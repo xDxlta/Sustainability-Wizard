@@ -1,0 +1,1718 @@
+<title>Swisspro Sustainability Wizard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Swisspro Sustainability Wizard - styles. Brand-neutral blue/aqua palette; replace tokens to match swissprowater.com. */
+:root {
+  --navy: #0b3d6b; --navy-700: #0d4a82; --aqua: #1fa6d8; --aqua-100: #e6f6fc; --ink: #15202b; --ink-60: #5b6770; --ink-30: #c3cbd2;
+  --bg: #f4f7fa; --card: #ffffff; --line: #e3e8ee; --ok: #1e8e5a; --warn: #b26a00; --bad: #b3261e;
+  --radius: 14px; --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 16px rgba(16, 24, 40, .06);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+:root { color-scheme: light; } /* single light theme by design: the page is embedded in Swisspro's light website */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.5; font-size: 16px; }
+a { color: var(--navy-700); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.muted { color: var(--ink-60); }
+.small { font-size: .875rem; }
+[hidden] { display: none !important; }
+
+/* header / footer */
+.site-header { background: var(--navy); color: #fff; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; min-height: 60px; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: radial-gradient(circle at 50% 35%, #7fdcff 0, #1fa6d8 60%, #0b3d6b 100%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.35); }
+.brand-sub { font-weight: 400; opacity: .85; }
+.site-nav { display: flex; gap: 16px; align-items: center; }
+.site-nav a, .link-btn { color: #dff3fb; font-size: .9rem; background: none; border: 0; cursor: pointer; font-family: inherit; text-decoration: underline; padding: 0; }
+.site-footer { margin-top: 48px; padding: 28px 0 40px; border-top: 1px solid var(--line); color: var(--ink-60); font-size: .875rem; }
+
+/* intro */
+.hero { padding: 40px 0 8px; }
+.hero h1 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); line-height: 1.15; margin: 0 0 12px; color: var(--navy); }
+.hero p.lead { font-size: 1.1rem; max-width: 46rem; margin: 0 0 20px; }
+.benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 20px 0 28px; padding: 0; list-style: none; }
+.benefits li { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; font-size: .95rem; }
+.benefits li strong { display: block; color: var(--navy); margin-bottom: 4px; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: 12px 20px; font-weight: 600; font-size: 1rem; border: 1px solid transparent; cursor: pointer; font-family: inherit; text-decoration: none; transition: background .15s, box-shadow .15s; }
+.btn-primary { background: var(--aqua); color: #06283d; }
+.btn-primary:hover { background: #17a0d3; }
+.btn-secondary { background: #fff; color: var(--navy); border-color: var(--ink-30); }
+.btn-secondary:hover { background: var(--aqua-100); }
+.btn-ghost { background: transparent; color: var(--navy-700); border-color: transparent; text-decoration: underline; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-lg { padding: 14px 26px; font-size: 1.05rem; }
+
+/* wizard */
+.progress { display: flex; align-items: center; gap: 12px; margin: 28px 0 10px; font-size: .85rem; color: var(--ink-60); }
+.progress-bar { flex: 1; height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.progress-bar span { display: block; height: 100%; background: var(--aqua); border-radius: 999px; transition: width .25s; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
+.step h2 { margin: 0 0 6px; font-size: 1.45rem; color: var(--navy); }
+.step .intro { margin: 0 0 20px; color: var(--ink-60); }
+.field { margin-bottom: 22px; }
+.field > label, .field > .field-label { display: block; font-weight: 600; margin-bottom: 10px; }
+.options { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.opt { text-align: left; background: #fff; border: 1.5px solid var(--ink-30); border-radius: 12px; padding: 12px 14px; cursor: pointer; font-family: inherit; font-size: .97rem; color: var(--ink); transition: border-color .12s, background .12s, box-shadow .12s; position: relative; }
+.opt:hover { border-color: var(--aqua); }
+.opt[aria-checked="true"], .opt.selected { border-color: var(--navy); background: var(--aqua-100); box-shadow: inset 0 0 0 1px var(--navy); }
+.opt .opt-label { display: block; font-weight: 600; }
+.opt .opt-desc { display: block; color: var(--ink-60); font-size: .85rem; margin-top: 2px; }
+.opt .tag { margin-top: 6px; }
+.input { width: 100%; max-width: 320px; font: inherit; padding: 11px 12px; border: 1.5px solid var(--ink-30); border-radius: 10px; }
+.input:focus, .opt:focus-visible, .btn:focus-visible { outline: 3px solid rgba(31,166,216,.45); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip { border: 1px solid var(--ink-30); background: #fff; border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: .875rem; }
+.chip:hover, .chip.selected { background: var(--aqua-100); border-color: var(--navy); }
+.error { color: var(--bad); font-size: .9rem; margin-top: 8px; }
+.nav-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+
+/* tags */
+.tag { display: inline-block; font-size: .72rem; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; vertical-align: middle; }
+.tag-sourced { color: #11643f; border-color: #9ad5b8; background: #e9f8f0; }
+.tag-sourced-secondary { color: #0b5a7a; border-color: #9bd2e8; background: #e8f6fc; }
+.tag-derived { color: #4a3fa3; border-color: #c3bdf0; background: #f0eefc; }
+.tag-assumption { color: #8a5300; border-color: #f0cf8e; background: #fff5e3; }
+.tag-user { color: #333; border-color: #cfd6dd; background: #f3f5f7; }
+.tag-constant { color: #333; border-color: #cfd6dd; background: #f3f5f7; }
+.tag-missing { color: var(--bad); border-color: #f0b3ae; background: #fdeeed; }
+.tag-config { color: #8a5300; border-color: #f0cf8e; background: #fff5e3; }
+
+/* results */
+.results h2 { color: var(--navy); font-size: 1.6rem; margin: 28px 0 6px; }
+.results h3 { color: var(--navy); font-size: 1.15rem; margin: 20px 0 10px; }
+.summary-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 20px; }
+.summary-chips span { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.tile .label { font-size: .85rem; color: var(--ink-60); margin-bottom: 4px; }
+.tile .value { font-size: 1.75rem; font-weight: 700; color: var(--navy); line-height: 1.15; }
+.tile .unit { font-size: .95rem; font-weight: 500; color: var(--ink-60); }
+.tile .sub { font-size: .875rem; margin-top: 6px; }
+.tile .basis { font-size: .78rem; color: var(--ink-60); margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+.kv { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.kv th { text-align: left; font-weight: 500; color: var(--ink-60); padding: 7px 0; vertical-align: top; width: 55%; }
+.kv td { text-align: right; padding: 7px 0; font-weight: 600; }
+.kv tr + tr th, .kv tr + tr td { border-top: 1px solid var(--line); }
+.notice { background: #fff8e8; border: 1px solid #f0cf8e; border-radius: 10px; padding: 12px 14px; font-size: .9rem; }
+.notice-info { background: var(--aqua-100); border-color: #9bd2e8; }
+.product { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; background: #fff; }
+.product h4 { margin: 0 0 6px; font-size: 1.02rem; color: var(--navy); }
+.product ul { margin: 8px 0 0; padding-left: 18px; font-size: .9rem; color: var(--ink-60); }
+.product .summary { margin: 0; font-size: .95rem; }
+.area-notes { font-size: .9rem; margin: 8px 0 14px; padding-left: 18px; }
+.ordered { counter-reset: n; list-style: none; padding: 0; margin: 0; }
+.ordered li { counter-increment: n; position: relative; padding-left: 44px; margin-bottom: 12px; }
+.ordered li::before { content: counter(n); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.adjust { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.adjust label { display: block; font-size: .85rem; color: var(--ink-60); margin-bottom: 4px; }
+.adjust input[type="number"] { width: 100%; }
+.sources-list { font-size: .9rem; }
+.sources-list li { margin-bottom: 8px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.readiness { display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 700; }
+.readiness-High { background: #e9f8f0; color: #11643f; }
+.readiness-Medium { background: #fff5e3; color: #8a5300; }
+.readiness-Early { background: #f3f5f7; color: #333; }
+details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
+.copy-area { width: 100%; min-height: 220px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+
+/* sources page */
+.factor { border-bottom: 1px solid var(--line); padding: 14px 0; }
+.factor h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.factor .val { font-weight: 700; color: var(--navy); }
+.factor blockquote { margin: 6px 0; padding-left: 12px; border-left: 3px solid var(--aqua); color: var(--ink-60); font-size: .9rem; }
+
+/* print */
+@media print {
+  body { background: #fff; font-size: 12px; }
+  .site-header, .site-footer, .actions, .adjust-card, .nav-row, .site-nav, .no-print { display: none !important; }
+  .card, .tile { box-shadow: none; break-inside: avoid; }
+  .tiles { grid-template-columns: repeat(3, 1fr); }
+  a { text-decoration: none; color: inherit; }
+}
+
+</style>
+<header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html" aria-label="Swisspro home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">Swisspro <span class="brand-sub">Sustainability Wizard</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Secondary">
+        <a href="sources.html">Sources &amp; assumptions</a>
+        <button type="button" class="link-btn" id="restart-top" hidden>Start over</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="app" aria-live="polite">
+    <noscript><p class="notice">This wizard needs JavaScript to run. Please enable it or contact info@swisspro.sg for a manual assessment.</p></noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>The wizard gives an indicative estimate from published reference values and your answers. Every figure is labelled as sourced, derived or assumed; see <a href="sources.html">Sources &amp; assumptions</a>. A Swisspro site survey and water test confirm the specification and the quote.</p>
+      <p class="muted">Swisspro Pte Ltd, Singapore &middot; Swiss microfiltration technology (Katadyn Group) &middot; <a href="https://swissprowater.com" rel="noopener">swissprowater.com</a></p>
+    </div>
+  </footer>
+<script>window.SW_ARTIFACT = true;</script>
+<script>
+/* Swisspro Sustainability Wizard - factor registry.
+ *
+ * EVERY number the calculator uses lives here with a provenance label:
+ *   kind: 'sourced'            value read from the cited page (via a search-engine excerpt of that page;
+ *                              direct page access was not available when this registry was built,
+ *                              so each link should be re-opened once before the tool goes live)
+ *   kind: 'sourced-secondary'  the official publication could not be read; value quoted by a third party
+ *   kind: 'derived'            pure arithmetic on sourced values (the formula is stated)
+ *   kind: 'assumption'         no source found; the value is an explicit, editable modelling assumption
+ *   kind: 'constant'           physical or calendar constant
+ *
+ * The wizard shows the label next to every figure. Change values here, never in the UI code.
+ * Accessed: 2026-10-29 unless stated otherwise.
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.factors = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var ACCESSED = '2026-10-29';
+
+  var factors = {
+    /* ------------------------------------------------------------------ packaging */
+    pet_bottle_weight_500ml_g: {
+      value: 9.89, unit: 'g per empty 500 ml (16.9 oz) PET bottle', kind: 'sourced',
+      label: 'Average weight of an empty 500 ml PET water bottle',
+      source: {
+        publisher: 'International Bottled Water Association (IBWA), citing Beverage Marketing Corporation',
+        title: 'Bottled water container weight (2000-2014)',
+        url: 'https://bottledwater.org/?p=652',
+        quote: 'the average 16.9-ounce PET bottle fell 48 percent to 9.89 grams between 2000 and 2014',
+        year: '2014 data', accessed: ACCESSED
+      },
+      note: 'US industry average and therefore a LIGHT bottle. Many bottles sold in South-East Asia weigh 12-18 g, so the plastic figure is conservative. A later IBWA release revised the same series to 9.25 g; the higher-weight 9.89 g value is kept only because it is the figure quoted in IBWA testimony to the US Congress.'
+    },
+    pet_bottle_weight_scaling: {
+      value: 2 / 3, unit: 'exponent', kind: 'assumption',
+      label: 'Scaling of bottle weight to other sizes',
+      note: 'No sourced weights were found for 330 ml, 600 ml, 1 L or 1.5 L water bottles. Their weight is derived from the 500 ml value as 9.89 g x (size / 500 ml)^(2/3), i.e. wall area grows slower than volume. Blog-grade ranges (1 L: 20-24 g, 1.5 L: 30-45 g) are higher than the derived 15.7 g and 20.6 g, so the derivation understates plastic for large bottles.'
+    },
+    co2e_kg_per_kg_pet: {
+      value: 3.86158, unit: 'kg CO2e per kg PET (primary material production, incl. forming)', kind: 'sourced-secondary',
+      label: 'Greenhouse-gas factor for virgin PET',
+      source: {
+        publisher: 'UK Government (DESNZ/DEFRA), Greenhouse gas reporting: conversion factors - as quoted by GreenCalculus',
+        title: 'Material use: Plastics - PET (incl. forming), primary material production',
+        url: 'https://greencalculus.com/data/defra-emission-factors/',
+        quote: 'PET primary production value of 3861.58251 kg CO2e per tonne, with a closed-loop figure of 2211.58251',
+        year: '2025/2026 factor set (third-party table)', accessed: ACCESSED
+      },
+      note: 'Official page: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025 (could not be opened from the build environment). Other third-party quotes of the same factor range from 3,121 to 4,032 kg CO2e/t depending on edition. Cradle-to-gate only: transport, chilling and end-of-life of the bottles are NOT included, nor is the electricity of the filtration unit.'
+    },
+    co2e_kg_per_car_km: {
+      value: 0.16272, unit: 'kg CO2e per km, average petrol car', kind: 'sourced-secondary',
+      label: 'Car-kilometre equivalence factor',
+      source: {
+        publisher: 'UK Government GHG conversion factors 2025 - as quoted by GreenCalculus',
+        title: 'Average car, petrol (kg CO2e per km)',
+        url: 'https://greencalculus.com/guides/defra-conversion-factors-what-changed/',
+        quote: 'Average car, petrol ... kg CO2e per km | 0.16272',
+        year: '2025 factor set', accessed: ACCESSED
+      },
+      note: 'Used only to translate tonnes of CO2e into something tangible.'
+    },
+
+    /* ------------------------------------------------------------------ logistics */
+    bottles_per_carton: {
+      value: 24, unit: 'bottles per carton (500 ml)', kind: 'sourced',
+      label: 'Bottles per carton',
+      source: {
+        publisher: 'Nestle Pure Life (water.com) / Cactus & Desa (Malaysia) / Wilkins & Absolute (Philippines) listings',
+        title: '24-bottle cartons of 500 ml water',
+        url: 'https://www.water.com/fr-ca/product/pure-life-water-plastic-bottle-16-oz-24-pack-pallet/',
+        quote: 'packs of 24 ... 78 cases, or 1,872 bottles, per pallet',
+        year: 'undated listing', accessed: ACCESSED
+      }
+    },
+    bottles_per_pallet_500ml: {
+      value: 1872, unit: 'bottles (500 ml) per pallet', kind: 'sourced',
+      label: 'Bottles per pallet',
+      source: {
+        publisher: 'water.com (Nestle Pure Life)',
+        title: 'Pure Life water 16.9 oz 24-pack pallet',
+        url: 'https://www.water.com/fr-ca/product/pure-life-water-plastic-bottle-16-oz-24-pack-pallet/',
+        quote: '78 cases, or 1,872 bottles, per pallet',
+        year: 'undated listing', accessed: ACCESSED
+      },
+      note: 'Costco/Niagara list 1,920 (48 cases x 40). For other bottle sizes the count is scaled by volume (assumption).'
+    },
+    pallet_footprint_m2: {
+      value: 1.2, unit: 'm2 per pallet (1200 x 1000 mm)', kind: 'sourced',
+      label: 'Pallet footprint',
+      source: {
+        publisher: 'Pallet Gauge',
+        title: 'Pallet size comparison',
+        url: 'https://palletgauge.com/pallet-size-comparison',
+        quote: '1200 x 1000 mm - 1.200 m2',
+        year: 'undated', accessed: ACCESSED
+      }
+    },
+    storage_aisle_multiplier: {
+      value: 1, unit: 'x', kind: 'assumption',
+      label: 'Storage area multiplier',
+      note: 'Pallet footprint only. A real store needs aisles and access; set to 1.5-2.5 for a realistic floor-area figure.'
+    },
+    stock_weeks_default: {
+      value: 2, unit: 'weeks of bottled water kept in stock', kind: 'assumption',
+      label: 'Stock on hand',
+      note: 'Determines the peak number of pallets in the store. Adjustable in the results page.'
+    },
+    water_density_kg_per_l: { value: 1, unit: 'kg per litre', kind: 'constant', label: 'Density of water' },
+
+    /* ------------------------------------------------------------------ labour */
+    working_hours_per_fte_year: {
+      value: 2080, unit: 'hours per full-time employee per year', kind: 'assumption',
+      label: 'Hours per full-time equivalent',
+      note: '40 hours x 52 weeks. Used only to express housekeeping hours as FTEs and to convert monthly wages to hourly (2080 / 12 = 173.3 h per month). Statutory weeks in the region are 40-45 h; a longer week would lower the hourly rate slightly.'
+    },
+    minutes_per_room_per_day_default: {
+      value: 1, unit: 'minutes of housekeeping time per occupied room per day', kind: 'assumption',
+      label: 'Bottle handling time per occupied room',
+      note: 'No published figure exists. Covers restocking bottles from the trolley, removing empties and reloading the trolley. Adjustable (0.5-3 min). Does not include guest requests for extra water.'
+    },
+    minutes_per_carton_default: {
+      value: 2, unit: 'minutes of receiving / storing / distributing time per carton', kind: 'assumption',
+      label: 'Handling time per carton',
+      note: 'Receiving the delivery, moving cartons to the store and up to floor pantries, breaking cartons and disposing of shrink-wrap. Adjustable.'
+    },
+    bottles_per_room_night_default: {
+      value: 2, unit: 'complimentary bottles per occupied room per night', kind: 'assumption',
+      label: 'Bottles per occupied room-night',
+      note: 'Industry case studies describe "two bottles a night" (Aquablu, Sheraton Brussels Airport) and "two 750 ml bottles per room per day" (Topia Water model). Fairmont Singapore and Swissotel The Stamford report avoiding 1.5 million bottles a year across 2,030 rooms (about 2 per room per day). Sources: https://www.aquablu.com/stories/the-future-of-hospitality-embracing-sustainability-in-hotels , https://topiawater.com/case-study-streamline-200/ , https://www.swissotel-singapore-stamford.com/the-hotel/blog/sustainability-at-fairmont-singapore-swissotel-the-stamford/'
+    },
+
+    /* ------------------------------------------------------------------ pricing (Swisspro) */
+    filter_sets_per_unit_per_year: {
+      value: 1, unit: 'replacement filter sets per unit per year', kind: 'assumption',
+      label: 'Filter replacement frequency',
+      note: 'Swisspro did not publish change intervals on the pages found. Replace with the service-contract terms from the price list.'
+    }
+  };
+
+  /* --------------------------------------------------------------------- markets */
+  var countries = {
+    SG: {
+      code: 'SG', name: 'Singapore', currency: 'SGD', symbol: 'S$', decimals: 2,
+      fx: { value: 1 / 1.28025, unit: 'USD per SGD', kind: 'sourced',
+        source: { publisher: 'MTFX (historical USD/SGD)', url: 'https://www.mtfxgroup.com/tools/historical-currency-exchange-rates/usd-to-sgd-rate/', quote: '1 USD = 1.28025 SGD on October 26, 2026', year: '2026-10-26', accessed: ACCESSED } },
+      occupancy: { value: 0.819, unit: 'average hotel occupancy 2025', kind: 'sourced',
+        source: { publisher: 'Singapore Tourism Board', title: 'Record Singapore tourism receipts from January to September 2025 (media release, 3 Feb 2026)', url: 'https://www.stb.gov.sg/about-stb/media-publications/media-centre/record-singapore-tourism-receipts-from-january-to-september-2025/', quote: 'hotel occupancy of 81.9% for 2025, up from 81.4% in 2024', year: '2025', accessed: ACCESSED } },
+      wageMonthly: { value: 1910, unit: 'SGD per month, basic wage', kind: 'sourced',
+        label: 'Progressive Wage Model, General/Indoor Cleaner (proxy for room attendant)',
+        source: { publisher: 'Ministry of Manpower Singapore', title: 'Progressive Wage Model - cleaning sector', url: 'https://www.mom.gov.sg/employment-practices/progressive-wage-model/cleaning-sector', quote: 'General Cleaner Indoor Cleaner ... $1,910 (from 1 July 2025)', year: '2025-26', accessed: ACCESSED },
+        note: 'Hotel room attendants are not covered by the cleaning-sector PWM; this is the lowest defensible proxy. MOM Occupational Wages June 2024 put the median gross wage of a "housekeeper (hotels and other establishments)" at S$3,233 per month.' },
+      bottlePrices: [
+        { id: 'local', label: 'Local brand, bought by the carton', price: 8.64 / 24, kind: 'sourced', ref: 'Pere Ocean natural mineral water 24 x 500 ml, S$8.64 incl. GST', url: 'https://www.pereocean.com/pere-ocean-natural-mineral-water-500ml' },
+        { id: 'premium', label: 'Premium imported brand', price: 34.95 / 24, kind: 'sourced', ref: 'Evian 24 x 500 ml, S$34.95 (promotional; regular S$56.40) at FairPrice', url: 'https://www.fairprice.com.sg/category/mineral-water' }
+      ],
+      context: [
+        { text: 'Singapore\'s Hotel Sustainability Roadmap (STB/SHA, 2022) targets 60% of hotel room stock holding an internationally recognised sustainability certification by 2025, and its measures list an in-room filtration tap.', url: 'https://www.stb.gov.sg/about-stb/media-publications/media-centre/launch-of-the-hotel-sustainability-roadmap-by-stb-and-sha/' }
+      ]
+    },
+    MY: {
+      code: 'MY', name: 'Malaysia', currency: 'MYR', symbol: 'RM', decimals: 2,
+      fx: { value: 1 / 4.0745, unit: 'USD per MYR', kind: 'sourced',
+        source: { publisher: 'Malay Mail / Bernama', url: 'https://malaymail.com/news/money/2026/10/28/ringgit-ends-higher-against-greenback-on-confidence-in-malaysias-fundamentals/241025', quote: 'rose to 4.0745/0790 against the US dollar', year: '2026-10-28', accessed: ACCESSED } },
+      occupancy: { value: 0.568, unit: 'average occupancy rate, paid accommodation, 2025', kind: 'sourced',
+        source: { publisher: 'Tourism Malaysia', title: 'Paid Accommodation Survey performance January-December 2025 (infographic)', url: 'https://data.tourism.gov.my/frontend/pdf/Infographic_paid_accommodation_performance_jan-dec2025.pdf', quote: 'Malaysia 2025 - 56.8%, 2024 - 54.9%', year: '2025', accessed: ACCESSED } },
+      wageMonthly: { value: 1700, unit: 'MYR per month', kind: 'sourced',
+        label: 'National minimum wage (Minimum Wages Order 2024)',
+        source: { publisher: 'Skrine (law firm) summarising the Minimum Wages Order 2024, gazetted 4 Dec 2024', url: 'https://www.skrine.com/insights/alerts/december-2024/minimum-wages-order-2024-gazetted', quote: 'Employers with fewer than five staff ... had until 1 August 2025 to move to RM1,700', year: '2025', accessed: ACCESSED },
+        note: 'Statutory floor; hotel housekeeping wages are usually above it, so the labour value is conservative.' },
+      bottlePrices: [
+        { id: 'local', label: 'Local brand, bought by the carton', price: 14.60 / 24, kind: 'sourced', ref: 'Desa mineral water 24 x 500 ml, RM14.60 (Ace Water price list)', url: 'https://acewater.my/price-list-2/' },
+        { id: 'mid', label: 'National brand, bought by the carton', price: 15.95 / 24, kind: 'sourced', ref: 'Cactus mineral water 24 x 500 ml, RM15.95 (Food Service Malaysia)', url: 'https://www.foodservicemalaysia.com/ourproducts/cid/277768/cat/beverage-water/' }
+      ],
+      context: [
+        { text: 'Malaysia Roadmap Towards Zero Single-Use Plastics 2018-2030 sets the vision of "zero single-use plastics for a cleaner and healthier environment in Malaysia by 2030".', url: 'https://www.pmo.gov.my/wp-content/uploads/2019/07/Malaysia-Roadmap-Towards-Zero-Single-Use-Plastics-2018-2030-m-min.pdf' },
+        { text: 'Halal certification of water filtration products by JAKIM is established practice in Malaysia (e.g. Coway: "all water purifier products are certified Halal by the Department of Islamic Development Malaysia (JAKIM)").', url: 'https://www.coway.com.my/halal' }
+      ]
+    },
+    ID: {
+      code: 'ID', name: 'Indonesia', currency: 'IDR', symbol: 'Rp', decimals: 0,
+      fx: { value: 1 / 18147.4, unit: 'USD per IDR', kind: 'sourced',
+        source: { publisher: 'Morningstar currencies', url: 'https://www.morningstar.com/markets/currencies', quote: 'Indonesian Rupiah USD-IDR 18,147.4000 as of October 26', year: '2026-10-26', accessed: ACCESSED } },
+      occupancy: { value: 0.4866, unit: 'star-rated hotel room occupancy (TPK), Jan-Nov 2025 cumulative', kind: 'sourced',
+        source: { publisher: 'BPS - Statistics Indonesia, reported by Bisnis.com', url: 'https://ekonomi.bisnis.com/read/20260105/12/1941619/okupansi-hotel-berbintang-masih-turun-107-yoy-per-november-2025', quote: 'Secara kumulatif Januari hingga November 2025, BPS mencatat TPK hotel bintang sebesar 48,66%', year: '2025 (Jan-Nov)', accessed: ACCESSED },
+        note: 'Full-year 2025 figure not retrievable; December 2025 alone was 56.12% (BPS release 2 Feb 2026).' },
+      wageMonthly: { value: 2996561, unit: 'IDR per month', kind: 'sourced',
+        label: 'Provincial minimum wage (UMP) Bali 2025',
+        source: { publisher: 'Hukumonline (UMP 2025 list)', url: 'https://www.hukumonline.com/berita/a/ump-2025-se-Indonesia-lt68d3bc774d628/', quote: 'Bali Rp2.996.561 (naik Rp179.889 dibandingkan UMP 2024)', year: '2025', accessed: ACCESSED },
+        note: 'Bali is used because it is the largest resort market. DKI Jakarta UMP 2025 is Rp5,396,761 (beritajakarta.id). Adjust in the results page for other provinces.' },
+      bottlePrices: [
+        { id: 'local', label: 'National brand (Aqua 600 ml), bought by the carton', price: 66718 / 24, kind: 'sourced', ref: 'Aqua 600 ml x 24, average marketplace price Rp66,718 per carton (Blibli)', url: 'https://www.blibli.com/jual/akua-600-ml-per-dus' },
+        { id: 'budget', label: 'Cheapest marketplace carton', price: 51000 / 24, kind: 'sourced', ref: 'Aqua 600 ml x 24, lowest listed Rp51,000 per carton (Blibli)', url: 'https://www.blibli.com/jual/akua-600-ml-per-dus' }
+      ],
+      context: [
+        { text: 'Bali Circular Letter 9 of 2025 (Governor Koster, April 2025) bans producing, distributing and selling single-use plastic bottled water under one litre.', url: 'https://www.socialexpat.net/bali-governor-bans-single-use-plastic-bottled-water-under-one-litre/' },
+        { text: 'A 2024 peer-reviewed study of PDAM piped water in three Indonesian cities found "sporadic microbial contamination ... due to the depletion of residual chlorine" - a reason to specify a bacteria-retaining (0.2 micron) filter.', url: 'https://ideas.repec.org/a/gam/jsusta/v16y2024i16p7082-d1458770.html' }
+      ]
+    },
+    PH: {
+      code: 'PH', name: 'Philippines', currency: 'PHP', symbol: '₱', decimals: 2,
+      fx: { value: 1 / 63.453, unit: 'USD per PHP', kind: 'sourced',
+        source: { publisher: 'Bangko Sentral ng Pilipinas reference rate (via taxcalculator.com.ph)', url: 'https://taxcalculator.com.ph/exchange-rates', quote: 'US$1 = ₱63.4530 on the bulletin of 26 October 2026', year: '2026-10-26', accessed: ACCESSED } },
+      occupancy: { value: 0.60, unit: 'average hotel occupancy 2025', kind: 'sourced',
+        source: { publisher: 'Leechiu Property Consultants, reported by BusinessWorld', url: 'https://www.bworldonline.com/?p=743528', quote: 'Hotel occupancy in 2025 remained at 60%, flat year on year, and still below the 68% recorded in 2019', year: '2025', accessed: ACCESSED },
+        note: 'Private consultancy figure; no official DOT/PSA national series was found. Metro Manila H1 2025: 64%.' },
+      wageMonthly: { value: 695 * 2080 / 12 / 8, unit: 'PHP per month (derived from ₱695 per day x 8 h)', kind: 'derived',
+        label: 'NCR daily minimum wage, non-agriculture (Wage Order NCR-26)',
+        source: { publisher: 'Philippine News Agency', url: 'https://www.pna.gov.ph/articles/1254675', quote: 'Wage Order NCR-26 raised the non-agriculture daily minimum in Metro Manila from ₱645 to ₱695, and the ₱50 increase took effect July 18, 2025', year: '2025', accessed: ACCESSED },
+        note: 'Monthly value = 695 / 8 h x 2080 h / 12. Regional wage boards outside NCR are lower.' },
+      bottlePrices: [
+        { id: 'local', label: 'National brand (Absolute), bought by the case', price: 334.57 / 24, kind: 'sourced', ref: 'Absolute distilled water 500 ml x 24, ₱334.57 per case (MerryMart Wholesale)', url: 'https://www.merrymartwholesale.com/products/absolute-distilled-water-500ml-1-case-includes-24-pcs-500ml' },
+        { id: 'mid', label: 'National brand (Wilkins), bought by the case', price: 366.17 / 24, kind: 'sourced', ref: 'Wilkins distilled water 500 ml x 24, ₱366.17 per case (MerryMart Wholesale)', url: 'https://www.merrymartwholesale.com/products/wilkins-distilled-500ml-1-case-includes-24pcs-500ml' }
+      ],
+      context: [
+        { text: 'Republic Act 11898 (Extended Producer Responsibility Act of 2022) obliges large enterprises to recover plastic packaging: 50% of the 2025 footprint, rising to 80% from 2028.', url: 'https://lawphil.net/statutes/repacts/ra2022/ra_11898_2022.html' },
+        { text: 'Boracay (Malay, Aklan) Municipal Ordinance No. 386 s. 2018 "prohibits the use of single-use or disposable plastic items by hotels, resorts, restaurants and establishments in the accommodation business".', url: 'https://denr.gov.ph/news-events/denr-backs-ordinance-banning-single-use-plastics-in-boracay/' }
+      ]
+    },
+    OTHER: {
+      code: 'OTHER', name: 'Other Asia-Pacific market', currency: 'USD', symbol: 'US$', decimals: 2,
+      fx: { value: 1, unit: 'USD per USD', kind: 'constant' },
+      occupancy: { value: (0.819 + 0.568 + 0.4866 + 0.60) / 4, unit: 'average of the four core markets', kind: 'derived',
+        note: 'Simple average of the Singapore, Malaysia, Indonesia and Philippines figures above.' },
+      wageMonthly: { value: 0, unit: 'USD per month', kind: 'assumption', label: 'No wage reference - enter your own', note: 'Labour is shown in hours only until a wage is entered.' },
+      bottlePrices: [],
+      context: []
+    }
+  };
+
+  /* Interview statements used as qualitative inputs (not numbers). */
+  var interview = {
+    source: 'Interview with Marriott International\'s VP Procurement APAC, October 2026 (project source, unpublished)',
+    points: [
+      'Decision drivers in order: 1) ROI ("owners challenge the payback"), 2) efficiency and guest experience (water 24/7, no waiting for housekeeping, one SKU less, no storage, no heavy trolleys), 3) sustainability ("if you put it as the main criteria for change, it\'s very, very hard to convince").',
+      'Approval limits vary: some management agreements require owner approval above USD 5,000; others let the GM decide up to USD 50,000.',
+      'Missing in the market: choosing the right filter grade for local water quality and volume; choosing the device (look, colour, space, temperatures).',
+      'Luxury is cosmetic and guest-experience driven and may keep premium mineral water; select and premium tiers are straightforward.',
+      'Triggers: Green Globe certification (no single-use bottles allowed), Forbes and LQA audits in luxury (points lost for single-use bottles), cost and efficiency; a renovation is an enabler.',
+      'A tap at the bathroom vanity next to the basin and water stations in corridors are both disliked by guests.'
+    ]
+  };
+
+  var swissproSources = {
+    guestroom: 'https://swissprowater.com/hospitality/guestroom/',
+    convention: 'https://swissprowater.com/hospitality/convention-area/',
+    projects: 'https://swissprowater.com/category-projects/hospitality/',
+    fairmont: 'https://swissprowater.com/projects/fairmont-south-tower-minibar-station/',
+    panpacific: 'https://swissprowater.com/projects/pan-pacific-orchard-guestroom-minibar/',
+    businessClass: 'https://swissprowater.com/drink-business-class-with-swisspro/',
+    san: 'https://swissprowater.com/products/san/',
+    smart: 'https://swissprowater.com/products/smart/',
+    fontana: 'https://swissprowater.com/products/fontana/',
+    vida: 'https://swissprowater.com/products/clima-vida/',
+    grande: 'https://swissprowater.com/products/clima-grande/',
+    mesa: 'https://swissprowater.com/products/clima-mesa-v2/',
+    piso: 'https://swissprowater.com/products/clima-piso-v2/',
+    shop: 'https://swisspro-singapore.myshopify.com/collections/all'
+  };
+
+  function derivedBottleWeightG(sizeMl) {
+    var base = factors.pet_bottle_weight_500ml_g.value;
+    var exp = factors.pet_bottle_weight_scaling.value;
+    return base * Math.pow(sizeMl / 500, exp);
+  }
+
+  /* Facts shown on the results page when a driver is selected (all search-excerpt sourced, see docs/research-notes-regulation.md). */
+  var triggerFacts = {
+    certification: [
+      { text: 'Singapore\'s Hotel Sustainability Roadmap targets 60% of hotel room stock with an internationally recognised sustainability certification by 2025 (up from under 10% in 2022).', url: 'https://www.stb.gov.sg/about-stb/media-publications/media-centre/launch-of-the-hotel-sustainability-roadmap-by-stb-and-sha/' },
+      { text: 'Green Globe certification does not allow single-use bottles, according to Marriott\'s VP Procurement APAC (interview, Oct 2026). Confirm the exact indicator with your certification body.', url: 'https://www.greenglobe.com/criteria-indicators' }
+    ],
+    audit: [
+      { text: 'Forbes Travel Guide\'s Responsible Hospitality verification "guides hotels through topics such as single-use plastics, food and water waste, local and seasonal food, recycling programs".', url: 'https://www.forbestravelguide.com/landing/press-release-sustainability-forbes-travel-guide-responsible-hospitality' },
+      { text: 'Luxury audits (Forbes, LQA) deduct points for single-use bottles in rooms, according to Marriott\'s VP Procurement APAC (interview, Oct 2026).', url: null }
+    ],
+    mandate: [
+      { text: 'Marriott International\'s Serve 360 goals: "Responsibly source 95% in our Top 10 priority categories by 2025" (the categories include bottled water) and "reduce waste-to-landfill per occupied room by 45% from 2016 to 2025".', url: 'https://serve360.marriott.com/wp-content/uploads/2021/09/2021_Serve_360_Report.pdf' }
+    ],
+    safety: [
+      { text: 'US CDC: to remove bacteria a filter needs an absolute pore size of 0.3 micron or smaller; Swisspro\'s filtration stage is 0.2 micron.', url: 'https://www.cdc.gov/drinking-water/prevention/about-choosing-home-water-filters.html' }
+    ]
+  };
+
+  return {
+    ACCESSED: ACCESSED,
+    triggerFacts: triggerFacts,
+    factors: factors,
+    countries: countries,
+    interview: interview,
+    swissproSources: swissproSources,
+    derivedBottleWeightG: derivedBottleWeightG,
+    hourlyWage: function (monthly) { return monthly / (factors.working_hours_per_fte_year.value / 12); }
+  };
+});
+
+/* Swisspro Sustainability Wizard - calculation engine.
+ *
+ * Pure functions only. Every number that is not pure arithmetic comes from the
+ * factor registry (js/factors.js), which carries a source or an explicit
+ * "assumption" label for each value. Works in the browser (classic <script>,
+ * exposes window.SW.engine) and in Node (CommonJS, for the tests).
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.engine = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var DAYS_PER_YEAR = 365; // calendar fact
+
+  function num(v, fallback) { var n = Number(v); return isFinite(n) ? n : fallback; }
+
+  /** Read a factor value; throws if the registry lacks it so a typo cannot silently become 0. */
+  function fv(F, key) {
+    if (!F || !F.factors || !F.factors[key]) throw new Error('Missing factor: ' + key);
+    return F.factors[key].value;
+  }
+
+  /** Weight (g) of an empty single-use PET bottle. Uses the sourced 500 ml value and the labelled scaling rule. */
+  function petBottleWeightGrams(F, sizeMl) {
+    var size = Math.max(100, num(sizeMl, 500));
+    if (size === 500) return fv(F, 'pet_bottle_weight_500ml_g');
+    return fv(F, 'pet_bottle_weight_500ml_g') * Math.pow(size / 500, fv(F, 'pet_bottle_weight_scaling'));
+  }
+
+  /** How many bottles the property consumes per year today. */
+  function annualBottles(inp) {
+    var rooms = Math.max(0, num(inp.rooms, 0));
+    var occ = Math.min(1, Math.max(0, num(inp.occupancy, 0)));
+    var perRoomNight = Math.max(0, num(inp.bottlesPerRoomNight, 0));
+    var other = Math.max(0, num(inp.otherBottlesPerDay, 0));
+    var occupiedRoomNights = rooms * occ * DAYS_PER_YEAR;
+    var roomBottles = occupiedRoomNights * perRoomNight;
+    var otherBottles = other * DAYS_PER_YEAR;
+    return { occupiedRoomNights: occupiedRoomNights, roomBottles: roomBottles, otherBottles: otherBottles, total: roomBottles + otherBottles };
+  }
+
+  /**
+   * Plastic and greenhouse-gas impact of the bottles avoided.
+   * Only single-use PET is quantified. Glass (reusable or bought-in) has no sourced
+   * weight/emission factor in the registry, so packaging and CO2e are reported as null.
+   */
+  function environmentalImpact(F, inp, bottles) {
+    var sizeMl = num(inp.bottleSizeMl, 500);
+    var litres = bottles.total * sizeMl / 1000;
+    if (inp.bottleMaterial === 'glass') {
+      return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false };
+    }
+    var gPerBottle = inp.bottleWeightOverrideG != null ? Math.max(0, num(inp.bottleWeightOverrideG, 0)) : petBottleWeightGrams(F, sizeMl);
+    var packagingKg = bottles.total * gPerBottle / 1000;
+    var co2Kg = packagingKg * fv(F, 'co2e_kg_per_kg_pet');
+    return {
+      material: 'pet', bottleWeightG: gPerBottle, packagingKg: packagingKg, litres: litres,
+      co2eKg: co2Kg, co2eCarKm: co2Kg / fv(F, 'co2e_kg_per_car_km'), quantified: true
+    };
+  }
+
+  /** Money the hotel spends on bottled water today (local currency). */
+  function spend(inp, bottles) {
+    var price = Math.max(0, num(inp.pricePerBottle, 0));
+    var annual = bottles.total * price;
+    return { pricePerBottle: price, annualLocal: annual, annualUsd: annual * num(inp.usdPerLocal, 0) };
+  }
+
+  /** Housekeeping / stewarding time spent handling bottles. */
+  function labour(F, inp, bottles) {
+    var minPerRoomDay = Math.max(0, num(inp.minutesPerRoomPerDay, 0));
+    var roomHours = bottles.occupiedRoomNights * minPerRoomDay / 60;
+    var cartons = bottles.total / fv(F, 'bottles_per_carton');
+    var cartonHours = cartons * Math.max(0, num(inp.minutesPerCarton, 0)) / 60;
+    var hours = roomHours + cartonHours;
+    var wage = Math.max(0, num(inp.wageHourly, 0));
+    var costLocal = hours * wage;
+    return {
+      roomHours: roomHours, cartonHours: cartonHours, hours: hours,
+      fteEquivalent: hours / fv(F, 'working_hours_per_fte_year'),
+      wageHourly: wage, costLocal: costLocal, costUsd: costLocal * num(inp.usdPerLocal, 0), quantified: wage > 0
+    };
+  }
+
+  /** Storage, deliveries and weight carried. */
+  function logistics(F, inp, bottles) {
+    var sizeMl = Math.max(100, num(inp.bottleSizeMl, 500));
+    var perPallet = fv(F, 'bottles_per_pallet_500ml') * (500 / sizeMl); // scaled by volume (assumption, see factor note)
+    var cartons = bottles.total / fv(F, 'bottles_per_carton');
+    var pallets = bottles.total / perPallet;
+    var stockWeeks = Math.max(0, num(inp.stockWeeks, 0));
+    var peakPallets = pallets * stockWeeks / 52;
+    var gPerBottle = inp.bottleMaterial === 'glass' ? 0 : petBottleWeightGrams(F, sizeMl); // glass weight unknown: water only (understates)
+    var kgPerBottle = sizeMl / 1000 * fv(F, 'water_density_kg_per_l') + gPerBottle / 1000;
+    return {
+      cartonsPerYear: cartons, palletsPerYear: pallets, peakPallets: peakPallets,
+      storageM2: peakPallets * fv(F, 'pallet_footprint_m2') * fv(F, 'storage_aisle_multiplier'),
+      deliveriesPerYear: stockWeeks > 0 && bottles.total > 0 ? 52 / stockWeeks : 0,
+      tonnesHandled: bottles.total * kgPerBottle / 1000, kgPerBottle: kgPerBottle
+    };
+  }
+
+  /**
+   * Payback. capex and annualService are in local currency (Swisspro quote, price-list
+   * config or user entry). null capex means "no price available".
+   */
+  function payback(inp, sp, lab) {
+    var capex = inp.capex == null ? null : Math.max(0, num(inp.capex, 0));
+    var service = inp.annualService == null ? 0 : Math.max(0, num(inp.annualService, 0));
+    var cash = sp.annualLocal - service;
+    var full = sp.annualLocal + lab.costLocal - service;
+    function years(s) { return capex == null ? null : (s > 0 ? capex / s : Infinity); }
+    return {
+      available: capex != null, capex: capex, annualService: service,
+      cashSavingsPerYear: cash, fullSavingsPerYear: full,
+      cashPaybackYears: years(cash), fullPaybackYears: years(full),
+      fiveYearNetCash: capex == null ? null : cash * 5 - capex,
+      fiveYearNetFull: capex == null ? null : full * 5 - capex
+    };
+  }
+
+  /** Run everything. `F` is the factor registry, `inp` the normalised wizard inputs. */
+  function calculate(F, inp) {
+    var bottles = annualBottles(inp);
+    var env = environmentalImpact(F, inp, bottles);
+    var sp = spend(inp, bottles);
+    var lab = labour(F, inp, bottles);
+    var log = logistics(F, inp, bottles);
+    return { inputs: inp, bottles: bottles, env: env, spend: sp, labour: lab, logistics: log, payback: payback(inp, sp, lab) };
+  }
+
+  return {
+    DAYS_PER_YEAR: DAYS_PER_YEAR, petBottleWeightGrams: petBottleWeightGrams, annualBottles: annualBottles,
+    environmentalImpact: environmentalImpact, spend: spend, labour: labour, logistics: logistics, payback: payback, calculate: calculate
+  };
+});
+
+/* Swisspro product families as described on swissprowater.com (accessed 2026-10-29 via search excerpts).
+ * Only features that appear on Swisspro's own pages are listed. Prices are NOT here: see pricing.js. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.products = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  var P = {
+    smart_tap: {
+      id: 'smart_tap', name: 'SMART series - separate drinking-water tap', family: 'tap',
+      areas: ['rooms'], temps: ['ambient'], finishes: ['chrome'], footprint: 'small',
+      summary: 'A dedicated filtered-water tap with the 3-stage filter hidden under the counter. No electricity. Fits a minibar counter or a vanity where a second tap is acceptable.',
+      facts: ['Separate drinking tap, chrome-plated brass (Swisspro shop listing)', 'Under-sink 3-stage filtration, no electricity (swissprowater.com/products/smart/)', '0.2-micron ceramic stage: Swisspro states it removes over 99.99% of microorganisms and bacteria (SAN/SMART pages)'],
+      url: 'https://swissprowater.com/products/smart/'
+    },
+    san_tap: {
+      id: 'san_tap', name: 'SAN series - all-in-one mixer with filtered outlet', family: 'tap',
+      areas: ['rooms', 'boh'], temps: ['ambient'], finishes: ['chrome'], footprint: 'none',
+      summary: 'Replaces the existing mixer tap: washing water and filtered drinking water from one fitting, so no extra hole is drilled. Suits bathroom vanities and pantry sinks.',
+      facts: ['All-in-one kitchen mixer with a separate filtered-water outlet, no drilling (swissprowater.com/products/san/)', '3rd stage 0.2-micron ceramic filter that can be cleaned and reused'],
+      url: 'https://swissprowater.com/products/san/'
+    },
+    minibar_station: {
+      id: 'minibar_station', name: 'Minibar hot & cold station (CLIMA Piso V2 under-counter)', family: 'dispenser',
+      areas: ['rooms'], temps: ['hot', 'cold', 'ambient'], finishes: ['white'], footprint: 'medium',
+      summary: 'Self-serve hot and chilled filtered water at the minibar counter. The hotel\'s own glass carafe or bottle sits next to it. This is the set-up Swisspro installed at Fairmont Singapore (400+ rooms, 2019) and Pan Pacific Orchard (200+ rooms, 2023).',
+      facts: ['Guestroom page: "minibar-mounted hot and cold station"', 'CLIMA Piso V2: undercounter, hot 5 L / cold 3 L tanks, ambient direct (swissprowater.com/products/clima-piso-v2/)', 'Fairmont South Tower minibar station: 400+ rooms, completed 2019; Pan Pacific Orchard: 200+ rooms, completed 2023'],
+      url: 'https://swissprowater.com/projects/fairmont-south-tower-minibar-station/'
+    },
+    vida: {
+      id: 'vida', name: 'CLIMA Vida compact countertop dispenser (Vida S with sparkling)', family: 'dispenser',
+      areas: ['rooms', 'meetings', 'boh'], temps: ['hot', 'cold', 'ambient', 'sparkling'], finishes: ['black', 'white'], footprint: 'medium',
+      summary: 'Compact countertop unit in black or white for rooms and small pantries; the Vida S version adds sparkling water.',
+      facts: ['Hot up to 12 L/hr, cold up to 20 L/hr; black or white (swissprowater.com/products/clima-vida/)', 'CLIMA Vida S: hot, cold and sparkling (listed on the CLIMA Mesa V2 page)'],
+      url: 'https://swissprowater.com/products/clima-vida/'
+    },
+    fontana: {
+      id: 'fontana', name: 'FONTANA built-in dispenser (ambient, hot, cold, sparkling)', family: 'dispenser',
+      areas: ['rooms', 'fnb'], temps: ['ambient', 'hot', 'cold', 'sparkling'], finishes: ['stainless'], footprint: 'built-in',
+      summary: 'Built into the joinery of suites or a bar: four water types from one outlet with the filter concealed. The premium alternative to imported sparkling water.',
+      facts: ['Built-in dispenser for ambient, hot, cold and sparkling water; 2-stage SuperSwiss filtration (0.2-micron ceramic + activated carbon block); 45 x 60 cm (swissprowater.com/products/fontana/)', 'Guestroom page: "sparkling water dispensers for suites"'],
+      url: 'https://swissprowater.com/products/fontana/'
+    },
+    grande: {
+      id: 'grande', name: 'CLIMA Grande heavy-duty dispenser', family: 'dispenser',
+      areas: ['fnb', 'boh', 'meetings'], temps: ['hot', 'cold', 'ambient'], finishes: ['white'], footprint: 'large',
+      summary: 'High-volume unit for kitchens, stewarding and banquet back-of-house: fills carafes and glass bottles quickly.',
+      facts: ['Water capacity hot 15 L, cold 4 L, ambient 10 L; 29 L tank; 3-stage filtration with 0.2-micron ceramic stage (swissprowater.com/products/clima-grande/)'],
+      url: 'https://swissprowater.com/products/clima-grande/'
+    },
+    mesa: {
+      id: 'mesa', name: 'CLIMA Mesa V2 countertop / floor-standing dispenser', family: 'dispenser',
+      areas: ['boh', 'meetings', 'public'], temps: ['hot', 'cold', 'ambient'], finishes: ['white'], footprint: 'medium',
+      summary: 'Countertop or floor-standing hot/cold/ambient unit for staff areas, meeting-room pantries and gyms.',
+      facts: ['Floor standing, white; hot 5 L, cold 1.7 L, ambient direct from mains; 6.7 L tank (swissprowater.com/products/clima-mesa-v2/)'],
+      url: 'https://swissprowater.com/products/clima-mesa-v2/'
+    },
+    self_serve_station: {
+      id: 'self_serve_station', name: 'Self-serve water station (hot, cold, still & sparkling)', family: 'station',
+      areas: ['fnb', 'meetings', 'public'], temps: ['hot', 'cold', 'ambient', 'sparkling'], finishes: ['stainless'], footprint: 'large',
+      summary: 'Guest-facing refill station for restaurants, pre-function areas, gyms and pools. Swisspro installed two at CLOVE buffet restaurant (Swissotel The Stamford) and a self-service station concept for Raffles City Convention Centre.',
+      facts: ['CLOVE Buffet Restaurant: 2 self-serve stations providing hot, cold, still & sparkling drinking water (swissprowater.com/projects/clove-buffet-restaurant/)', 'Convention area page: "self-service filtration station outside meeting rooms"'],
+      url: 'https://swissprowater.com/hospitality/convention-area/'
+    },
+    boh_refill: {
+      id: 'boh_refill', name: 'Back-of-house refilling station for glass bottles', family: 'station',
+      areas: ['meetings', 'fnb', 'boh'], temps: ['cold', 'ambient', 'sparkling'], finishes: ['stainless'], footprint: 'large',
+      summary: 'A filtration unit in the banquet or stewarding area where staff fill the hotel\'s own glass bottles for ballrooms, meeting rooms and restaurants.',
+      facts: ['Convention area page: "back-of-house unit for refilling glass bottles for ballrooms"'],
+      url: 'https://swissprowater.com/hospitality/convention-area/'
+    }
+  };
+
+  var FILTER = {
+    standard: 'Swisspro 0.2-micron ceramic microfiltration + activated carbon (the filtration Swisspro lists for SAN, SMART, FONTANA and CLIMA Grande).',
+    cdc: 'US CDC guidance: to remove bacteria a filter needs an absolute pore size of 0.3 micron or smaller; microfilters with absolute pore sizes of 0.1-0.4 micron are usually effective at removing bacteria; 1 micron or smaller removes Cryptosporidium and Giardia.',
+    cdcUrl: 'https://www.cdc.gov/drinking-water/prevention/about-choosing-home-water-filters.html'
+  };
+
+  return { products: P, filter: FILTER };
+});
+
+/* Swisspro pricing configuration.
+ *
+ * STATUS: the hotel price list was not available when this file was written. The only
+ * published Swisspro prices found are the RETAIL prices of the residential range on
+ * Swisspro's online store (SGD, accessed 2026-10-29). They are kept here, clearly labelled,
+ * so the payback section can show a ballpark. Replace `hotel` with the price list before
+ * putting the wizard on the website; the UI switches automatically when `hotel.enabled` is true.
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.pricing = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  return {
+    leadEmail: 'info@swisspro.sg',          // confirm with Swisspro's sales manager
+    formEndpoint: '',                        // optional: a Formspree/Netlify/own endpoint that receives the lead JSON
+
+    /* Retail reference (residential range, Swisspro Singapore online store). */
+    retail: {
+      enabled: true,
+      currency: 'SGD',
+      kind: 'sourced',
+      label: 'Swisspro online-store retail prices (residential range) - NOT hotel project pricing',
+      url: 'https://swisspro-singapore.myshopify.com/collections/all',
+      accessed: '2026-10-29',
+      items: {
+        smart_tap:        { price: 1499, note: 'SMART Classic - separate drinking tap (chrome-plated brass) with water filtration' },
+        san_tap:          { price: 1899, note: 'SAN Classic - all-in-one faucet (chrome-plated brass) with water filtration' },
+        fontana:          { price: 5999, note: 'CLIMA Fontana - built-in dispenser with hot, cold, ambient & sparkling' },
+        minibar_station:  { price: null, note: 'CLIMA Piso V2 under-counter hot & cold: no price published' },
+        vida:             { price: null, note: 'CLIMA Vida: no price published' },
+        grande:           { price: null, note: 'CLIMA Grande: no price published' },
+        mesa:             { price: null, note: 'CLIMA Mesa: no price published' },
+        self_serve_station: { price: null, note: 'Project item: quote required' },
+        boh_refill:       { price: null, note: 'Project item: quote required' }
+      },
+      filterSets: {
+        threeStage: { price: 53.00 + 149.40 + 222.00, note: '1st step CleanSwissP S$53.00 + 2nd step CarboSwiss S$149.40 + 3rd step CeraSwiss S$222.00' },
+        superSwiss: { price: 252.30, note: '2-in-1 SuperSwiss filter S$252.30' }
+      }
+    },
+
+    /* Hotel price list - TO BE FILLED FROM SWISSPRO'S PRICE LIST. Prices per installed unit in the listed currency.
+       serviceAnnual = yearly service-contract fee per unit (filter changes included). */
+    hotel: {
+      enabled: false,
+      currency: 'SGD',
+      label: 'Swisspro hotel price list',
+      validFrom: null,
+      items: {
+        smart_tap:          { unit: null, install: null, serviceAnnual: null },
+        san_tap:            { unit: null, install: null, serviceAnnual: null },
+        minibar_station:    { unit: null, install: null, serviceAnnual: null },
+        vida:               { unit: null, install: null, serviceAnnual: null },
+        fontana:            { unit: null, install: null, serviceAnnual: null },
+        grande:             { unit: null, install: null, serviceAnnual: null },
+        mesa:               { unit: null, install: null, serviceAnnual: null },
+        self_serve_station: { unit: null, install: null, serviceAnnual: null },
+        boh_refill:         { unit: null, install: null, serviceAnnual: null }
+      }
+    }
+  };
+});
+
+/* Wizard definition: every step is multiple choice; numbers are optional quick-picks.
+ * `showIf(a)` receives the answers object. Option `value`s are what the engine consumes. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.questions = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var steps = [
+    {
+      id: 'country', title: 'Where is your hotel?', intro: 'We use the market to pick sourced reference values for occupancy, wages, bottle prices and local regulations. You can change any of them later.',
+      fields: [
+        { id: 'country', type: 'single', required: true, options: [
+          { id: 'SG', label: 'Singapore' },
+          { id: 'MY', label: 'Malaysia' },
+          { id: 'ID', label: 'Indonesia' },
+          { id: 'PH', label: 'Philippines' },
+          { id: 'OTHER', label: 'Other Asia-Pacific market', desc: 'Results in US dollars; you enter your own prices.' }
+        ] }
+      ]
+    },
+    {
+      id: 'property', title: 'What kind of property is it?', intro: 'Different segments decide differently, so the summary and the arguments are tailored.',
+      fields: [
+        { id: 'tier', type: 'single', label: 'Brand tier', required: true, options: [
+          { id: 'luxury', label: 'Luxury', desc: 'Guest experience and audit standards (Forbes, LQA) drive the decision.' },
+          { id: 'premium', label: 'Premium / upscale', desc: 'Full-service hotel with F&B and meeting space.' },
+          { id: 'select', label: 'Select-service / midscale', desc: 'Rooms-led, lean operations, cost focus.' }
+        ] },
+        { id: 'ownership', type: 'single', label: 'Who owns and operates it?', required: true, options: [
+          { id: 'owned', label: 'Owner-operated or independent', desc: 'The owner decides and keeps the savings.' },
+          { id: 'managed', label: 'Operated by a brand under a management agreement', desc: 'Brand standards apply; the owner may need to approve capital spend.' },
+          { id: 'franchised', label: 'Franchised', desc: 'Owner runs the hotel under brand standards.' }
+        ] },
+        { id: 'build', type: 'single', label: 'Where is the building in its life cycle?', required: true, options: [
+          { id: 'existing', label: 'Existing hotel, no renovation planned', desc: 'Space and plumbing are fixed; retrofit solutions.' },
+          { id: 'renovation', label: 'Renovation planned or under way', desc: 'The best moment to integrate water points into the joinery.' },
+          { id: 'newbuild', label: 'New build or pre-opening', desc: 'Free design: taps and dispensers can be planned in.' }
+        ] }
+      ]
+    },
+    {
+      id: 'size', title: 'How big is the hotel?', intro: 'An approximate room count is enough. If you do not know the occupancy, we use the latest published national average.',
+      fields: [
+        { id: 'rooms', type: 'number', label: 'Number of guest rooms', required: true, min: 1, max: 5000, chips: [80, 150, 250, 400, 600], placeholder: 'e.g. 250' },
+        { id: 'occupancy', type: 'single', label: 'Average occupancy', required: true, options: [
+          { id: 'default', label: 'Not sure - use the national average', desc: 'Sourced figure for the selected market.' },
+          { id: '0.5', label: 'About 50%' }, { id: '0.6', label: 'About 60%' }, { id: '0.7', label: 'About 70%' },
+          { id: '0.8', label: 'About 80%' }, { id: '0.9', label: 'About 90%' }
+        ] }
+      ]
+    },
+    {
+      id: 'water', title: 'How do you serve drinking water in guest rooms today?', intro: 'This sets the baseline we compare against.',
+      fields: [
+        { id: 'current', type: 'single', required: true, options: [
+          { id: 'pet_free', label: 'Single-use plastic bottles, complimentary' },
+          { id: 'pet_sold', label: 'Single-use plastic bottles, sold via the minibar' },
+          { id: 'glass_bought', label: 'Bought-in glass bottles (e.g. premium mineral water)' },
+          { id: 'glass_own', label: 'Glass bottles from our own bottling plant', desc: 'Reusable glass: plastic is already avoided, labour and washing remain.' },
+          { id: 'cooler', label: '19-litre water-cooler bottles or jugs' },
+          { id: 'none', label: 'No bottled water in rooms / already filtered', desc: 'We will focus on F&B, meetings and back of house.' }
+        ] },
+        { id: 'bottlesPerRoomNight', type: 'single', label: 'Bottles placed per occupied room per night', required: true, showIf: function (a) { return a.current !== 'none'; }, options: [
+          { id: 'default', label: 'Not sure - assume 2', desc: 'Typical complimentary set-up in industry case studies (labelled assumption).' },
+          { id: '1', label: '1' }, { id: '2', label: '2' }, { id: '3', label: '3' }, { id: '4', label: '4 or more' }
+        ] },
+        { id: 'bottleSizeMl', type: 'single', label: 'Usual bottle size', required: true, showIf: function (a) { return a.current !== 'none'; }, options: [
+          { id: '330', label: '330 ml' }, { id: '500', label: '500 ml', desc: 'Most common; the only size with a sourced bottle weight.' },
+          { id: '600', label: '600 ml' }, { id: '1000', label: '1 litre' }, { id: '1500', label: '1.5 litres' }
+        ] }
+      ]
+    },
+    {
+      id: 'price', title: 'What does a bottle cost you?', intro: 'Pick the closest option. The reference prices are published carton prices (not restaurant prices); hotels on contracts may pay less.',
+      fields: [
+        { id: 'priceBand', type: 'single', required: true, dynamic: 'bottlePrices', options: [] },
+        { id: 'priceCustom', type: 'number', label: 'Your price per bottle (local currency)', showIf: function (a) { return a.priceBand === 'custom'; }, min: 0, max: 100000, step: 0.01, placeholder: 'e.g. 0.45' }
+      ]
+    },
+    {
+      id: 'areas', title: 'Where should filtered water go?', intro: 'Select every area you are considering. Each area gets its own product suggestion.',
+      fields: [
+        { id: 'areas', type: 'multi', required: true, options: [
+          { id: 'rooms', label: 'Guest rooms' },
+          { id: 'fnb', label: 'Restaurants and bars' },
+          { id: 'meetings', label: 'Meeting rooms and events' },
+          { id: 'boh', label: 'Back of house (kitchen, stewarding, staff areas)' },
+          { id: 'public', label: 'Gym, spa, pool, lobby' }
+        ] },
+        { id: 'fnbOutlets', type: 'single', label: 'Number of F&B outlets', showIf: function (a) { return (a.areas || []).indexOf('fnb') >= 0; }, options: [
+          { id: '1', label: '1' }, { id: '2', label: '2' }, { id: '3', label: '3' }, { id: '5', label: '5 or more' }
+        ] },
+        { id: 'meetingRooms', type: 'single', label: 'Number of meeting rooms / ballrooms', showIf: function (a) { return (a.areas || []).indexOf('meetings') >= 0; }, options: [
+          { id: '2', label: '1-2' }, { id: '5', label: '3-5' }, { id: '10', label: '6-10' }, { id: '15', label: 'More than 10' }
+        ] },
+        { id: 'otherBottlesPerDay', type: 'single', label: 'Bottles used outside guest rooms on a typical day (F&B, events, staff)', showIf: function (a) { var s = a.areas || []; return s.indexOf('fnb') >= 0 || s.indexOf('meetings') >= 0 || s.indexOf('boh') >= 0 || s.indexOf('public') >= 0; }, options: [
+          { id: '0', label: 'Not sure - leave out', desc: 'Only guest-room bottles are counted.' },
+          { id: '25', label: 'About 25' }, { id: '50', label: 'About 50' }, { id: '100', label: 'About 100' },
+          { id: '250', label: 'About 250' }, { id: '500', label: 'About 500' }, { id: '1000', label: '1,000 or more' }
+        ] }
+      ]
+    },
+    {
+      id: 'roomprefs', title: 'Guest-room preferences', intro: 'Like configuring a product online: placement, temperatures and finish decide which Swisspro unit fits.',
+      showIf: function (a) { return (a.areas || []).indexOf('rooms') >= 0; },
+      fields: [
+        { id: 'placement', type: 'single', label: 'Where would the water point sit?', required: true, options: [
+          { id: 'minibar', label: 'Minibar counter', desc: 'Preferred by guests and operators; no change to the bathroom.' },
+          { id: 'vanity', label: 'Bathroom vanity', desc: 'Uses the existing water supply; guests dislike a drinking tap right next to the basin.' },
+          { id: 'notsure', label: 'Not sure - advise me' }
+        ] },
+        { id: 'temps', type: 'single', label: 'Which water types should guests get?', required: true, options: [
+          { id: 'ambient', label: 'Ambient only', desc: 'Simplest: a filtered tap, no electricity.' },
+          { id: 'cold', label: 'Chilled + ambient' },
+          { id: 'hotcold', label: 'Hot + chilled', desc: 'Replaces the kettle as well.' },
+          { id: 'sparkling', label: 'Hot, chilled and sparkling', desc: 'Suites and luxury: replaces imported sparkling water.' }
+        ] },
+        { id: 'finish', type: 'single', label: 'Preferred look', required: true, options: [
+          { id: 'chrome', label: 'Chrome' }, { id: 'black', label: 'Black' }, { id: 'white', label: 'White' }, { id: 'nopref', label: 'No preference' }
+        ] },
+        { id: 'space', type: 'single', label: 'Space at the minibar or vanity', required: true, options: [
+          { id: 'enough', label: 'Enough counter and cabinet space' },
+          { id: 'tight', label: 'Tight - compact or built-in needed' }
+        ] }
+      ]
+    },
+    {
+      id: 'supply', title: 'Your water supply', intro: 'Local water quality decides the filter specification and how often filters are changed.',
+      fields: [
+        { id: 'source', type: 'single', label: 'Where does the water in your taps come from?', required: true, options: [
+          { id: 'mains', label: 'Municipal mains, directly' },
+          { id: 'tank', label: 'Municipal mains via a rooftop or basement storage tank', desc: 'Common in the region; tanks can let bacteria regrow.' },
+          { id: 'well', label: 'Own well, borehole or private treatment plant' },
+          { id: 'notsure', label: 'Not sure' }
+        ] },
+        { id: 'issues', type: 'multi', label: 'Any known issues? (select all that apply)', options: [
+          { id: 'none', label: 'None that we know of', exclusive: true },
+          { id: 'sediment', label: 'Sediment, rust or discolouration' },
+          { id: 'chlorine', label: 'Chlorine taste or smell' },
+          { id: 'microbial', label: 'Microbial concerns (boil notices, test results)' },
+          { id: 'notsure', label: 'Not sure', exclusive: true }
+        ] },
+        { id: 'halal', type: 'single', label: 'Do you need Halal-certified filtration?', required: true, options: [
+          { id: 'yes', label: 'Yes' }, { id: 'no', label: 'No' }, { id: 'notsure', label: 'Not sure' }
+        ] }
+      ]
+    },
+    {
+      id: 'drivers', title: 'What is driving the change?', intro: 'We order the business case around what matters to your decision makers.',
+      fields: [
+        { id: 'drivers', type: 'multi', label: 'Select all that apply', required: true, options: [
+          { id: 'cost', label: 'Cost of bottled water' },
+          { id: 'efficiency', label: 'Housekeeping efficiency and guest convenience' },
+          { id: 'storage', label: 'Storage, deliveries and heavy trolleys' },
+          { id: 'certification', label: 'Sustainability certification (Green Globe, GSTC, EarthCheck, etc.)' },
+          { id: 'audit', label: 'Luxury audit standards (Forbes Travel Guide, LQA)' },
+          { id: 'mandate', label: 'Brand or owner single-use plastic policy' },
+          { id: 'renovation', label: 'Renovation or new build' },
+          { id: 'safety', label: 'Water safety and guest health' }
+        ] },
+        { id: 'keepPremium', type: 'single', label: 'Will you keep offering a premium branded water?', required: true, showIf: function (a) { return a.tier === 'luxury'; }, options: [
+          { id: 'no', label: 'No - filtered water for all guests' },
+          { id: 'yes', label: 'Yes - as a paid or VIP option', desc: 'Filtered water replaces the complimentary bottles only.' }
+        ] },
+        { id: 'approval', type: 'single', label: 'Who can approve the investment?', required: true, options: [
+          { id: 'gm', label: 'The general manager or hotel management' },
+          { id: 'owner', label: 'The owner or asset manager must approve' },
+          { id: 'notsure', label: 'Not sure' }
+        ] },
+        { id: 'timeline', type: 'single', label: 'When would you like to implement?', required: true, options: [
+          { id: 'lt3', label: 'Within 3 months' }, { id: '3to12', label: 'In 3-12 months' }, { id: 'gt12', label: 'In more than 12 months' }, { id: 'exploring', label: 'Just exploring' }
+        ] }
+      ]
+    },
+    {
+      id: 'contact', title: 'Almost done', intro: 'Optional: tell us who you are so Swisspro can send you the detailed report and a quote. Your results appear either way.',
+      fields: [
+        { id: 'name', type: 'text', label: 'Your name', placeholder: 'Optional' },
+        { id: 'role', type: 'text', label: 'Your role', placeholder: 'e.g. Director of Rooms (optional)' },
+        { id: 'hotel', type: 'text', label: 'Hotel name', placeholder: 'Optional' },
+        { id: 'email', type: 'email', label: 'Work email', placeholder: 'Optional' }
+      ]
+    }
+  ];
+
+  return { steps: steps };
+});
+
+/* Turns wizard answers into engine inputs, applying country defaults from the factor registry.
+ * Every default applied is recorded in `provenance` so the UI can label it. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.model = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
+
+  function bottlePriceOptions(F, countryCode) {
+    var c = F.countries[countryCode] || F.countries.OTHER;
+    var opts = c.bottlePrices.map(function (b) {
+      return { id: b.id, label: b.label, desc: c.symbol + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle - ' + b.ref, value: b.price, kind: b.kind, url: b.url };
+    });
+    opts.push({ id: 'custom', label: 'I know our price - let me enter it' });
+    if (opts.length > 1) opts.push({ id: 'unknown', label: 'Not sure - use the lowest reference price', desc: 'Conservative: the cheapest sourced carton price for the market.' });
+    return opts;
+  }
+
+  /** @returns {{inputs: object, provenance: object, country: object}} */
+  function normalise(F, a, overrides) {
+    overrides = overrides || {};
+    var c = F.countries[a.country] || F.countries.OTHER;
+    var prov = {};
+    var bottlesPerRoomNight, occupancy, price, wageHourly, minutesPerRoom, minutesPerCarton, stockWeeks;
+
+    // occupancy
+    if (overrides.occupancy != null) { occupancy = num(overrides.occupancy, c.occupancy.value); prov.occupancy = { kind: 'user', label: 'Adjusted by you' }; }
+    else if (a.occupancy && a.occupancy !== 'default') { occupancy = num(a.occupancy, c.occupancy.value); prov.occupancy = { kind: 'user', label: 'Your answer' }; }
+    else { occupancy = c.occupancy.value; prov.occupancy = { kind: c.occupancy.kind, label: c.name + ' average', source: c.occupancy.source, note: c.occupancy.note }; }
+
+    // bottles per room-night
+    var noRoomBottles = a.current === 'none' || (a.areas || []).indexOf('rooms') < 0 && a.current === 'none';
+    if (overrides.bottlesPerRoomNight != null) { bottlesPerRoomNight = num(overrides.bottlesPerRoomNight, 0); prov.bottlesPerRoomNight = { kind: 'user', label: 'Adjusted by you' }; }
+    else if (a.current === 'none') { bottlesPerRoomNight = 0; prov.bottlesPerRoomNight = { kind: 'user', label: 'No bottles in rooms today' }; }
+    else if (a.bottlesPerRoomNight && a.bottlesPerRoomNight !== 'default') { bottlesPerRoomNight = num(a.bottlesPerRoomNight, 2); prov.bottlesPerRoomNight = { kind: 'user', label: 'Your answer' }; }
+    else { bottlesPerRoomNight = F.factors.bottles_per_room_night_default.value; prov.bottlesPerRoomNight = { kind: 'assumption', label: 'Assumed', note: F.factors.bottles_per_room_night_default.note }; }
+
+    // price per bottle (local currency)
+    if (overrides.pricePerBottle != null) { price = num(overrides.pricePerBottle, 0); prov.pricePerBottle = { kind: 'user', label: 'Adjusted by you' }; }
+    else if (a.priceBand === 'custom') { price = num(a.priceCustom, 0); prov.pricePerBottle = { kind: 'user', label: 'Your price' }; }
+    else {
+      var band = c.bottlePrices.filter(function (b) { return b.id === a.priceBand; })[0];
+      if (!band && c.bottlePrices.length) { band = c.bottlePrices.slice().sort(function (x, y) { return x.price - y.price; })[0]; }
+      if (band) { price = band.price; prov.pricePerBottle = { kind: band.kind, label: band.label, note: band.ref, url: band.url }; }
+      else { price = 0; prov.pricePerBottle = { kind: 'missing', label: 'No price available - cost not calculated' }; }
+    }
+
+    // wage
+    if (overrides.wageHourly != null) { wageHourly = num(overrides.wageHourly, 0); prov.wageHourly = { kind: 'user', label: 'Adjusted by you' }; }
+    else { wageHourly = F.hourlyWage(c.wageMonthly.value); prov.wageHourly = { kind: c.wageMonthly.kind, label: c.wageMonthly.label, source: c.wageMonthly.source, note: c.wageMonthly.note }; }
+
+    minutesPerRoom = overrides.minutesPerRoomPerDay != null ? num(overrides.minutesPerRoomPerDay, 0) : F.factors.minutes_per_room_per_day_default.value;
+    prov.minutesPerRoomPerDay = overrides.minutesPerRoomPerDay != null ? { kind: 'user', label: 'Adjusted by you' } : { kind: 'assumption', label: 'Assumed', note: F.factors.minutes_per_room_per_day_default.note };
+    minutesPerCarton = overrides.minutesPerCarton != null ? num(overrides.minutesPerCarton, 0) : F.factors.minutes_per_carton_default.value;
+    prov.minutesPerCarton = overrides.minutesPerCarton != null ? { kind: 'user', label: 'Adjusted by you' } : { kind: 'assumption', label: 'Assumed', note: F.factors.minutes_per_carton_default.note };
+    stockWeeks = overrides.stockWeeks != null ? num(overrides.stockWeeks, 0) : F.factors.stock_weeks_default.value;
+    prov.stockWeeks = overrides.stockWeeks != null ? { kind: 'user', label: 'Adjusted by you' } : { kind: 'assumption', label: 'Assumed', note: F.factors.stock_weeks_default.note };
+
+    var material = (a.current === 'glass_bought' || a.current === 'glass_own') ? 'glass' : 'pet';
+    var inputs = {
+      country: c.code, currency: c.currency, symbol: c.symbol, decimals: c.decimals, usdPerLocal: c.fx.value,
+      rooms: num(a.rooms, 0), occupancy: occupancy, bottlesPerRoomNight: bottlesPerRoomNight,
+      bottleSizeMl: a.current === 'cooler' ? 19000 : num(a.bottleSizeMl, 500),
+      bottleMaterial: material, glassReusable: a.current === 'glass_own',
+      bottleWeightOverrideG: overrides.bottleWeightG != null ? num(overrides.bottleWeightG, null) : null,
+      pricePerBottle: price, otherBottlesPerDay: num(a.otherBottlesPerDay, 0),
+      minutesPerRoomPerDay: minutesPerRoom, minutesPerCarton: minutesPerCarton, wageHourly: wageHourly,
+      stockWeeks: stockWeeks,
+      capex: overrides.capex != null ? num(overrides.capex, null) : null,
+      annualService: overrides.annualService != null ? num(overrides.annualService, 0) : null
+    };
+    if (a.current === 'cooler') { inputs.bottlesPerRoomNight = 0; inputs.otherBottlesPerDay = num(a.otherBottlesPerDay, 0); prov.bottlesPerRoomNight = { kind: 'user', label: '19 L cooler bottles are not counted per room' }; }
+    return { inputs: inputs, provenance: prov, country: c };
+  }
+
+  return { normalise: normalise, bottlePriceOptions: bottlePriceOptions };
+});
+
+/* Lead sorting and product fit. Qualitative rules, each traceable to the brief, the
+ * Marriott interview (Oct 2026) or Swisspro's published product pages. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.recommend = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var LABELS = {
+    tier: { luxury: 'Luxury', premium: 'Premium / upscale', select: 'Select-service / midscale' },
+    ownership: { owned: 'Owner-operated', managed: 'Brand-managed', franchised: 'Franchised' },
+    build: { existing: 'Existing building', renovation: 'Renovation planned', newbuild: 'New build / pre-opening' },
+    areas: { rooms: 'Guest rooms', fnb: 'Restaurants and bars', meetings: 'Meetings and events', boh: 'Back of house', public: 'Gym, spa, pool and lobby' },
+    current: { pet_free: 'Complimentary single-use plastic bottles', pet_sold: 'Single-use plastic bottles sold via minibar', glass_bought: 'Bought-in glass bottles', glass_own: 'Own bottling plant (glass)', cooler: '19 L cooler bottles', none: 'No bottled water in rooms' },
+    timeline: { lt3: 'Within 3 months', '3to12': '3-12 months', gt12: 'More than 12 months', exploring: 'Exploring' },
+    approval: { gm: 'GM / hotel management can approve', owner: 'Owner approval required', notsure: 'Approval path unclear' }
+  };
+
+  function has(arr, v) { return (arr || []).indexOf(v) >= 0; }
+
+  /* ---------------------------------------------------------------- unit planning (assumptions) */
+  function unitPlan(a) {
+    var rooms = Math.max(0, Number(a.rooms) || 0);
+    var plan = {};
+    if (has(a.areas, 'rooms')) plan.rooms = rooms;                                   // one water point per room
+    if (has(a.areas, 'fnb')) plan.fnb = Math.max(1, Number(a.fnbOutlets) || 1);      // one unit per outlet
+    if (has(a.areas, 'meetings')) plan.meetings = Math.max(1, Math.ceil((Number(a.meetingRooms) || 2) / 3)); // one station per 3 rooms
+    if (has(a.areas, 'boh')) plan.boh = Math.max(1, Math.ceil(rooms / 150));         // one high-volume unit per 150 rooms
+    if (has(a.areas, 'public')) plan.public = 1;
+    plan.note = 'Unit counts are planning assumptions (1 per room, 1 per outlet, 1 station per 3 meeting rooms, 1 back-of-house unit per 150 rooms). A site survey decides.';
+    return plan;
+  }
+
+  /* ---------------------------------------------------------------- product fit per area */
+  function roomProducts(a) {
+    var out = [], notes = [];
+    var temps = a.temps || 'ambient', placement = a.placement || 'notsure', finish = a.finish || 'nopref', tight = a.space === 'tight';
+    if (placement === 'vanity') {
+      notes.push('Guests dislike a drinking tap right next to the basin (Marriott VP Procurement APAC interview). If the vanity is the only option, use a SAN all-in-one mixer so there is no second tap; otherwise move the water point to the minibar.');
+    }
+    if (temps === 'ambient') {
+      if (placement === 'vanity') out.push('san_tap'); else out.push('smart_tap');
+      if (finish === 'black') notes.push('Swisspro\'s published tap range is chrome-plated brass; black is available on the CLIMA Vida dispenser line. Ask Swisspro about finish options for taps.');
+    } else if (temps === 'sparkling') {
+      out.push('fontana');
+      if (!tight) out.push('vida');
+      notes.push('Sparkling in every room is a luxury/suite feature; most hotels specify it for suites only and hot/chilled elsewhere.');
+    } else {
+      if (tight && finish === 'black') { out.push('vida'); }
+      else { out.push('minibar_station'); if (finish === 'black') out.push('vida'); }
+      if (placement === 'vanity') notes.push('Hot and chilled water needs power and tank space: a minibar counter is the practical location.');
+    }
+    if (a.tier === 'luxury' && a.keepPremium === 'yes' && out.indexOf('fontana') < 0) {
+      notes.push('Because a premium branded water stays on offer, position filtered water as the always-on complimentary option and consider FONTANA with sparkling for suites as the premium in-house alternative.');
+    }
+    if (a.build === 'newbuild' || a.build === 'renovation') notes.push('With joinery still open, a built-in or under-counter unit can be concealed completely - plan the drainage and power point now.');
+    return { products: out, notes: notes };
+  }
+
+  function areaProducts(a) {
+    var list = [];
+    if (has(a.areas, 'rooms')) { var r = roomProducts(a); list.push({ id: 'rooms', label: LABELS.areas.rooms, products: r.products, notes: r.notes }); }
+    if (has(a.areas, 'fnb')) list.push({ id: 'fnb', label: LABELS.areas.fnb, products: ['boh_refill', 'self_serve_station', 'fontana'], notes: ['Table service: fill the hotel\'s own glass bottles at a back-of-house station (still and sparkling). Buffet and casual outlets: a guest-facing self-serve station. A built-in FONTANA suits a bar counter.'] });
+    if (has(a.areas, 'meetings')) list.push({ id: 'meetings', label: LABELS.areas.meetings, products: ['self_serve_station', 'boh_refill'], notes: ['Swisspro\'s convention-area concept: a self-service station outside the meeting rooms for delegates plus a back-of-house unit where the banquet team refills glass bottles for the ballroom. Avoid stations in long corridors; place them in pre-function areas (interview feedback).'] });
+    if (has(a.areas, 'boh')) list.push({ id: 'boh', label: LABELS.areas.boh, products: ['grande', 'mesa', 'san_tap'], notes: ['High-volume CLIMA Grande for stewarding and kitchens; Mesa V2 for staff canteens; SAN mixer for pantry sinks.'] });
+    if (has(a.areas, 'public')) list.push({ id: 'public', label: LABELS.areas.public, products: ['self_serve_station', 'mesa'], notes: ['Refill stations with bottle fillers at the gym and pool; keep them visible and branded - they are part of the sustainability story guests notice.'] });
+    return list;
+  }
+
+  /* ---------------------------------------------------------------- filter specification */
+  function filterSpec(a) {
+    var reasons = [], prefilter = false, carbon = true, test = false, interval = 'Standard service interval per the service contract.';
+    var issues = a.issues || [];
+    reasons.push('0.2-micron absolute microfiltration retains bacteria (CDC: absolute pore size of 0.3 micron or smaller is needed to remove bacteria). This is the filtration Swisspro lists for its SAN, SMART, FONTANA and CLIMA Grande units.');
+    if (a.source === 'tank') { reasons.push('Water stored in rooftop or basement tanks can lose residual chlorine and allow bacteria to regrow, so the bacteria barrier matters even where mains water is potable.'); test = true; }
+    if (a.source === 'well') { reasons.push('Private wells and boreholes are outside the municipal safety net: a laboratory test before design is essential and a sediment pre-filter is standard.'); prefilter = true; test = true; }
+    if (has(issues, 'sediment')) { reasons.push('Sediment or discolouration: add a sediment pre-filter stage to protect the ceramic element and expect shorter change intervals.'); prefilter = true; interval = 'Expect more frequent cartridge changes; Swisspro can size the pre-filter after a water test.'; }
+    if (has(issues, 'chlorine')) { reasons.push('Chlorine taste or smell: the activated-carbon stage removes it; this is a taste issue, not a safety issue.'); }
+    if (has(issues, 'microbial')) { reasons.push('Reported microbial concerns: specify the 0.2-micron absolute grade for every outlet and include a water test in the service contract.'); test = true; }
+    if (a.country === 'ID') { reasons.push('Indonesia: a 2024 study of PDAM piped water found sporadic microbial contamination where residual chlorine was depleted - a bacteria-retaining grade is the safe default.'); test = true; }
+    if (a.source === 'notsure' || has(issues, 'notsure')) { reasons.push('Water source or quality unknown: Swisspro should test the water during the site survey before sizing filters.'); test = true; }
+    var halal = a.halal === 'yes' || (a.country === 'MY' && a.halal !== 'no');
+    return { grade: '0.2 micron absolute (microfiltration) + activated carbon', reasons: reasons, prefilter: prefilter, carbon: carbon, waterTest: test, interval: interval, halal: halal,
+      halalNote: halal ? 'Ask Swisspro for its Halal certificate; JAKIM certification of water filtration products is established practice in Malaysia.' : null };
+  }
+
+  /* ---------------------------------------------------------------- argument order */
+  function argumentOrder(a, calc) {
+    var cheapWater = (a.country === 'MY' || a.country === 'ID') && (!a.priceBand || a.priceBand === 'unknown' || a.priceBand === 'local' || a.priceBand === 'budget' || a.priceBand === 'mid');
+    var args = {
+      roi: { key: 'roi', title: 'Return on investment', why: 'Owners challenge the payback first ("why three years and not two"). Lead with annual bottled-water spend avoided, the service-contract cost and the payback period.' },
+      efficiency: { key: 'efficiency', title: 'Efficiency and guest experience', why: 'Water available 24/7 without waiting for housekeeping, one SKU less to buy, store and count, no heavy trolleys, no space taken by pallets.' },
+      safety: { key: 'safety', title: 'Water safety', why: 'Microfiltration retains bacteria; bottled water is not needed as the safety guarantee.' },
+      sustainability: { key: 'sustainability', title: 'Sustainability and compliance', why: 'Bottles and plastic avoided, certification criteria and local plastic rules. Convincing as support, rarely as the main reason (interview).' }
+    };
+    var order;
+    if (a.tier === 'luxury') order = ['efficiency', 'sustainability', 'roi', 'safety'];
+    else if (cheapWater) order = ['efficiency', 'safety', 'roi', 'sustainability'];
+    else order = ['roi', 'efficiency', 'sustainability', 'safety'];
+    if (has(a.drivers, 'certification') || has(a.drivers, 'audit') || has(a.drivers, 'mandate')) { order.splice(order.indexOf('sustainability'), 1); order.splice(1, 0, 'sustainability'); }
+    if (has(a.drivers, 'safety') || has(a.issues, 'microbial') || a.source === 'well') { order.splice(order.indexOf('safety'), 1); order.unshift('safety'); }
+    var out = order.map(function (k) { return args[k]; });
+    if (cheapWater) out[out.map(function (x) { return x.key; }).indexOf('roi')].why = 'Bottled water is cheap in this market, so the cash payback is longer; add the labour, storage and delivery savings to the business case and show the payback both ways.';
+    if (a.tier === 'luxury') out[0].why = 'Luxury decisions are cosmetic and guest-experience driven: always-available chilled and sparkling water in the room, concealed in the joinery, and no plastic in sight for Forbes/LQA inspectors.';
+    return out;
+  }
+
+  /* ---------------------------------------------------------------- lead score */
+  function leadScore(a) {
+    var pts = 0, reasons = [];
+    function add(n, why) { pts += n; reasons.push((n >= 0 ? '+' : '') + n + ' ' + why); }
+    if (has(a.drivers, 'certification')) add(3, 'certification trigger');
+    if (has(a.drivers, 'audit')) add(3, 'audit standard trigger');
+    if (has(a.drivers, 'mandate')) add(3, 'brand or owner mandate');
+    if (has(a.drivers, 'renovation') || a.build !== 'existing') add(2, 'renovation or new build enables installation');
+    if (has(a.drivers, 'cost')) add(1, 'cost driver');
+    if (has(a.drivers, 'efficiency') || has(a.drivers, 'storage')) add(1, 'operational pain');
+    var tl = { lt3: 3, '3to12': 2, gt12: 1, exploring: 0 }[a.timeline] || 0; add(tl, 'timeline: ' + (LABELS.timeline[a.timeline] || 'unknown'));
+    var ap = { gm: 2, notsure: 1, owner: 0 }[a.approval] || 0; add(ap, LABELS.approval[a.approval] || 'approval unknown');
+    var rooms = Number(a.rooms) || 0; if (rooms >= 300) add(2, '300+ rooms'); else if (rooms >= 100) add(1, '100-299 rooms');
+    if (a.current === 'pet_free' || a.current === 'pet_sold') add(2, 'single-use plastic in rooms today');
+    else if (a.current === 'glass_bought' || a.current === 'cooler') add(1, 'bottled supply to replace');
+    if (a.current === 'glass_own') add(0, 'own bottling plant: different need (labour, washing)');
+    if (a.tier === 'luxury' && a.keepPremium === 'yes') add(-1, 'premium water stays');
+    if ((a.areas || []).length >= 3) add(1, 'multiple areas');
+    if (a.email) add(1, 'contact details left');
+    var tier = pts >= 11 ? 'Hot' : pts >= 7 ? 'Warm' : 'Nurture';
+    return { points: pts, tier: tier, reasons: reasons };
+  }
+
+  function approvalNote(a, capexUsd) {
+    var s = 'Approval limits in management agreements vary: some require owner approval above USD 5,000, others let the GM decide up to USD 50,000 (interview).';
+    if (a.ownership === 'managed' && capexUsd != null) {
+      if (capexUsd > 50000) s += ' This investment is above USD 50,000, so owner approval is likely required - prepare the ROI case for the asset manager.';
+      else if (capexUsd > 5000) s += ' This investment sits in the band where approval depends on the agreement - check the capital-expenditure threshold.';
+      else s += ' This investment is below USD 5,000 and may sit within hotel management\'s authority.';
+    }
+    if (a.approval === 'owner') s += ' You indicated owner approval is needed: lead with payback and the five-year net saving.';
+    return s;
+  }
+
+  function segment(a) {
+    return {
+      tier: LABELS.tier[a.tier] || '-', ownership: LABELS.ownership[a.ownership] || '-', build: LABELS.build[a.build] || '-',
+      current: LABELS.current[a.current] || '-', timeline: LABELS.timeline[a.timeline] || '-', approval: LABELS.approval[a.approval] || '-',
+      areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; })
+    };
+  }
+
+  function recommend(a, calc) {
+    return { segment: segment(a), unitPlan: unitPlan(a), areas: areaProducts(a), filter: filterSpec(a), arguments: argumentOrder(a, calc), lead: leadScore(a), labels: LABELS, approvalNote: approvalNote };
+  }
+
+  return { recommend: recommend, unitPlan: unitPlan, areaProducts: areaProducts, filterSpec: filterSpec, argumentOrder: argumentOrder, leadScore: leadScore, approvalNote: approvalNote, LABELS: LABELS };
+});
+
+/* Number formatting helpers (browser + Node). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+  else { root.SW = root.SW || {}; root.SW.format = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  function int(n) { if (n == null || !isFinite(n)) return '-'; return Math.round(n).toLocaleString('en-US'); }
+  function dec(n, d) { if (n == null || !isFinite(n)) return '-'; return Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function money(symbol, n, decimals) { if (n == null || !isFinite(n)) return '-'; var d = decimals == null ? 0 : decimals; if (Math.abs(n) >= 1000) d = 0; return symbol + Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function years(y) { if (y == null) return '-'; if (!isFinite(y)) return 'no payback'; if (y < 1) return Math.round(y * 12) + ' months'; return dec(y, 1) + ' years'; }
+  function pct(p) { return dec(p * 100, p * 100 % 1 === 0 ? 0 : 1) + '%'; }
+  function compact(n) { if (n == null || !isFinite(n)) return '-'; var a = Math.abs(n); if (a >= 1e6) return dec(n / 1e6, 2) + ' million'; if (a >= 1e4) return int(n); return int(n); }
+  return { int: int, dec: dec, money: money, years: years, pct: pct, compact: compact };
+});
+
+/* Swisspro Sustainability Wizard - UI. Vanilla JS, no build step. */
+(function () {
+  'use strict';
+  var F = window.SW.factors, E = window.SW.engine, P = window.SW.products, PR = window.SW.pricing,
+      Q = window.SW.questions, M = window.SW.model, R = window.SW.recommend, fmt = window.SW.format;
+  var STORE = 'swisspro-wizard-v1';
+  var ARTIFACT = !!window.SW_ARTIFACT; // hosted preview frame: no print dialog, no mailto, no confirm()
+  var app = document.getElementById('app');
+  var state = load() || { view: 'intro', step: 0, answers: {}, overrides: {} };
+
+  /* ------------------------------------------------------------------ utilities */
+  function load() { try { var s = localStorage.getItem(STORE); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ } }
+  function el(tag, props) {
+    var node = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      if (k === 'class') node.className = props[k];
+      else if (k === 'html') node.innerHTML = props[k];
+      else if (k === 'text') node.textContent = props[k];
+      else if (k.indexOf('on') === 0) node.addEventListener(k.slice(2), props[k]);
+      else if (props[k] != null) node.setAttribute(k, props[k]);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      if (Array.isArray(c)) c.forEach(function (x) { if (x != null) node.appendChild(typeof x === 'string' ? document.createTextNode(x) : x); });
+      else node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return node;
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function tag(kind, text) {
+    var names = { sourced: 'Sourced', 'sourced-secondary': 'Sourced (secondary)', derived: 'Derived', assumption: 'Assumption', user: 'Your input', constant: 'Constant', missing: 'Missing', config: 'Config' };
+    return el('span', { class: 'tag tag-' + kind, text: text || names[kind] || kind });
+  }
+  function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function visibleSteps() { return Q.steps.filter(function (s) { return !s.showIf || s.showIf(state.answers); }); }
+  function fieldOptions(f) { return f.dynamic === 'bottlePrices' ? M.bottlePriceOptions(F, state.answers.country) : f.options; }
+  function has(arr, v) { return (arr || []).indexOf(v) >= 0; }
+
+  /* ------------------------------------------------------------------ intro */
+  function renderIntro() {
+    app.innerHTML = '';
+    var hero = el('section', { class: 'hero' },
+      el('h1', { text: 'What would switching from bottled water to Swisspro filtered water mean for your hotel?' }),
+      el('p', { class: 'lead', text: 'Answer ten multiple-choice questions - no spreadsheets needed - and get an indicative business case: bottles and plastic avoided, money and housekeeping time saved, storage freed, the payback, and the Swisspro set-up that fits each area of your property.' }),
+      el('ul', { class: 'benefits' },
+        el('li', {}, el('strong', { text: 'ROI first' }), 'Bottled-water spend avoided and payback, in your currency.'),
+        el('li', {}, el('strong', { text: 'Operations' }), 'Housekeeping hours, pallets, deliveries and tonnes carried.'),
+        el('li', {}, el('strong', { text: 'Sustainability' }), 'Plastic and CO2e avoided with published factors.'),
+        el('li', {}, el('strong', { text: 'The right product' }), 'Filter grade for your water and a unit for each area, like configuring online.')
+      ),
+      el('div', { class: 'actions' },
+        el('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); } }, 'Start - about 3 minutes'),
+        Object.keys(state.answers).length ? el('button', { class: 'btn btn-secondary', type: 'button', onclick: function () { state.view = 'wizard'; save(); render(); } }, 'Continue where I left off') : null
+      ),
+      el('p', { class: 'small muted', text: 'Every figure is labelled as sourced, derived or assumed, and you can adjust any assumption on the results page. Nothing is sent anywhere unless you choose to share your summary with Swisspro.' })
+    );
+    app.appendChild(hero);
+  }
+
+  /* ------------------------------------------------------------------ wizard */
+  function renderStep() {
+    app.innerHTML = '';
+    var steps = visibleSteps();
+    if (state.step >= steps.length) state.step = steps.length - 1;
+    var step = steps[state.step];
+    var a = state.answers;
+
+    var prog = el('div', { class: 'progress' },
+      el('span', { text: 'Step ' + (state.step + 1) + ' of ' + steps.length }),
+      el('div', { class: 'progress-bar' }, el('span', { style: 'width:' + Math.round((state.step) / steps.length * 100) + '%' })));
+    app.appendChild(prog);
+
+    var card = el('section', { class: 'card step', 'aria-labelledby': 'step-title' });
+    card.appendChild(el('h2', { id: 'step-title', text: step.title }));
+    if (step.intro) card.appendChild(el('p', { class: 'intro', text: step.intro }));
+
+    var errors = {};
+    var singleAuto = step.fields.length === 1 && step.fields[0].type === 'single';
+
+    step.fields.forEach(function (f) {
+      if (f.showIf && !f.showIf(a)) return;
+      var wrap = el('div', { class: 'field', 'data-field': f.id });
+      if (f.label) wrap.appendChild(el('div', { class: 'field-label', id: 'lbl-' + f.id, text: f.label }));
+      if (f.type === 'single' || f.type === 'multi') {
+        var opts = fieldOptions(f);
+        var group = el('div', { class: 'options', role: f.type === 'single' ? 'radiogroup' : 'group', 'aria-labelledby': f.label ? 'lbl-' + f.id : 'step-title' });
+        opts.forEach(function (o) {
+          var selected = f.type === 'single' ? a[f.id] === o.id : has(a[f.id], o.id);
+          var btn = el('button', { type: 'button', class: 'opt' + (selected ? ' selected' : ''), role: f.type === 'single' ? 'radio' : 'checkbox', 'aria-checked': selected ? 'true' : 'false', 'data-opt': o.id,
+            onclick: function () {
+              if (f.type === 'single') { a[f.id] = o.id; }
+              else {
+                var cur = (a[f.id] || []).slice();
+                if (o.exclusive) cur = has(cur, o.id) ? [] : [o.id];
+                else { cur = cur.filter(function (x) { var ex = opts.filter(function (p) { return p.id === x; })[0]; return !(ex && ex.exclusive); }); if (has(cur, o.id)) cur.splice(cur.indexOf(o.id), 1); else cur.push(o.id); }
+                a[f.id] = cur;
+              }
+              save();
+              if (f.type === 'single' && singleAuto) { setTimeout(next, 160); } else { renderStep(); }
+            } },
+            el('span', { class: 'opt-label', text: o.label }),
+            o.desc ? el('span', { class: 'opt-desc', text: o.desc }) : null,
+            o.kind ? tag(o.kind) : null);
+          group.appendChild(btn);
+        });
+        wrap.appendChild(group);
+      } else if (f.type === 'number' || f.type === 'text' || f.type === 'email') {
+        var input = el('input', { class: 'input', type: f.type, id: 'in-' + f.id, placeholder: f.placeholder || '', value: a[f.id] != null ? a[f.id] : '', min: f.min, max: f.max, step: f.step, inputmode: f.type === 'number' ? 'decimal' : null, 'aria-labelledby': 'lbl-' + f.id,
+          oninput: function (e) { a[f.id] = e.target.value; save(); } });
+        wrap.appendChild(input);
+        if (f.chips) {
+          var chips = el('div', { class: 'chips' });
+          f.chips.forEach(function (c) { chips.appendChild(el('button', { type: 'button', class: 'chip' + (String(a[f.id]) === String(c) ? ' selected' : ''), onclick: function () { a[f.id] = String(c); save(); renderStep(); } }, String(c))); });
+          wrap.appendChild(chips);
+        }
+      }
+      wrap.appendChild(el('div', { class: 'error', id: 'err-' + f.id, hidden: true }));
+      card.appendChild(wrap);
+    });
+
+    var nav = el('div', { class: 'nav-row' },
+      el('button', { type: 'button', class: 'btn btn-secondary', onclick: back }, state.step === 0 ? 'Intro' : 'Back'),
+      el('button', { type: 'button', class: 'btn btn-primary', onclick: next }, state.step === steps.length - 1 ? 'See my results' : 'Next'));
+    card.appendChild(nav);
+    app.appendChild(card);
+    document.getElementById('restart-top').hidden = false;
+  }
+
+  function validate(step) {
+    var a = state.answers, ok = true, first = null;
+    step.fields.forEach(function (f) {
+      if (f.showIf && !f.showIf(a)) return;
+      var msg = '';
+      if (f.type === 'single' && f.required && !a[f.id]) msg = 'Please choose an option.';
+      if (f.type === 'multi' && f.required && !(a[f.id] && a[f.id].length)) msg = 'Please select at least one option.';
+      if (f.type === 'number') {
+        var v = Number(a[f.id]);
+        if (f.required && (a[f.id] == null || a[f.id] === '' || !isFinite(v))) msg = 'Please enter a number.';
+        else if (a[f.id] !== '' && a[f.id] != null && isFinite(v) && ((f.min != null && v < f.min) || (f.max != null && v > f.max))) msg = 'Please enter a value between ' + f.min + ' and ' + f.max + '.';
+      }
+      if (f.type === 'email' && a[f.id] && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a[f.id])) msg = 'That email address does not look right.';
+      var e = document.getElementById('err-' + f.id);
+      if (e) { e.textContent = msg; e.hidden = !msg; }
+      if (msg) { ok = false; if (!first) first = f.id; }
+    });
+    if (first) { var node = document.querySelector('[data-field="' + first + '"]'); if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    return ok;
+  }
+
+  function next() {
+    var steps = visibleSteps();
+    if (!validate(steps[state.step])) return;
+    if (state.step >= steps.length - 1) { state.view = 'results'; save(); render(); return; }
+    state.step += 1; save(); renderStep(); scrollTop();
+  }
+  function back() {
+    if (state.step === 0) { state.view = 'intro'; save(); render(); return; }
+    state.step -= 1; save(); renderStep(); scrollTop();
+  }
+  function restart() {
+    if (document.getElementById('restart-confirm')) return;
+    var bar = el('div', { class: 'card notice', id: 'restart-confirm', role: 'alertdialog', 'aria-label': 'Confirm start over' },
+      el('p', { style: 'margin:0 0 10px', text: 'Clear your answers and start over?' }),
+      el('div', { class: 'actions', style: 'margin:0' },
+        el('button', { type: 'button', class: 'btn btn-primary', onclick: function () { state = { view: 'intro', step: 0, answers: {}, overrides: {} }; save(); render(); scrollTop(); } }, 'Yes, start over'),
+        el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { bar.remove(); } }, 'Keep my answers')));
+    app.insertBefore(bar, app.firstChild);
+    bar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  /* ------------------------------------------------------------------ pricing */
+  function filterSetFor(productId) { return productId === 'fontana' ? PR.retail.filterSets.superSwiss : PR.retail.filterSets.threeStage; }
+
+  /** Builds capex/service in LOCAL currency from the hotel price list (if enabled) or the retail reference. */
+  function pricingEstimate(rec, inputs) {
+    var src = PR.hotel.enabled ? PR.hotel : PR.retail;
+    var fromCode = src.currency;
+    var fromFx = F.countries[Object.keys(F.countries).filter(function (c) { return F.countries[c].currency === fromCode; })[0]];
+    var usdPerFrom = fromFx ? fromFx.fx.value : 1;
+    var toLocal = function (v) { return v * usdPerFrom / inputs.usdPerLocal; };
+    var lines = [], capex = 0, service = 0, unpriced = [];
+    rec.areas.forEach(function (area) {
+      var units = rec.unitPlan[area.id] || 0; var pid = area.products[0]; var prod = P.products[pid];
+      var unitPrice = null, svc = null;
+      if (PR.hotel.enabled) { var it = PR.hotel.items[pid]; if (it && it.unit != null) { unitPrice = it.unit + (it.install || 0); svc = it.serviceAnnual || 0; } }
+      else { var r = PR.retail.items[pid]; if (r && r.price != null) { unitPrice = r.price; svc = filterSetFor(pid).price * F.factors.filter_sets_per_unit_per_year.value; } }
+      if (unitPrice == null) { unpriced.push({ area: area.label, product: prod.name }); return; }
+      lines.push({ area: area.label, product: prod.name, units: units, unitLocal: toLocal(unitPrice), capexLocal: toLocal(unitPrice * units), serviceLocal: toLocal(svc * units) });
+      capex += toLocal(unitPrice * units); service += toLocal(svc * units);
+    });
+    return { mode: PR.hotel.enabled ? 'hotel' : 'retail', label: src.label, url: src.url, lines: lines, unpriced: unpriced, capex: lines.length ? capex : null, service: lines.length ? service : 0 };
+  }
+
+  /* ------------------------------------------------------------------ results */
+  function compute() {
+    var n = M.normalise(F, state.answers, state.overrides);
+    var calc = E.calculate(F, n.inputs);
+    var rec = R.recommend(state.answers, calc);
+    var est = pricingEstimate(rec, n.inputs);
+    var mode = state.overrides.pricingMode || (state.overrides.capex != null ? 'quote' : (est.capex != null ? 'estimate' : 'quote'));
+    if (mode === 'estimate' && est.capex == null) mode = 'quote'; // nothing priced: show the quote inputs instead
+    var inp = Object.assign({}, n.inputs);
+    if (mode === 'estimate' && est.capex != null) { inp.capex = est.capex; inp.annualService = est.service; }
+    else if (mode === 'quote') { inp.capex = state.overrides.capex != null ? Number(state.overrides.capex) : null; inp.annualService = state.overrides.annualService != null ? Number(state.overrides.annualService) : 0; }
+    else { inp.capex = null; inp.annualService = 0; }
+    calc.payback = E.payback(inp, calc.spend, calc.labour);
+    calc.inputs = inp;
+    return { n: n, calc: calc, rec: rec, est: est, mode: mode };
+  }
+
+  function provTag(p) { return p ? tag(p.kind === 'user' ? 'user' : p.kind) : null; }
+  function basis(parts) { var d = el('div', { class: 'basis' }); parts.forEach(function (p, i) { if (i) d.appendChild(document.createTextNode(' x ')); d.appendChild(document.createTextNode(p.text + ' ')); if (p.tag) d.appendChild(p.tag); }); return d; }
+
+  function money(ctx, v) { return fmt.money(ctx.n.inputs.symbol, v, ctx.n.inputs.decimals); }
+  function usd(ctx, local) { return ctx.n.inputs.currency === 'USD' ? '' : ' (US$' + fmt.int(local * ctx.n.inputs.usdPerLocal) + ')'; }
+
+  function renderResults() {
+    var ctx = compute();
+    var a = state.answers, n = ctx.n, c = ctx.calc, rec = ctx.rec, prov = n.provenance, inp = n.inputs;
+    app.innerHTML = '';
+    var root = el('div', { class: 'results' });
+
+    /* header */
+    root.appendChild(el('h2', { text: 'Your indicative business case' + (a.hotel ? ' - ' + a.hotel : '') }));
+    root.appendChild(el('div', { class: 'summary-chips' },
+      el('span', { text: n.country.name }), el('span', { text: rec.segment.tier }), el('span', { text: rec.segment.ownership }), el('span', { text: rec.segment.build }),
+      el('span', { text: fmt.int(inp.rooms) + ' rooms' }), el('span', { text: fmt.pct(inp.occupancy) + ' occupancy' }), el('span', { text: rec.segment.current })));
+
+    /* headline tiles */
+    var tiles = el('div', { class: 'tiles' });
+    tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Single-use bottles avoided per year' }),
+      el('div', { class: 'value', text: fmt.int(c.bottles.total) }),
+      el('div', { class: 'sub', text: fmt.int(c.bottles.roomBottles) + ' in guest rooms' + (c.bottles.otherBottles ? ', ' + fmt.int(c.bottles.otherBottles) + ' elsewhere' : '') + ' - ' + fmt.int(c.env.litres) + ' litres' }),
+      basis([{ text: fmt.int(inp.rooms) + ' rooms', tag: tag('user') }, { text: fmt.pct(inp.occupancy) + ' occupancy', tag: provTag(prov.occupancy) }, { text: inp.bottlesPerRoomNight + ' bottles/night', tag: provTag(prov.bottlesPerRoomNight) }, { text: '365 days' }])));
+    tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Plastic packaging avoided per year' }),
+      el('div', { class: 'value', text: c.env.quantified ? fmt.int(c.env.packagingKg) : '-' }, el('span', { class: 'unit', text: c.env.quantified ? ' kg' : '' })),
+      el('div', { class: 'sub', text: c.env.quantified ? 'at ' + fmt.dec(c.env.bottleWeightG, 1) + ' g per ' + (inp.bottleSizeMl >= 1000 ? fmt.dec(inp.bottleSizeMl / 1000, 1) + ' L' : inp.bottleSizeMl + ' ml') + ' bottle' : 'Glass bottles: no sourced weight factor, so plastic is not estimated. Reusable glass already avoids single-use packaging.' }),
+      c.env.quantified ? basis([{ text: 'bottle weight', tag: tag(inp.bottleWeightOverrideG != null ? 'user' : (inp.bottleSizeMl === 500 ? 'sourced' : 'derived'), inp.bottleWeightOverrideG != null ? 'Your input' : (inp.bottleSizeMl === 500 ? 'Sourced (IBWA)' : 'Derived from 500 ml')) }]) : null));
+    tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Greenhouse gas avoided per year' }),
+      el('div', { class: 'value', text: c.env.quantified ? fmt.dec(c.env.co2eKg / 1000, 1) : '-' }, el('span', { class: 'unit', text: c.env.quantified ? ' t CO2e' : '' })),
+      el('div', { class: 'sub', text: c.env.quantified ? 'about ' + fmt.int(c.env.co2eCarKm) + ' km driven by an average petrol car; bottle production only (transport, chilling and disposal not included)' : 'Not estimated for glass bottles.' }),
+      c.env.quantified ? basis([{ text: 'PET factor ' + fmt.dec(F.factors.co2e_kg_per_kg_pet.value, 2) + ' kg CO2e/kg', tag: tag('sourced-secondary', 'UK GHG factors') }]) : null));
+    tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Bottled-water spend avoided per year' }),
+      el('div', { class: 'value', text: inp.pricePerBottle > 0 ? money(ctx, c.spend.annualLocal) : '-' }),
+      el('div', { class: 'sub', text: inp.pricePerBottle > 0 ? 'at ' + fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + usd(ctx, c.spend.annualLocal) : 'No price available - enter your price below.' }),
+      basis([{ text: 'price per bottle', tag: provTag(prov.pricePerBottle) }, { text: 'bottles' }])));
+    tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Housekeeping and stewarding time freed per year' }),
+      el('div', { class: 'value', text: fmt.int(c.labour.hours) }, el('span', { class: 'unit', text: ' hours' })),
+      el('div', { class: 'sub', text: fmt.dec(c.labour.fteEquivalent, 1) + ' full-time equivalents' + (c.labour.quantified ? ', worth ' + money(ctx, c.labour.costLocal) + ' at ' + fmt.money(inp.symbol, c.labour.wageHourly, 2) + '/h' : ' (enter an hourly wage below to value it)') }),
+      basis([{ text: inp.minutesPerRoomPerDay + ' min per occupied room', tag: provTag(prov.minutesPerRoomPerDay) }, { text: inp.minutesPerCarton + ' min per carton', tag: provTag(prov.minutesPerCarton) }, { text: 'wage', tag: provTag(prov.wageHourly) }])));
+    tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Storage, deliveries and lifting avoided per year' }),
+      el('div', { class: 'value', text: fmt.dec(c.logistics.palletsPerYear, 0) }, el('span', { class: 'unit', text: ' pallets' })),
+      el('div', { class: 'sub', text: fmt.int(c.logistics.cartonsPerYear) + ' cartons, ' + fmt.int(c.logistics.deliveriesPerYear) + ' deliveries, ' + fmt.dec(c.logistics.storageM2, 1) + ' m2 of store at peak (' + inp.stockWeeks + ' weeks of stock), ' + fmt.int(c.logistics.tonnesHandled) + ' tonnes carried by staff' }),
+      basis([{ text: '24 per carton', tag: tag('sourced') }, { text: '1,872 per pallet', tag: tag('sourced') }, { text: '1.2 m2 per pallet', tag: tag('sourced') }, { text: 'stock weeks', tag: provTag(prov.stockWeeks) }])));
+    root.appendChild(tiles);
+    if (a.current === 'glass_own') root.appendChild(el('p', { class: 'notice notice-info', text: 'You already bottle in reusable glass, so the plastic figures do not apply. The case for in-room filtration here is labour (no bottle rounds, no washing cycle for room bottles), storage and 24/7 availability for guests.' }));
+
+    /* payback */
+    root.appendChild(renderPayback(ctx));
+
+    /* recommendation */
+    root.appendChild(renderRecommendation(ctx));
+
+    /* why now */
+    root.appendChild(renderWhyNow(ctx));
+
+    /* business case order + readiness */
+    root.appendChild(renderCase(ctx));
+
+    /* adjust */
+    root.appendChild(renderAdjust(ctx));
+
+    /* sources used */
+    root.appendChild(renderSources(ctx));
+
+    /* actions */
+    root.appendChild(renderActions(ctx));
+    app.appendChild(root);
+    document.getElementById('restart-top').hidden = false;
+  }
+
+  function renderPayback(ctx) {
+    var c = ctx.calc, inp = ctx.n.inputs, est = ctx.est, mode = ctx.mode;
+    var card = el('section', { class: 'card' });
+    card.appendChild(el('h3', { text: 'Payback and five-year view' }));
+    var modes = el('div', { class: 'options', role: 'radiogroup', style: 'margin-bottom:14px' });
+    function modeBtn(id, label, desc, disabled) {
+      return el('button', { type: 'button', class: 'opt' + (mode === id ? ' selected' : ''), role: 'radio', 'aria-checked': mode === id ? 'true' : 'false', disabled: disabled ? 'disabled' : null, onclick: function () { state.overrides.pricingMode = id; save(); renderResults(); } },
+        el('span', { class: 'opt-label', text: label }), el('span', { class: 'opt-desc', text: desc }));
+    }
+    modes.appendChild(modeBtn('quote', 'I have a Swisspro quote', 'Enter the investment and the yearly service contract.'));
+    modes.appendChild(modeBtn('estimate', est.mode === 'hotel' ? 'Use the Swisspro hotel price list' : 'Ballpark from Swisspro retail list prices', est.mode === 'hotel' ? est.label : 'Residential online-store prices (SGD), converted - NOT hotel project pricing. For orientation only.', est.capex == null));
+    modes.appendChild(modeBtn('none', 'Skip the payback', 'Show savings only.'));
+    card.appendChild(modes);
+    if (est.capex == null && est.unpriced.length) card.appendChild(el('p', { class: 'small muted', text: 'The ballpark is unavailable because Swisspro has not published prices for the recommended units (' + est.unpriced.map(function (u) { return u.product; }).join('; ') + '). These are quoted per project.' }));
+
+    if (mode === 'quote') {
+      var row = el('div', { class: 'adjust', style: 'margin-bottom:14px' });
+      row.appendChild(el('div', {}, el('label', { for: 'ov-capex', text: 'Investment incl. installation (' + inp.currency + ')' }), el('input', { class: 'input', id: 'ov-capex', type: 'number', min: 0, step: 1, value: state.overrides.capex != null ? state.overrides.capex : '', placeholder: 'from your quote', onchange: function (e) { state.overrides.capex = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
+      row.appendChild(el('div', {}, el('label', { for: 'ov-service', text: 'Yearly service contract, filters included (' + inp.currency + ')' }), el('input', { class: 'input', id: 'ov-service', type: 'number', min: 0, step: 1, value: state.overrides.annualService != null ? state.overrides.annualService : '', placeholder: 'from your quote', onchange: function (e) { state.overrides.annualService = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
+      card.appendChild(row);
+      if (state.overrides.capex == null) card.appendChild(el('p', { class: 'notice', text: 'No quote yet? Request one below: Swisspro prices per installed point and per service contract, and the sales team will put the numbers straight into this view.' }));
+    }
+    if (mode === 'estimate' && est.capex != null) {
+      var t = el('table', { class: 'kv' });
+      est.lines.forEach(function (l) { t.appendChild(el('tr', {}, el('th', { text: l.area + ': ' + l.units + ' x ' + l.product }), el('td', { text: money(ctx, l.capexLocal) + ' + ' + money(ctx, l.serviceLocal) + '/yr' }))); });
+      card.appendChild(t);
+      if (est.unpriced.length) card.appendChild(el('p', { class: 'small muted', text: 'Not priced (quote required): ' + est.unpriced.map(function (u) { return u.area + ' - ' + u.product; }).join('; ') + '.' }));
+      card.appendChild(el('p', { class: 'notice' }, tag(est.mode === 'hotel' ? 'config' : 'sourced', est.mode === 'hotel' ? 'Price list' : 'Retail reference'), ' ' + (est.mode === 'hotel' ? 'Prices from ' + est.label + '.' : 'These are the prices of Swisspro\'s residential products on its online store (' + PR.retail.accessed + '), with one replacement filter set per unit per year (assumption). Hotel project pricing and service contracts differ; treat this as orientation only and request a quote. ') , el('a', { href: est.url, rel: 'noopener', text: 'Source' })));
+    }
+    if (c.payback.available) {
+      var pb = c.payback;
+      var grid = el('div', { class: 'two-col' });
+      var left = el('table', { class: 'kv' });
+      left.appendChild(el('tr', {}, el('th', { text: 'Investment' }), el('td', { text: money(ctx, pb.capex) + usd(ctx, pb.capex) })));
+      left.appendChild(el('tr', {}, el('th', { text: 'Yearly service contract' }), el('td', { text: money(ctx, pb.annualService) })));
+      left.appendChild(el('tr', {}, el('th', { text: 'Bottled-water spend avoided per year' }), el('td', { text: money(ctx, c.spend.annualLocal) })));
+      left.appendChild(el('tr', {}, el('th', { text: 'Housekeeping time value per year' }), el('td', { text: c.labour.quantified ? money(ctx, c.labour.costLocal) : '-' })));
+      var right = el('table', { class: 'kv' });
+      right.appendChild(el('tr', {}, el('th', { text: 'Cash payback (bottled-water spend only)' }), el('td', { text: fmt.years(pb.cashPaybackYears) })));
+      right.appendChild(el('tr', {}, el('th', { text: 'Payback including housekeeping time' }), el('td', { text: fmt.years(pb.fullPaybackYears) })));
+      right.appendChild(el('tr', {}, el('th', { text: 'Five-year net saving (cash)' }), el('td', { text: money(ctx, pb.fiveYearNetCash) })));
+      right.appendChild(el('tr', {}, el('th', { text: 'Five-year net saving (incl. time)' }), el('td', { text: money(ctx, pb.fiveYearNetFull) })));
+      grid.appendChild(left); grid.appendChild(right);
+      card.appendChild(grid);
+      card.appendChild(el('p', { class: 'small muted', text: R.approvalNote(state.answers, pb.capex * inp.usdPerLocal) }));
+      if (inp.pricePerBottle === 0) card.appendChild(el('p', { class: 'notice', text: 'No bottle price is set, so the cash payback cannot be computed. Enter your price per bottle in "Adjust the assumptions".' }));
+    } else if (mode !== 'none') {
+      card.appendChild(el('p', { class: 'small muted', text: 'Payback appears here once an investment figure is available.' }));
+    }
+    return card;
+  }
+
+  function productCard(pid) {
+    var p = P.products[pid];
+    return el('div', { class: 'product' }, el('h4', { text: p.name }), el('p', { class: 'summary', text: p.summary }),
+      el('ul', {}, p.facts.map(function (f) { return el('li', { text: f }); })),
+      el('p', { class: 'small', style: 'margin:8px 0 0' }, el('a', { href: p.url, rel: 'noopener', text: 'Swisspro product page' })));
+  }
+
+  function renderRecommendation(ctx) {
+    var rec = ctx.rec, a = state.answers;
+    var card = el('section', { class: 'card' });
+    card.appendChild(el('h3', { text: 'Recommended Swisspro set-up' }));
+    card.appendChild(el('p', { class: 'small muted', text: rec.unitPlan.note }));
+    rec.areas.forEach(function (area) {
+      var units = rec.unitPlan[area.id];
+      card.appendChild(el('h4', { style: 'margin:18px 0 6px', text: area.label + (units ? ' - ' + fmt.int(units) + (units === 1 ? ' unit' : ' units') : '') }));
+      if (area.notes.length) card.appendChild(el('ul', { class: 'area-notes' }, area.notes.map(function (t) { return el('li', { text: t }); })));
+      card.appendChild(productCard(area.products[0]));
+      if (area.products.length > 1) {
+        var alt = el('details', { style: 'margin:6px 0 10px' }, el('summary', { text: 'Alternatives for this area (' + (area.products.length - 1) + ')' }));
+        area.products.slice(1).forEach(function (pid) { var pc = productCard(pid); pc.style.marginTop = '10px'; alt.appendChild(pc); });
+        card.appendChild(alt);
+      }
+    });
+    var f = rec.filter;
+    var fc = el('div', { class: 'product', style: 'margin-top:18px;background:var(--aqua-100)' });
+    fc.appendChild(el('h4', { text: 'Filter specification: ' + f.grade }));
+    fc.appendChild(el('ul', {}, f.reasons.map(function (r) { return el('li', { text: r }); })));
+    var flags = [];
+    if (f.prefilter) flags.push('Sediment pre-filter stage recommended');
+    if (f.waterTest) flags.push('Water test during the site survey');
+    if (f.halal) flags.push('Halal certificate to be provided');
+    flags.push(f.interval);
+    fc.appendChild(el('p', { class: 'small', style: 'margin:8px 0 0', text: flags.join(' - ') }));
+    if (f.halalNote) fc.appendChild(el('p', { class: 'small muted', style: 'margin:6px 0 0', text: f.halalNote }));
+    fc.appendChild(el('p', { class: 'small muted', style: 'margin:6px 0 0' }, P.filter.cdc + ' ', el('a', { href: P.filter.cdcUrl, rel: 'noopener', text: 'CDC source' })));
+    card.appendChild(fc);
+    if (has(a.areas, 'rooms')) card.appendChild(el('p', { class: 'small muted', style: 'margin-top:12px', text: 'Placement feedback from the Marriott interview: guests dislike a drinking tap right next to the basin and water stations in corridors. The minibar counter in the room and pre-function areas for events are the preferred positions.' }));
+    return card;
+  }
+
+  function renderWhyNow(ctx) {
+    var a = state.answers, cc = ctx.n.country;
+    var items = [];
+    cc.context.forEach(function (x) { items.push(x); });
+    ['certification', 'audit', 'mandate', 'safety'].forEach(function (k) { if (has(a.drivers, k)) F.triggerFacts[k].forEach(function (x) { items.push(x); }); });
+    if (!items.length) return el('span');
+    var card = el('section', { class: 'card' });
+    card.appendChild(el('h3', { text: 'Why now: rules and standards that point the same way' }));
+    card.appendChild(el('ul', { class: 'sources-list' }, items.map(function (x) { return el('li', {}, x.text + ' ', x.url ? el('a', { href: x.url, rel: 'noopener', text: 'source' }) : null); })));
+    return card;
+  }
+
+  function readinessLabel(tier) { return { Hot: 'High', Warm: 'Medium', Nurture: 'Early' }[tier] || tier; }
+
+  function renderCase(ctx) {
+    var rec = ctx.rec, a = state.answers;
+    var card = el('section', { class: 'card' });
+    card.appendChild(el('h3', { text: 'How to present the case internally' }));
+    card.appendChild(el('p', { class: 'small muted', text: 'Ordered for a ' + rec.segment.tier.toLowerCase() + ', ' + rec.segment.ownership.toLowerCase() + ' hotel in ' + ctx.n.country.name + '. Marriott\'s APAC procurement lead ranks the drivers ROI, then efficiency and guest experience, then sustainability - "if you put it as the main criteria for change, it\'s very, very hard to convince".' }));
+    card.appendChild(el('ol', { class: 'ordered' }, rec.arguments.map(function (x) { return el('li', {}, el('strong', { text: x.title }), el('div', { class: 'small', text: x.why })); })));
+    var r = el('div', { style: 'margin-top:18px' });
+    r.appendChild(el('h4', { style: 'margin:0 0 6px', text: 'Project readiness' }));
+    r.appendChild(el('span', { class: 'readiness readiness-' + readinessLabel(rec.lead.tier), text: readinessLabel(rec.lead.tier) }));
+    r.appendChild(el('span', { class: 'small muted', text: '  ' + rec.segment.timeline + ' - ' + rec.segment.approval }));
+    r.appendChild(el('p', { class: 'small muted', style: 'margin:8px 0 0', text: 'Next steps with Swisspro: site survey (placement, plumbing, power), water test, specification and quote per area, then a pilot floor if you want to test guest response before the roll-out.' }));
+    card.appendChild(r);
+    return card;
+  }
+
+  function renderAdjust(ctx) {
+    var inp = ctx.n.inputs, c = ctx.calc, prov = ctx.n.provenance, o = state.overrides;
+    var card = el('section', { class: 'card adjust-card' });
+    card.appendChild(el('h3', { text: 'Adjust the assumptions' }));
+    card.appendChild(el('p', { class: 'small muted', text: 'Advanced users: change any input and the results update. Labels show where the current value comes from.' }));
+    var grid = el('div', { class: 'adjust' });
+    function field(id, label, value, step, p, extra) {
+      var d = el('div', {});
+      d.appendChild(el('label', { for: 'ov-' + id }, label + ' ', provTag(p) || ''));
+      d.appendChild(el('input', Object.assign({ class: 'input', id: 'ov-' + id, type: 'number', step: step, min: 0, value: value, onchange: function (e) { if (e.target.value === '') delete o[id]; else o[id] = Number(e.target.value); if (id === 'occupancy' && o[id] != null) o[id] = o[id] / 100; save(); renderResults(); } }, extra || {})));
+      return d;
+    }
+    grid.appendChild(field('occupancy', 'Occupancy (%)', Math.round(inp.occupancy * 1000) / 10, 1, prov.occupancy, { max: 100 }));
+    grid.appendChild(field('bottlesPerRoomNight', 'Bottles per occupied room per night', inp.bottlesPerRoomNight, 0.5, prov.bottlesPerRoomNight));
+    grid.appendChild(field('pricePerBottle', 'Price per bottle (' + inp.currency + ')', Math.round(inp.pricePerBottle * 1000) / 1000, 0.01, prov.pricePerBottle));
+    if (c.env.quantified) grid.appendChild(field('bottleWeightG', 'Empty bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1, inp.bottleWeightOverrideG != null ? { kind: 'user' } : { kind: inp.bottleSizeMl === 500 ? 'sourced' : 'derived' }));
+    grid.appendChild(field('minutesPerRoomPerDay', 'Housekeeping minutes per occupied room per day', inp.minutesPerRoomPerDay, 0.5, prov.minutesPerRoomPerDay));
+    grid.appendChild(field('minutesPerCarton', 'Handling minutes per carton', inp.minutesPerCarton, 0.5, prov.minutesPerCarton));
+    grid.appendChild(field('wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, prov.wageHourly));
+    grid.appendChild(field('stockWeeks', 'Weeks of stock kept on site', inp.stockWeeks, 1, prov.stockWeeks));
+    card.appendChild(grid);
+    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { var keep = { pricingMode: o.pricingMode, capex: o.capex, annualService: o.annualService }; state.overrides = {}; Object.keys(keep).forEach(function (k) { if (keep[k] != null) state.overrides[k] = keep[k]; }); save(); renderResults(); } }, 'Reset to reference values')));
+    return card;
+  }
+
+  function renderSources(ctx) {
+    var cc = ctx.n.country, prov = ctx.n.provenance;
+    var card = el('section', { class: 'card' });
+    card.appendChild(el('h3', { text: 'Where the numbers come from' }));
+    var list = el('ul', { class: 'sources-list' });
+    function item(label, p, f) {
+      var li = el('li', {}, tag(p.kind === 'user' ? 'user' : p.kind), ' ', el('strong', { text: label + ': ' }), p.label || '');
+      if (p.note) li.appendChild(el('span', { class: 'muted', text: ' ' + p.note }));
+      var s = p.source || (f && f.source);
+      if (s && s.url) li.appendChild(el('span', {}, ' ', el('a', { href: s.url, rel: 'noopener', text: s.publisher || 'source' })));
+      else if (p.url) li.appendChild(el('span', {}, ' ', el('a', { href: p.url, rel: 'noopener', text: 'source' })));
+      return li;
+    }
+    list.appendChild(item('Occupancy', prov.occupancy));
+    list.appendChild(item('Bottles per room-night', prov.bottlesPerRoomNight));
+    list.appendChild(item('Price per bottle', prov.pricePerBottle));
+    list.appendChild(item('Labour cost', prov.wageHourly));
+    list.appendChild(item('Handling time per room', prov.minutesPerRoomPerDay));
+    list.appendChild(item('Handling time per carton', prov.minutesPerCarton));
+    list.appendChild(item('Stock on hand', prov.stockWeeks));
+    ['pet_bottle_weight_500ml_g', 'pet_bottle_weight_scaling', 'co2e_kg_per_kg_pet', 'co2e_kg_per_car_km', 'bottles_per_carton', 'bottles_per_pallet_500ml', 'pallet_footprint_m2', 'working_hours_per_fte_year'].forEach(function (k) {
+      var f = F.factors[k]; list.appendChild(item(f.label, { kind: f.kind, label: (typeof f.value === 'number' ? (Math.round(f.value * 1000) / 1000) + ' ' : '') + (f.unit || ''), note: f.kind === 'assumption' ? f.note : null, source: f.source }));
+    });
+    if (cc.fx.source) list.appendChild(item('Exchange rate', { kind: cc.fx.kind, label: cc.fx.source.quote, source: cc.fx.source }));
+    card.appendChild(list);
+    card.appendChild(el('p', { class: 'small muted' }, 'Full registry with quotes and access dates: ', el('a', { href: 'sources.html', text: 'Sources & assumptions' }), '. Figures are indicative; a Swisspro site survey and quote confirm them.'));
+    return card;
+  }
+
+  /* ------------------------------------------------------------------ summary / lead */
+  function summaryText(ctx) {
+    var a = state.answers, c = ctx.calc, rec = ctx.rec, inp = ctx.n.inputs, sym = inp.symbol;
+    var L = [];
+    L.push('SWISSPRO SUSTAINABILITY WIZARD - SUMMARY (' + new Date().toISOString().slice(0, 10) + ')');
+    L.push('Hotel: ' + (a.hotel || '-') + ' | Contact: ' + (a.name || '-') + (a.role ? ', ' + a.role : '') + ' | Email: ' + (a.email || '-'));
+    L.push('Market: ' + ctx.n.country.name + ' | ' + rec.segment.tier + ' | ' + rec.segment.ownership + ' | ' + rec.segment.build);
+    L.push('Rooms: ' + fmt.int(inp.rooms) + ' | Occupancy: ' + fmt.pct(inp.occupancy) + ' | Today: ' + rec.segment.current + ' | ' + inp.bottlesPerRoomNight + ' x ' + inp.bottleSizeMl + ' ml per room-night');
+    L.push('Areas: ' + rec.segment.areas.join(', '));
+    L.push('');
+    L.push('RESULTS PER YEAR');
+    L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' L)');
+    if (c.env.quantified) { L.push('- Plastic avoided: ' + fmt.int(c.env.packagingKg) + ' kg'); L.push('- CO2e avoided: ' + fmt.dec(c.env.co2eKg / 1000, 1) + ' t (bottle production only)'); }
+    L.push('- Bottled-water spend avoided: ' + (inp.pricePerBottle > 0 ? fmt.money(sym, c.spend.annualLocal, 0) + ' at ' + fmt.money(sym, inp.pricePerBottle, 2) + '/bottle' : 'n/a (no price)'));
+    L.push('- Housekeeping time: ' + fmt.int(c.labour.hours) + ' h (' + fmt.dec(c.labour.fteEquivalent, 1) + ' FTE)' + (c.labour.quantified ? ' = ' + fmt.money(sym, c.labour.costLocal, 0) : ''));
+    L.push('- Logistics: ' + fmt.dec(c.logistics.palletsPerYear, 0) + ' pallets, ' + fmt.int(c.logistics.cartonsPerYear) + ' cartons, ' + fmt.int(c.logistics.tonnesHandled) + ' t carried, ' + fmt.dec(c.logistics.storageM2, 1) + ' m2 store at peak');
+    if (c.payback.available) L.push('- Payback: cash ' + fmt.years(c.payback.cashPaybackYears) + ', incl. time ' + fmt.years(c.payback.fullPaybackYears) + ' on ' + fmt.money(sym, c.payback.capex, 0) + ' investment (' + (ctx.mode === 'estimate' ? (ctx.est.mode === 'hotel' ? 'price list' : 'RETAIL BALLPARK') : 'quote') + ')');
+    L.push('');
+    L.push('RECOMMENDED SET-UP');
+    rec.areas.forEach(function (ar) { L.push('- ' + ar.label + ' (' + (rec.unitPlan[ar.id] || '?') + ' units): ' + ar.products.map(function (p) { return P.products[p].name; }).join(' / ')); });
+    L.push('- Filter: ' + rec.filter.grade + (rec.filter.prefilter ? ' + sediment pre-filter' : '') + (rec.filter.waterTest ? ' | water test needed' : '') + (rec.filter.halal ? ' | Halal certificate' : ''));
+    if (has(a.areas, 'rooms')) L.push('- Room preferences: ' + [a.placement, a.temps, a.finish, a.space].join(', '));
+    L.push('- Water supply: ' + a.source + (a.issues && a.issues.length ? ' | issues: ' + a.issues.join(', ') : ''));
+    L.push('');
+    L.push('LEAD PROFILE (for Swisspro)');
+    L.push('- Readiness: ' + rec.lead.tier + ' (' + rec.lead.points + ' pts: ' + rec.lead.reasons.join('; ') + ')');
+    L.push('- Drivers: ' + (a.drivers || []).join(', ') + ' | Timeline: ' + rec.segment.timeline + ' | Approval: ' + rec.segment.approval);
+    L.push('- Lead with: ' + rec.arguments.map(function (x) { return x.title; }).join(' > '));
+    L.push('');
+    L.push('Assumptions can be reviewed at: ' + location.href.split('#')[0].replace(/index\.html$/, '') + 'sources.html');
+    return L.join('\n');
+  }
+
+  function renderActions(ctx) {
+    var card = el('section', { class: 'card' });
+    card.appendChild(el('h3', { text: 'Take it further' }));
+    var txt = summaryText(ctx);
+    var ta = el('textarea', { class: 'copy-area', readonly: 'readonly', 'aria-label': 'Summary text' }); ta.value = txt;
+    var subject = 'Sustainability Wizard summary - ' + (state.answers.hotel || 'hotel enquiry');
+    var mail = 'mailto:' + PR.leadEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(txt);
+    function copyText(btn, text) {
+      var done = function () { btn.textContent = 'Copied'; };
+      try { navigator.clipboard.writeText(text).then(done, function () { ta.select(); document.execCommand('copy'); done(); }); }
+      catch (e) { ta.select(); document.execCommand('copy'); done(); }
+    }
+    var actions = el('div', { class: 'actions' },
+      el('a', { class: 'btn btn-primary', href: mail, onclick: function () { if (PR.formEndpoint) { try { fetch(PR.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: state.answers, overrides: state.overrides, summary: txt }) }); } catch (e) { /* ignore */ } } } }, ARTIFACT ? 'Open email draft' : 'Request a site survey and quote'),
+      el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, txt); } }, 'Copy summary'),
+      ARTIFACT ? el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, PR.leadEmail); } }, 'Copy Swisspro\'s email address') : el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { window.print(); } }, 'Print / save as PDF'),
+      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); scrollTop(); } }, 'Change my answers'),
+      el('button', { type: 'button', class: 'btn btn-ghost', onclick: restart }, 'Start over'));
+    card.appendChild(el('p', { class: 'small muted', text: ARTIFACT
+      ? 'In this preview the email button may do nothing. Copy the summary and send it to ' + PR.leadEmail + ' from your own email program; nothing is sent automatically.'
+      : 'The request opens an email to Swisspro with the summary below; nothing is sent automatically. Swisspro uses it to prepare the site survey and a quote per area.' }));
+    card.appendChild(actions);
+    card.appendChild(el('details', {}, el('summary', { text: 'Show the summary text' }), ta));
+    return card;
+  }
+
+  /* ------------------------------------------------------------------ router */
+  function render() {
+    document.getElementById('restart-top').hidden = state.view === 'intro';
+    if (state.view === 'wizard') renderStep();
+    else if (state.view === 'results') renderResults();
+    else renderIntro();
+  }
+  document.getElementById('restart-top').addEventListener('click', restart);
+  window.SW.app = { state: function () { return state; }, compute: compute, summaryText: summaryText, render: render };
+  render();
+})();
+
+</script>

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test",
     "serve": "python3 -m http.server 8080",
-    "walkthrough": "node tools/walkthrough.js"
+    "walkthrough": "node tools/walkthrough.js",
+    "build:artifact": "node tools/build-artifact.js"
   },
   "license": "UNLICENSED"
 }

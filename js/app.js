@@ -4,6 +4,7 @@
   var F = window.SW.factors, E = window.SW.engine, P = window.SW.products, PR = window.SW.pricing,
       Q = window.SW.questions, M = window.SW.model, R = window.SW.recommend, fmt = window.SW.format;
   var STORE = 'swisspro-wizard-v1';
+  var ARTIFACT = !!window.SW_ARTIFACT; // hosted preview frame: no print dialog, no mailto, no confirm()
   var app = document.getElementById('app');
   var state = load() || { view: 'intro', step: 0, answers: {}, overrides: {} };
 
@@ -159,8 +160,14 @@
     state.step -= 1; save(); renderStep(); scrollTop();
   }
   function restart() {
-    if (!confirm('Start over and clear your answers?')) return;
-    state = { view: 'intro', step: 0, answers: {}, overrides: {} }; save(); render(); scrollTop();
+    if (document.getElementById('restart-confirm')) return;
+    var bar = el('div', { class: 'card notice', id: 'restart-confirm', role: 'alertdialog', 'aria-label': 'Confirm start over' },
+      el('p', { style: 'margin:0 0 10px', text: 'Clear your answers and start over?' }),
+      el('div', { class: 'actions', style: 'margin:0' },
+        el('button', { type: 'button', class: 'btn btn-primary', onclick: function () { state = { view: 'intro', step: 0, answers: {}, overrides: {} }; save(); render(); scrollTop(); } }, 'Yes, start over'),
+        el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { bar.remove(); } }, 'Keep my answers')));
+    app.insertBefore(bar, app.firstChild);
+    bar.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   /* ------------------------------------------------------------------ pricing */
@@ -489,13 +496,20 @@
     var ta = el('textarea', { class: 'copy-area', readonly: 'readonly', 'aria-label': 'Summary text' }); ta.value = txt;
     var subject = 'Sustainability Wizard summary - ' + (state.answers.hotel || 'hotel enquiry');
     var mail = 'mailto:' + PR.leadEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(txt);
+    function copyText(btn, text) {
+      var done = function () { btn.textContent = 'Copied'; };
+      try { navigator.clipboard.writeText(text).then(done, function () { ta.select(); document.execCommand('copy'); done(); }); }
+      catch (e) { ta.select(); document.execCommand('copy'); done(); }
+    }
     var actions = el('div', { class: 'actions' },
-      el('a', { class: 'btn btn-primary', href: mail, onclick: function () { if (PR.formEndpoint) { try { fetch(PR.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: state.answers, overrides: state.overrides, summary: txt }) }); } catch (e) { /* ignore */ } } } }, 'Request a site survey and quote'),
-      el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { try { navigator.clipboard.writeText(txt); } catch (e) { ta.select(); document.execCommand('copy'); } this.textContent = 'Copied'; } }, 'Copy summary'),
-      el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { window.print(); } }, 'Print / save as PDF'),
+      el('a', { class: 'btn btn-primary', href: mail, onclick: function () { if (PR.formEndpoint) { try { fetch(PR.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: state.answers, overrides: state.overrides, summary: txt }) }); } catch (e) { /* ignore */ } } } }, ARTIFACT ? 'Open email draft' : 'Request a site survey and quote'),
+      el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, txt); } }, 'Copy summary'),
+      ARTIFACT ? el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, PR.leadEmail); } }, 'Copy Swisspro\'s email address') : el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { window.print(); } }, 'Print / save as PDF'),
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); scrollTop(); } }, 'Change my answers'),
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: restart }, 'Start over'));
-    card.appendChild(el('p', { class: 'small muted', text: 'The request opens an email to Swisspro with the summary below; nothing is sent automatically. Swisspro uses it to prepare the site survey and a quote per area.' }));
+    card.appendChild(el('p', { class: 'small muted', text: ARTIFACT
+      ? 'In this preview the email button may do nothing. Copy the summary and send it to ' + PR.leadEmail + ' from your own email program; nothing is sent automatically.'
+      : 'The request opens an email to Swisspro with the summary below; nothing is sent automatically. Swisspro uses it to prepare the site survey and a quote per area.' }));
     card.appendChild(actions);
     card.appendChild(el('details', {}, el('summary', { text: 'Show the summary text' }), ta));
     return card;
