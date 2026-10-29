@@ -1,5 +1,5 @@
-/* Lead sorting and product fit. Qualitative rules, each traceable to the brief, the
- * Marriott interview (Oct 2026) or Swisspro's published product pages. */
+/* Solution fit, filtration notes and argument order (version 2).
+ * Products and prices come only from js/pricelist.js (Swisspro Hospitality price list). No lead score. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) { module.exports = factory(); }
   else { root.SW = root.SW || {}; root.SW.recommend = factory(); }
@@ -8,148 +8,145 @@
 
   var LABELS = {
     tier: { luxury: 'Luxury', premium: 'Premium / upscale', select: 'Select-service / midscale' },
-    ownership: { owned: 'Owner-operated', managed: 'Brand-managed', franchised: 'Franchised' },
     build: { existing: 'Existing building', renovation: 'Renovation planned', newbuild: 'New build / pre-opening' },
-    areas: { rooms: 'Guest rooms', fnb: 'Restaurants and bars', meetings: 'Meetings and events', boh: 'Back of house', public: 'Gym, spa, pool and lobby' },
-    current: { pet_free: 'Complimentary single-use plastic bottles', pet_sold: 'Single-use plastic bottles sold via minibar', glass_bought: 'Bought-in glass bottles', glass_own: 'Own bottling plant (glass)', cooler: '19 L cooler bottles', none: 'No bottled water in rooms' },
-    timeline: { lt3: 'Within 3 months', '3to12': '3-12 months', gt12: 'More than 12 months', exploring: 'Exploring' },
-    approval: { gm: 'GM / hotel management can approve', owner: 'Owner approval required', notsure: 'Approval path unclear' }
+    areas: { rooms: 'Guest rooms', fnb: 'Restaurants and bars', meetings: 'Meeting rooms and events', boh: 'Staff areas and back of house' },
+    current: { pet_free: 'Complimentary single-use plastic bottles', pet_sold: 'Single-use plastic bottles sold via minibar', glass_bought: 'Bought-in glass bottles', glass_own: 'Reusable glass from own bottling plant', none: 'No bottled water in rooms' },
+    timing: { lt3: 'Within 3 months', '3to12': 'In 3 to 12 months', gt12: 'In more than 12 months' },
+    approval: { gm: 'Hotel management', owner: 'Owner or asset manager' }
   };
+  var TEMP_LABEL = { ambient: 'ambient', chilled: 'chilled', hot: 'hot', sparkling: 'sparkling' };
 
   function has(arr, v) { return (arr || []).indexOf(v) >= 0; }
 
-  /* ---------------------------------------------------------------- unit planning (assumptions) */
+  /* ---------------------------------------------------------------- unit planning (labelled assumption) */
   function unitPlan(a) {
     var rooms = Math.max(0, Number(a.rooms) || 0);
-    var plan = {};
-    if (has(a.areas, 'rooms')) plan.rooms = rooms;                                   // one water point per room
-    if (has(a.areas, 'fnb')) plan.fnb = Math.max(1, Number(a.fnbOutlets) || 1);      // one unit per outlet
-    if (has(a.areas, 'meetings')) plan.meetings = Math.max(1, Math.ceil((Number(a.meetingRooms) || 2) / 3)); // one station per 3 rooms
-    if (has(a.areas, 'boh')) plan.boh = Math.max(1, Math.ceil(rooms / 150));         // one high-volume unit per 150 rooms
-    if (has(a.areas, 'public')) plan.public = 1;
-    plan.note = 'Unit counts are planning assumptions (1 per room, 1 per outlet, 1 station per 3 meeting rooms, 1 back-of-house unit per 150 rooms). A site survey decides.';
+    var plan = { inRoom: has(a.areas, 'rooms') ? rooms : 0, stations: 0 };
+    ['fnb', 'meetings', 'boh'].forEach(function (k) { if (has(a.areas, k)) plan.stations += 1; });
+    plan.note = 'Unit counts are planning assumptions: one in-room unit per guest room and one drinking station per selected area outside the rooms. The site survey and the proposal set the real quantities.';
     return plan;
   }
 
-  /* ---------------------------------------------------------------- product fit per area */
-  function roomProducts(a) {
-    var out = [], notes = [];
-    var temps = a.temps || 'ambient', placement = a.placement || 'notsure', finish = a.finish || 'nopref', tight = a.space === 'tight';
-    if (placement === 'vanity') {
-      notes.push('Guests dislike a drinking tap right next to the basin (Marriott VP Procurement APAC interview). If the vanity is the only option, use a SAN all-in-one mixer so there is no second tap; otherwise move the water point to the minibar.');
-    }
+  /* ---------------------------------------------------------------- solution per price-list area */
+  function inRoomSolution(a) {
+    var temps = a.temps || 'ambient', placement = a.placement || 'notsure';
+    var s = { area: 'inRoom', areaLabel: 'In-Room', covers: [LABELS.areas.rooms], notes: [], requiredTemps: [], mount: null };
     if (temps === 'ambient') {
-      if (placement === 'vanity') out.push('san_tap'); else out.push('smart_tap');
-      if (finish === 'black') notes.push('Swisspro\'s published tap range is chrome-plated brass; black is available on the CLIMA Vida dispenser line. Ask Swisspro about finish options for taps.');
+      s.title = 'Filtered drinking-water tap in the room';
+      s.description = placement === 'vanity'
+        ? 'A filtered tap integrated at the vanity, with the cartridge concealed in the cabinet below. Guests dislike a second tap right next to the basin, so Swisspro should propose a fitting that replaces the existing one rather than adding a tap.'
+        : 'A dedicated filtered tap at the minibar counter with the cartridge concealed below. No electricity, no drain beyond a drip tray.';
+      s.requiredTemps = ['ambient']; s.mount = 'tap';
     } else if (temps === 'sparkling') {
-      out.push('fontana');
-      if (!tight) out.push('vida');
-      notes.push('Sparkling in every room is a luxury/suite feature; most hotels specify it for suites only and hot/chilled elsewhere.');
+      s.title = 'Still, chilled and sparkling water in the room';
+      s.description = 'An in-room unit that dispenses chilled, ambient and sparkling filtered water at the minibar, replacing both the still and the sparkling bottles. Typical for suites and luxury rooms; it needs a power point and a CO2 supply.';
+      s.requiredTemps = ['chilled', 'sparkling']; s.mount = null;
     } else {
-      if (tight && finish === 'black') { out.push('vida'); }
-      else { out.push('minibar_station'); if (finish === 'black') out.push('vida'); }
-      if (placement === 'vanity') notes.push('Hot and chilled water needs power and tank space: a minibar counter is the practical location.');
+      s.title = temps === 'hotcold' ? 'Hot and chilled filtered water at the minibar' : 'Chilled filtered water at the minibar';
+      s.description = (temps === 'hotcold'
+        ? 'A compact under-counter or countertop unit at the minibar that gives chilled and hot filtered water on demand, so the kettle goes as well. '
+        : 'A compact under-counter or countertop unit at the minibar that gives chilled and ambient filtered water on demand. ')
+        + 'The hotel\'s own carafe or glass bottle sits next to it for the guest to fill.';
+      s.requiredTemps = temps === 'hotcold' ? ['hot', 'chilled'] : ['chilled']; s.mount = null;
+      if (placement === 'vanity') s.notes.push('Chilled or hot water needs a power point and cabinet space, which the vanity rarely has. The minibar counter is the practical location.');
     }
-    if (a.tier === 'luxury' && a.keepPremium === 'yes' && out.indexOf('fontana') < 0) {
-      notes.push('Because a premium branded water stays on offer, position filtered water as the always-on complimentary option and consider FONTANA with sparkling for suites as the premium in-house alternative.');
-    }
-    if (a.build === 'newbuild' || a.build === 'renovation') notes.push('With joinery still open, a built-in or under-counter unit can be concealed completely - plan the drainage and power point now.');
-    return { products: out, notes: notes };
+    if (placement === 'notsure') s.notes.push('Placement advice: the minibar counter is preferred by guests and operators (interview feedback); the vanity suits an ambient tap only.');
+    if (a.build === 'existing') s.notes.push('Retrofit: the unit must fit the existing minibar cabinet; chilled or hot water needs a power point and a drip tray or drain nearby. Swisspro checks this in the site survey.');
+    else s.notes.push('With the joinery still open, plan the power point, drain and cabinet space for the unit now; a built-in unit can then be concealed completely.');
+    if (a.tier === 'luxury' && temps !== 'sparkling') s.notes.push('Luxury hotels often add sparkling water for suites; ask for it in the proposal if wanted.');
+    return s;
   }
 
-  function areaProducts(a) {
-    var list = [];
-    if (has(a.areas, 'rooms')) { var r = roomProducts(a); list.push({ id: 'rooms', label: LABELS.areas.rooms, products: r.products, notes: r.notes }); }
-    if (has(a.areas, 'fnb')) list.push({ id: 'fnb', label: LABELS.areas.fnb, products: ['boh_refill', 'self_serve_station', 'fontana'], notes: ['Table service: fill the hotel\'s own glass bottles at a back-of-house station (still and sparkling). Buffet and casual outlets: a guest-facing self-serve station. A built-in FONTANA suits a bar counter.'] });
-    if (has(a.areas, 'meetings')) list.push({ id: 'meetings', label: LABELS.areas.meetings, products: ['self_serve_station', 'boh_refill'], notes: ['Swisspro\'s convention-area concept: a self-service station outside the meeting rooms for delegates plus a back-of-house unit where the banquet team refills glass bottles for the ballroom. Avoid stations in long corridors; place them in pre-function areas (interview feedback).'] });
-    if (has(a.areas, 'boh')) list.push({ id: 'boh', label: LABELS.areas.boh, products: ['grande', 'mesa', 'san_tap'], notes: ['High-volume CLIMA Grande for stewarding and kitchens; Mesa V2 for staff canteens; SAN mixer for pantry sinks.'] });
-    if (has(a.areas, 'public')) list.push({ id: 'public', label: LABELS.areas.public, products: ['self_serve_station', 'mesa'], notes: ['Refill stations with bottle fillers at the gym and pool; keep them visible and branded - they are part of the sustainability story guests notice.'] });
-    return list;
+  function stationSolution(a) {
+    var covers = ['fnb', 'meetings', 'boh'].filter(function (k) { return has(a.areas, k); }).map(function (k) { return LABELS.areas[k]; });
+    var s = { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, notes: [], requiredTemps: ['chilled'], mount: 'station' };
+    s.title = 'Self-serve drinking station';
+    s.description = 'A drinking station with chilled and ambient filtered water (sparkling as an option) for restaurants, bars, pre-function areas and staff canteens. Staff can also fill the hotel\'s own glass carafes for table service and for meeting rooms, so no bottles are carried to the ballroom.';
+    if (has(a.areas, 'meetings')) s.notes.push('For events, a station in the pre-function area works better than one in a corridor (interview feedback); carafes filled back of house cover the meeting rooms themselves.');
+    if (a.tier === 'luxury' || has(a.areas, 'fnb')) s.notes.push('For table service in restaurants, Swisspro can propose a back-of-house filling point for still and sparkling water in glass bottles.');
+    return s;
   }
 
-  /* ---------------------------------------------------------------- filter specification */
-  function filterSpec(a) {
-    var reasons = [], prefilter = false, carbon = true, test = false, interval = 'Standard service interval per the service contract.';
+  function attachProducts(solution, PL) {
+    if (!PL || !PL.loaded()) {
+      solution.products = [];
+      solution.productNote = 'The model and the price come from the Hospitality section of the Swisspro price list. That list is not loaded in this version, so no model is named here; the proposal names it.';
+      return solution;
+    }
+    var matched = PL.match(solution.area, solution.requiredTemps, null);
+    if (matched.length) { solution.products = matched; solution.productNote = 'Listed in the ' + PL.AREAS[solution.area] + ' section of the Swisspro price list.'; }
+    else {
+      solution.products = PL.match(solution.area, [], null);
+      solution.productNote = 'No ' + PL.AREAS[solution.area] + ' unit on the price list covers every requested water type; the units of that section are listed and Swisspro confirms the fit in the proposal.';
+    }
+    return solution;
+  }
+
+  function solutions(a, PL) {
+    var out = [];
+    if (has(a.areas, 'rooms')) out.push(attachProducts(inRoomSolution(a), PL));
+    if (has(a.areas, 'fnb') || has(a.areas, 'meetings') || has(a.areas, 'boh')) out.push(attachProducts(stationSolution(a), PL));
+    return out;
+  }
+
+  /* ---------------------------------------------------------------- filtration (generic, no unverified product claims) */
+  function filtration(a) {
+    var notes = [], flags = { waterTest: false, pretreatment: false, halal: 'no' };
     var issues = a.issues || [];
-    reasons.push('0.2-micron absolute microfiltration retains bacteria (CDC: absolute pore size of 0.3 micron or smaller is needed to remove bacteria). This is the filtration Swisspro lists for its SAN, SMART, FONTANA and CLIMA Grande units.');
-    if (a.source === 'tank') { reasons.push('Water stored in rooftop or basement tanks can lose residual chlorine and allow bacteria to regrow, so the bacteria barrier matters even where mains water is potable.'); test = true; }
-    if (a.source === 'well') { reasons.push('Private wells and boreholes are outside the municipal safety net: a laboratory test before design is essential and a sediment pre-filter is standard.'); prefilter = true; test = true; }
-    if (has(issues, 'sediment')) { reasons.push('Sediment or discolouration: add a sediment pre-filter stage to protect the ceramic element and expect shorter change intervals.'); prefilter = true; interval = 'Expect more frequent cartridge changes; Swisspro can size the pre-filter after a water test.'; }
-    if (has(issues, 'chlorine')) { reasons.push('Chlorine taste or smell: the activated-carbon stage removes it; this is a taste issue, not a safety issue.'); }
-    if (has(issues, 'microbial')) { reasons.push('Reported microbial concerns: specify the 0.2-micron absolute grade for every outlet and include a water test in the service contract.'); test = true; }
-    if (a.country === 'ID') { reasons.push('Indonesia: a 2024 study of PDAM piped water found sporadic microbial contamination where residual chlorine was depleted - a bacteria-retaining grade is the safe default.'); test = true; }
-    if (a.source === 'notsure' || has(issues, 'notsure')) { reasons.push('Water source or quality unknown: Swisspro should test the water during the site survey before sizing filters.'); test = true; }
-    var halal = a.halal === 'yes' || (a.country === 'MY' && a.halal !== 'no');
-    return { grade: '0.2 micron absolute (microfiltration) + activated carbon', reasons: reasons, prefilter: prefilter, carbon: carbon, waterTest: test, interval: interval, halal: halal,
-      halalNote: halal ? 'Ask Swisspro for its Halal certificate; JAKIM certification of water filtration products is established practice in Malaysia.' : null };
+    var summary = 'Swisspro units treat the hotel\'s own tap water with replaceable multi-stage filter cartridges, exchanged under the service contract (the price list names a comprehensive SUPERSWISS replacement with labour and parts). The filtration specification for your water is confirmed in the proposal, after a water test where the notes below ask for one.';
+    if (a.source === 'tank') { notes.push('Water stored in rooftop or basement tanks can lose its chlorine residual, which lets bacteria regrow; a water test at the tank outlet should precede the specification.'); flags.waterTest = true; }
+    if (a.source === 'well') { notes.push('Private wells and boreholes are outside the municipal safety net: a laboratory test before the design and, depending on the result, pre-treatment ahead of the filter units.'); flags.waterTest = true; flags.pretreatment = true; }
+    if (a.source === 'notsure') { notes.push('Water source unknown: Swisspro tests the water during the site survey before sizing the filtration.'); flags.waterTest = true; }
+    if (has(issues, 'sediment')) { notes.push('Sediment or discolouration: a sediment pre-filter protects the cartridges and the exchange interval may be shorter than the standard contract.'); flags.pretreatment = true; }
+    if (has(issues, 'chlorine')) notes.push('Chlorine taste or smell is a taste issue, not a safety issue; the cartridges are designed to remove it.');
+    if (has(issues, 'microbial')) { notes.push('Reported microbial concerns: include a water test and a bacteria-retaining specification in the proposal.'); flags.waterTest = true; }
+    if (a.country === 'ID') { notes.push('Indonesia: a 2024 study of PDAM piped water found sporadic microbial contamination where the chlorine residual was depleted (unverified source), so a water test is advisable even on mains supply.'); flags.waterTest = true; }
+    if (a.halal === 'yes') { flags.halal = 'yes'; notes.push('You need Halal-certified filtration: ask Swisspro to include its Halal certification in the proposal.'); }
+    else if (a.halal === 'notsure') { flags.halal = 'ask'; notes.push('If your F&B operation requires Halal-certified equipment, ask for the certificate with the proposal.'); }
+    return { summary: summary, notes: notes, flags: flags };
   }
 
-  /* ---------------------------------------------------------------- argument order */
-  function argumentOrder(a, calc) {
-    var cheapWater = (a.country === 'MY' || a.country === 'ID') && (!a.priceBand || a.priceBand === 'unknown' || a.priceBand === 'local' || a.priceBand === 'budget' || a.priceBand === 'mid');
+  /* ---------------------------------------------------------------- argument order (adapts to tier and market) */
+  function argumentOrder(a, inp, F) {
+    var threshold = F && F.factors.cheap_water_threshold_usd ? F.factors.cheap_water_threshold_usd.value : 0.25;
+    var priceUsd = inp ? inp.pricePerBottle * inp.usdPerLocal : null;
+    var cheapWater = priceUsd != null && priceUsd > 0 && priceUsd < threshold;
     var args = {
-      roi: { key: 'roi', title: 'Return on investment', why: 'Owners challenge the payback first ("why three years and not two"). Lead with annual bottled-water spend avoided, the service-contract cost and the payback period.' },
-      efficiency: { key: 'efficiency', title: 'Efficiency and guest experience', why: 'Water available 24/7 without waiting for housekeeping, one SKU less to buy, store and count, no heavy trolleys, no space taken by pallets.' },
-      safety: { key: 'safety', title: 'Water safety', why: 'Microfiltration retains bacteria; bottled water is not needed as the safety guarantee.' },
+      roi: { key: 'roi', title: 'Return on investment', why: 'Owners challenge the payback first. Lead with the bottled-water spend avoided, the service-contract cost and the payback period.' },
+      efficiency: { key: 'efficiency', title: 'Efficiency and guest experience', why: 'Water available 24/7 without waiting for housekeeping, one item less to buy, store and count, no heavy trolleys, no pallets in the store.' },
+      safety: { key: 'safety', title: 'Water safety', why: 'Filtered water from a tested supply replaces the bottle as the safety guarantee; the specification is confirmed in the proposal.' },
       sustainability: { key: 'sustainability', title: 'Sustainability and compliance', why: 'Bottles and plastic avoided, certification criteria and local plastic rules. Convincing as support, rarely as the main reason (interview).' }
     };
     var order;
     if (a.tier === 'luxury') order = ['efficiency', 'sustainability', 'roi', 'safety'];
     else if (cheapWater) order = ['efficiency', 'safety', 'roi', 'sustainability'];
     else order = ['roi', 'efficiency', 'sustainability', 'safety'];
-    if (has(a.drivers, 'certification') || has(a.drivers, 'audit') || has(a.drivers, 'mandate')) { order.splice(order.indexOf('sustainability'), 1); order.splice(1, 0, 'sustainability'); }
-    if (has(a.drivers, 'safety') || has(a.issues, 'microbial') || a.source === 'well') { order.splice(order.indexOf('safety'), 1); order.unshift('safety'); }
-    var out = order.map(function (k) { return args[k]; });
-    if (cheapWater) out[out.map(function (x) { return x.key; }).indexOf('roi')].why = 'Bottled water is cheap in this market, so the cash payback is longer; add the labour, storage and delivery savings to the business case and show the payback both ways.';
-    if (a.tier === 'luxury') out[0].why = 'Luxury decisions are cosmetic and guest-experience driven: always-available chilled and sparkling water in the room, concealed in the joinery, and no plastic in sight for Forbes/LQA inspectors.';
-    return out;
+    if (a.source === 'well' || has(a.issues, 'microbial')) { order.splice(order.indexOf('safety'), 1); order.unshift('safety'); }
+    var out = order.map(function (k) { return Object.assign({}, args[k]); });
+    if (cheapWater) out.filter(function (x) { return x.key === 'roi'; })[0].why = 'Bottled water is cheap in this market, so the cash payback is long on its own. Add the labour, storage and delivery savings and show the payback both ways.';
+    if (a.tier === 'luxury') out[0].why = 'Luxury decisions are driven by guest experience: always-available chilled (and sparkling) water in the room, concealed in the joinery, and no plastic in sight for audit inspectors.';
+    return { order: out, cheapWater: cheapWater, priceUsd: priceUsd };
   }
 
-  /* ---------------------------------------------------------------- lead score */
-  function leadScore(a) {
-    var pts = 0, reasons = [];
-    function add(n, why) { pts += n; reasons.push((n >= 0 ? '+' : '') + n + ' ' + why); }
-    if (has(a.drivers, 'certification')) add(3, 'certification trigger');
-    if (has(a.drivers, 'audit')) add(3, 'audit standard trigger');
-    if (has(a.drivers, 'mandate')) add(3, 'brand or owner mandate');
-    if (has(a.drivers, 'renovation') || a.build !== 'existing') add(2, 'renovation or new build enables installation');
-    if (has(a.drivers, 'cost')) add(1, 'cost driver');
-    if (has(a.drivers, 'efficiency') || has(a.drivers, 'storage')) add(1, 'operational pain');
-    var tl = { lt3: 3, '3to12': 2, gt12: 1, exploring: 0 }[a.timeline] || 0; add(tl, 'timeline: ' + (LABELS.timeline[a.timeline] || 'unknown'));
-    var ap = { gm: 2, notsure: 1, owner: 0 }[a.approval] || 0; add(ap, LABELS.approval[a.approval] || 'approval unknown');
-    var rooms = Number(a.rooms) || 0; if (rooms >= 300) add(2, '300+ rooms'); else if (rooms >= 100) add(1, '100-299 rooms');
-    if (a.current === 'pet_free' || a.current === 'pet_sold') add(2, 'single-use plastic in rooms today');
-    else if (a.current === 'glass_bought' || a.current === 'cooler') add(1, 'bottled supply to replace');
-    if (a.current === 'glass_own') add(0, 'own bottling plant: different need (labour, washing)');
-    if (a.tier === 'luxury' && a.keepPremium === 'yes') add(-1, 'premium water stays');
-    if ((a.areas || []).length >= 3) add(1, 'multiple areas');
-    if (a.email) add(1, 'contact details left');
-    var tier = pts >= 11 ? 'Hot' : pts >= 7 ? 'Warm' : 'Nurture';
-    return { points: pts, tier: tier, reasons: reasons };
-  }
-
-  function approvalNote(a, capexUsd) {
-    var s = 'Approval limits in management agreements vary: some require owner approval above USD 5,000, others let the GM decide up to USD 50,000 (interview).';
-    if (a.ownership === 'managed' && capexUsd != null) {
-      if (capexUsd > 50000) s += ' This investment is above USD 50,000, so owner approval is likely required - prepare the ROI case for the asset manager.';
-      else if (capexUsd > 5000) s += ' This investment sits in the band where approval depends on the agreement - check the capital-expenditure threshold.';
+  /* Neutral note on approval thresholds from the interview (not a question). */
+  function approvalNote(capexUsd) {
+    var s = 'For orientation: approval limits in hotel management agreements vary. Some require owner approval above USD 5,000; others let the general manager decide up to USD 50,000 (Marriott VP Procurement APAC, interview, October 2026).';
+    if (capexUsd != null && capexUsd > 0) {
+      if (capexUsd > 50000) s += ' This investment is above USD 50,000, so owner approval is likely needed; prepare the five-year view for the asset manager.';
+      else if (capexUsd > 5000) s += ' This investment sits in the band where it depends on the agreement; check the capital-expenditure threshold.';
       else s += ' This investment is below USD 5,000 and may sit within hotel management\'s authority.';
     }
-    if (a.approval === 'owner') s += ' You indicated owner approval is needed: lead with payback and the five-year net saving.';
     return s;
   }
 
   function segment(a) {
-    return {
-      tier: LABELS.tier[a.tier] || '-', ownership: LABELS.ownership[a.ownership] || '-', build: LABELS.build[a.build] || '-',
-      current: LABELS.current[a.current] || '-', timeline: LABELS.timeline[a.timeline] || '-', approval: LABELS.approval[a.approval] || '-',
-      areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; })
-    };
+    return { tier: LABELS.tier[a.tier] || '-', build: LABELS.build[a.build] || '-', current: LABELS.current[a.current] || '-', areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; }) };
   }
 
-  function recommend(a, calc) {
-    return { segment: segment(a), unitPlan: unitPlan(a), areas: areaProducts(a), filter: filterSpec(a), arguments: argumentOrder(a, calc), lead: leadScore(a), labels: LABELS, approvalNote: approvalNote };
+  function recommend(a, inp, F, PL) {
+    var args = argumentOrder(a, inp, F);
+    return { segment: segment(a), unitPlan: unitPlan(a), solutions: solutions(a, PL), filtration: filtration(a), arguments: args.order, cheapWater: args.cheapWater, approvalNote: approvalNote, labels: LABELS };
   }
 
-  return { recommend: recommend, unitPlan: unitPlan, areaProducts: areaProducts, filterSpec: filterSpec, argumentOrder: argumentOrder, leadScore: leadScore, approvalNote: approvalNote, LABELS: LABELS };
+  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, inRoomSolution: inRoomSolution, stationSolution: stationSolution, filtration: filtration, argumentOrder: argumentOrder, approvalNote: approvalNote, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
 });

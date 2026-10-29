@@ -49,14 +49,20 @@
     var sizeMl = num(inp.bottleSizeMl, 500);
     var litres = bottles.total * sizeMl / 1000;
     if (inp.bottleMaterial === 'glass') {
-      return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false };
+      // Glass: no opened source gives a weight or an emission factor; see factors.glass_co2e.note for why.
+      var g = F.factors.glass_co2e;
+      if (g && g.value != null) {
+        var co2Glass = bottles.total * g.value;
+        return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: co2Glass, co2eCarKm: co2Glass / fv(F, 'co2e_kg_per_car_km'), quantified: true, reason: null };
+      }
+      return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false, reason: g ? g.note : 'No sourced factor for glass.' };
     }
     var gPerBottle = inp.bottleWeightOverrideG != null ? Math.max(0, num(inp.bottleWeightOverrideG, 0)) : petBottleWeightGrams(F, sizeMl);
     var packagingKg = bottles.total * gPerBottle / 1000;
     var co2Kg = packagingKg * fv(F, 'co2e_kg_per_kg_pet');
     return {
       material: 'pet', bottleWeightG: gPerBottle, packagingKg: packagingKg, litres: litres,
-      co2eKg: co2Kg, co2eCarKm: co2Kg / fv(F, 'co2e_kg_per_car_km'), quantified: true
+      co2eKg: co2Kg, co2eCarKm: co2Kg / fv(F, 'co2e_kg_per_car_km'), quantified: true, reason: null
     };
   }
 
