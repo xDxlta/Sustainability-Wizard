@@ -16,6 +16,7 @@
   var AREAS = { inRoom: 'In-Room', fnb: 'F&B / Drinking Station' };
 
   var pricelist = {
+    leadEmail: 'info@swisspro.sg', // to be confirmed by Swisspro's sales manager
     source: {
       title: 'Swisspro Price List, Hospitality section',
       file: 'docs/Swisspro_Price_List.pdf',
@@ -63,5 +64,5 @@
     return pricelist.servicing.price / iv;
   }
 
-  return { pricelist: pricelist, AREAS: AREAS, loaded: loaded, match: match, servicingPerUnitPerYear: servicingPerUnitPerYear };
+  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, AREAS: AREAS, loaded: loaded, match: match, servicingPerUnitPerYear: servicingPerUnitPerYear };
 });

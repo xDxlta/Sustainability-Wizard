@@ -17,9 +17,11 @@
   <main class="wrap">
     <section class="hero">
       <h1>Sources and assumptions</h1>
-      <p class="lead">Every number the wizard uses is listed here with its provenance. <span class="tag tag-sourced">Sourced</span> values were read from the cited page; <span class="tag tag-sourced-secondary">Sourced (secondary)</span> values come from a third party quoting an official publication that could not be opened; <span class="tag tag-derived">Derived</span> values are arithmetic on sourced values; <span class="tag tag-assumption">Assumption</span> values have no published source and can be changed on the results page.</p>
-      <p class="notice">Build note: when this registry was compiled (29 October 2026) the pages were read through search-engine excerpts because direct access was unavailable. Each link should be re-opened and the quote confirmed before the wizard goes on the website.</p>
+      <p class="lead">Every number the wizard uses is listed here with its provenance. <span class="tag tag-sourced">Sourced</span> means a published value whose page was opened and whose quoted wording is on it; <span class="tag tag-unverified">Sourced, unverified</span> means the page could not be opened when this version was built, so the value and the quote come from a search-engine excerpt and must be checked (see VERIFY.md); <span class="tag tag-derived">Derived</span> values are arithmetic on other values; <span class="tag tag-assumption">Assumption</span> values have no published source and can be changed on the result page.</p>
+      <p class="notice" id="verification-note"></p>
+      <p class="small">Where sources disagree, one value per factor is chosen by a rule stated once: see "Choice rules" below.</p>
     </section>
+    <section class="card" id="rules"></section>
     <section class="card" id="factors"></section>
     <section class="card" id="markets"></section>
     <section class="card" id="interview"></section>
@@ -27,30 +29,36 @@
   </main>
   <footer class="site-footer"><div class="wrap"><p class="muted">Swisspro Pte Ltd, Singapore. Indicative tool; a site survey and water test confirm the specification and quote.</p></div></footer>
   <script src="js/factors.js"></script>
-  <script src="js/pricing.js"></script>
+  <script src="js/pricelist.js"></script>
   <script>
   (function () {
-    var F = window.SW.factors, P = window.SW.pricing;
+    var F = window.SW.factors, PL = window.SW.pricelist;
+    document.getElementById('verification-note').textContent = F.verification.note;
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function tag(kind) { var names = { sourced: 'Sourced', 'sourced-secondary': 'Sourced (secondary)', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', config: 'Config' }; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
+    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
     function src(s) { if (!s) return ''; var h = '<blockquote>' + (s.quote ? '&ldquo;' + esc(s.quote) + '&rdquo; ' : '') + '<br><span class="small">' + esc(s.publisher || '') + (s.title ? ' - ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? ' - <a href="' + esc(s.url) + '" rel="noopener">' + esc(s.url) + '</a>' : '') + (s.accessed ? ' - accessed ' + esc(s.accessed) : '') + '</span></blockquote>'; return h; }
     function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? v.toPrecision(4) : (Math.round(v * 1000) / 1000)) + ' ' + esc(unit || ''); if (v && typeof v === 'object') return esc(JSON.stringify(v)) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
-    var h = '<h2>Calculation factors</h2>';
+    var h = '<h2>Choice rules</h2><p class="small muted">Applied once per factor wherever sources disagree.</p><ul class="small">';
+    Object.keys(F.rules).forEach(function (k) { h += '<li><strong>' + esc(k) + ':</strong> ' + esc(F.rules[k]) + '</li>'; });
+    h += '</ul>';
+    document.getElementById('rules').innerHTML = h;
+
+    h = '<h2>Calculation factors</h2>';
     Object.keys(F.factors).forEach(function (k) {
       var f = F.factors[k];
-      h += '<div class="factor" id="' + esc(k) + '"><h3>' + esc(f.label || k) + ' ' + tag(f.kind) + '</h3><div class="val">' + val(f.value, f.unit) + '</div>' + src(f.source) + (f.note ? '<p class="small muted">' + esc(f.note) + '</p>' : '') + '</div>';
+      h += '<div class="factor" id="' + esc(k) + '"><h3>' + esc(f.label || k) + ' ' + tag(f.kind, f.status) + '</h3><div class="val">' + (f.value == null ? 'not available' : val(f.value, f.unit)) + '</div>' + src(f.source) + (f.rule ? '<p class="small"><strong>Choice rule:</strong> ' + esc(f.rule) + '</p>' : '') + (f.note ? '<p class="small muted">' + esc(f.note) + '</p>' : '') + '</div>';
     });
     document.getElementById('factors').innerHTML = h;
 
     h = '<h2>Market reference values</h2>';
-    Object.keys(F.countries).forEach(function (code) {
+    F.marketOrder.forEach(function (code) {
       var c = F.countries[code];
       h += '<div class="factor"><h3>' + esc(c.name) + ' (' + esc(c.currency) + ')</h3>';
-      h += '<p><strong>Exchange rate</strong> ' + tag(c.fx.kind) + ' ' + val(c.fx.value, c.fx.unit) + src(c.fx.source) + '</p>';
-      h += '<p><strong>Occupancy</strong> ' + tag(c.occupancy.kind) + ' ' + val(c.occupancy.value * 100, '% - ' + (c.occupancy.unit || '')) + src(c.occupancy.source) + (c.occupancy.note ? '<span class="small muted">' + esc(c.occupancy.note) + '</span>' : '') + '</p>';
-      h += '<p><strong>Wage reference</strong> ' + tag(c.wageMonthly.kind) + ' ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ' - ' + esc(c.wageMonthly.label) : '') + src(c.wageMonthly.source) + (c.wageMonthly.note ? '<span class="small muted">' + esc(c.wageMonthly.note) + '</span>' : '') + '</p>';
-      if (c.bottlePrices.length) { h += '<p><strong>Bottle price references</strong></p><ul class="small">'; c.bottlePrices.forEach(function (b) { h += '<li>' + tag(b.kind) + ' ' + esc(b.label) + ': ' + esc(c.symbol) + b.price.toFixed(c.decimals === 0 ? 0 : 3) + ' per bottle - ' + esc(b.ref) + ' - <a href="' + esc(b.url) + '" rel="noopener">source</a></li>'; }); h += '</ul>'; }
-      if (c.context.length) { h += '<p><strong>Local context used on the results page</strong></p><ul class="small">'; c.context.forEach(function (x) { h += '<li>' + esc(x.text) + ' <a href="' + esc(x.url) + '" rel="noopener">source</a></li>'; }); h += '</ul>'; }
+      h += '<p><strong>Exchange rate</strong> ' + tag(c.fx.kind, c.fx.status) + ' ' + val(c.fx.value, c.fx.unit) + src(c.fx.source) + (c.fx.note ? '<span class="small muted">' + esc(c.fx.note) + '</span>' : '') + '</p>';
+      h += '<p><strong>Occupancy</strong> ' + tag(c.occupancy.kind, c.occupancy.status) + ' ' + val(c.occupancy.value * 100, '%, ' + (c.occupancy.unit || '')) + src(c.occupancy.source) + (c.occupancy.note ? '<span class="small muted">' + esc(c.occupancy.note) + '</span>' : '') + '</p>';
+      h += '<p><strong>Wage reference</strong> ' + tag(c.wageMonthly.kind, c.wageMonthly.status) + ' ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + src(c.wageMonthly.source) + (c.wageMonthly.note ? '<span class="small muted">' + esc(c.wageMonthly.note) + '</span>' : '') + '</p>';
+      if (c.bottlePrices.length) { h += '<p><strong>Bottle price references</strong></p><ul class="small">'; c.bottlePrices.forEach(function (b) { h += '<li>' + tag(b.kind, b.status) + ' ' + esc(b.label) + ': ' + esc(c.symbol) + b.price.toFixed(c.decimals === 0 ? 0 : 3) + ' per bottle, ' + esc(b.ref) + ', <a href="' + esc(b.url) + '" rel="noopener">source</a></li>'; }); h += '</ul>'; }
+      if (c.context.length) { h += '<p><strong>Local context used on the result page</strong></p><ul class="small">'; c.context.forEach(function (x) { h += '<li>' + tag('sourced', x.status) + ' ' + esc(x.text) + ' <a href="' + esc(x.url) + '" rel="noopener">source</a></li>'; }); h += '</ul>'; }
       h += '</div>';
     });
     document.getElementById('markets').innerHTML = h;
@@ -60,11 +68,12 @@
     h += '</ul>';
     document.getElementById('interview').innerHTML = h;
 
-    h = '<h2>Swisspro product and pricing references</h2><p class="small">Product facts come from Swisspro\'s own pages:</p><ul class="small">';
-    Object.keys(F.swissproSources).forEach(function (k) { h += '<li><a href="' + esc(F.swissproSources[k]) + '" rel="noopener">' + esc(F.swissproSources[k]) + '</a></li>'; });
-    h += '</ul><p class="small"><strong>Pricing status:</strong> ' + (P.hotel.enabled ? 'hotel price list loaded (' + esc(P.hotel.label) + ').' : 'the hotel price list is not loaded. The payback section can use ' + tag('sourced') + ' retail prices from Swisspro\'s online store as a labelled ballpark only: ');
-    if (!P.hotel.enabled) { h += '<ul class="small">'; Object.keys(P.retail.items).forEach(function (k) { var it = P.retail.items[k]; h += '<li>' + esc(k) + ': ' + (it.price != null ? 'S$' + it.price.toLocaleString('en-US') : 'no published price') + ' - ' + esc(it.note) + '</li>'; }); h += '<li>Filter sets: 3-stage S$' + P.retail.filterSets.threeStage.price.toFixed(2) + ' (' + esc(P.retail.filterSets.threeStage.note) + '); SuperSwiss S$' + P.retail.filterSets.superSwiss.price.toFixed(2) + '</li></ul><p class="small">Source: <a href="' + esc(P.retail.url) + '" rel="noopener">' + esc(P.retail.url) + '</a>, accessed ' + esc(P.retail.accessed) + '.</p>'; }
-    h += '</p>';
+    var pl = PL.pricelist;
+    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + '). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
+    h += '<p class="small">' + tag('assumption') + ' Currency: ' + esc(pl.currency.value) + '. ' + esc(pl.currency.note) + '</p>';
+    h += '<p class="small">' + tag('sourced') + ' Servicing line: "' + esc(pl.servicing.name) + '", ' + pl.servicing.price.toFixed(2) + ' per unit. ' + esc(pl.servicing.source) + '. ' + tag('assumption') + ' ' + esc(pl.servicing.reading.note) + ' ' + tag('assumption') + ' Interval ' + pl.servicing.intervalYears.value + ' years: ' + esc(pl.servicing.intervalYears.note) + '</p>';
+    if (pl.items.length) { h += '<table class="kv"><tr><th>Area</th><th>Product (as printed)</th><th>Price</th></tr>'; pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.name) + '</td><td>' + (it.price != null ? it.price.toLocaleString('en-US') : '-') + '</td></tr>'; }); h += '</table>'; }
+    else h += '<p class="small muted">No product lines loaded yet: the wizard describes the fitting solution type per area and names no model.</p>';
     document.getElementById('swisspro').innerHTML = h;
   })();
   </script>

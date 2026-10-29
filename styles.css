@@ -76,6 +76,9 @@ a { color: var(--navy-700); }
 .tag-user { color: #333; border-color: #cfd6dd; background: #f3f5f7; }
 .tag-constant { color: #333; border-color: #cfd6dd; background: #f3f5f7; }
 .tag-missing { color: var(--bad); border-color: #f0b3ae; background: #fdeeed; }
+.tag-unverified { color: #8a3b00; border-color: #f3b98f; background: #fff1e8; }
+select.input { appearance: auto; }
+details.card > summary { font-size: 1.05rem; }
 .tag-config { color: #8a5300; border-color: #f0cf8e; background: #fff5e3; }
 
 /* results */

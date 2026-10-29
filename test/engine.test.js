@@ -41,13 +41,22 @@ test('environmental impact: plastic kg and CO2e scale with bottles and the PET f
   assert.equal(env.litres, b.total * 0.5);
 });
 
-test('glass bottles are not quantified for plastic or CO2e (no sourced factor)', () => {
+test('glass bottles: CO2e not quantified while the glass factor is missing, with the reason attached', () => {
   const inp = Object.assign({}, base, { bottleMaterial: 'glass' });
   const env = E.environmentalImpact(F, inp, E.annualBottles(inp));
   assert.equal(env.quantified, false);
   assert.equal(env.packagingKg, null);
   assert.equal(env.co2eKg, null);
+  assert.match(env.reason, /Garfi/);
   assert.ok(env.litres > 0);
+});
+
+test('glass bottles: CO2e is quantified as soon as a glass factor is entered in the register', () => {
+  const F2 = { factors: Object.assign({}, F.factors, { glass_co2e: { value: 0.2, kind: 'sourced', status: 'opened' } }) };
+  const inp = Object.assign({}, base, { bottleMaterial: 'glass' });
+  const env = E.environmentalImpact(F2, inp, E.annualBottles(inp));
+  assert.equal(env.quantified, true);
+  assert.ok(Math.abs(env.co2eKg - E.annualBottles(inp).total * 0.2) < 1e-9);
 });
 
 test('bottle weight override is honoured', () => {
