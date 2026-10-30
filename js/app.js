@@ -444,7 +444,7 @@
     field(g3, 'minutesPerRoomPerDay', 'Minutes per room and day, bottles', inp.minutesPerRoomPerDay, 0.5);
     field(g3, 'minutesPerCarton', 'Minutes per carton', inp.minutesPerCarton, 0.5);
     field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day, filtered', inp.newMinutesPerRoomPerDay, 0.5, null, 'Refilling carafes, for example');
-    field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : 'Minimum wage');
+    field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : (ctx.n.country.wageMonthly.label || 'Minimum wage') + ', adjust for your property');
     field(g3, 'stockWeeks', 'Weeks of stock on site', inp.stockWeeks, 1);
     card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; save(); renderResults(); } }, 'Reset to the defaults')));
     return card;

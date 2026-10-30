@@ -33,7 +33,7 @@
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
     function kindWord(f) { return f.kind === 'assumption' ? 'Assumption, adjustable' : (f.kind === 'derived' ? 'Derived' : (f.kind === 'constant' ? 'Constant' : 'Reference value')); }
     function src(s) { if (!s) return ''; return '<p class="small muted">' + esc(s.publisher || '') + (s.title ? ', ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? '. <a href="' + esc(s.url) + '" rel="noopener">Open the source</a>' : '') + '</p>'; }
-    function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? v.toPrecision(4) : (Math.round(v * 1000) / 1000).toLocaleString('en-US')) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
+    function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? String(Number(v.toPrecision(4))) : (Math.round(v * 1000) / 1000).toLocaleString('en-US')) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
     var PUBLIC_NOTES = {
       co2e_kg_per_kg_pet: 'Production of the plastic only; transport, chilling and disposal of the bottles and the electricity of the filtration unit are not included.',
       pet_bottle_weight_500ml_g: 'Industry average for a light bottle; many bottles sold in South-East Asia weigh more, so the plastic figure is conservative.',

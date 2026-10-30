@@ -232,7 +232,7 @@ details.fine summary { font-weight: 600; }
 .factor .val { font-weight: 600; color: var(--brand-700); font-variant-numeric: tabular-nums; }
 .factor blockquote { margin: var(--s-2) 0; padding-left: var(--s-3); border-left: 3px solid var(--accent-200); color: var(--ink-2); font-size: var(--fs-sm); }
 .factor p { margin-top: var(--s-2); }
-.card table.kv th, .card table.kv td { font-size: var(--fs-sm); white-space: normal; }
+.card table.kv th, .card table.kv td { font-size: var(--fs-sm); white-space: normal; padding-right: 8px; }
 
 /* phone */
 @media (max-width: 640px) {
@@ -1512,7 +1512,7 @@ details.fine summary { font-weight: 600; }
     field(g3, 'minutesPerRoomPerDay', 'Minutes per room and day, bottles', inp.minutesPerRoomPerDay, 0.5);
     field(g3, 'minutesPerCarton', 'Minutes per carton', inp.minutesPerCarton, 0.5);
     field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day, filtered', inp.newMinutesPerRoomPerDay, 0.5, null, 'Refilling carafes, for example');
-    field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : 'Minimum wage');
+    field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : (ctx.n.country.wageMonthly.label || 'Minimum wage') + ', adjust for your property');
     field(g3, 'stockWeeks', 'Weeks of stock on site', inp.stockWeeks, 1);
     card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; save(); renderResults(); } }, 'Reset to the defaults')));
     return card;

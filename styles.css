@@ -229,7 +229,7 @@ details.fine summary { font-weight: 600; }
 .factor .val { font-weight: 600; color: var(--brand-700); font-variant-numeric: tabular-nums; }
 .factor blockquote { margin: var(--s-2) 0; padding-left: var(--s-3); border-left: 3px solid var(--accent-200); color: var(--ink-2); font-size: var(--fs-sm); }
 .factor p { margin-top: var(--s-2); }
-.card table.kv th, .card table.kv td { font-size: var(--fs-sm); white-space: normal; }
+.card table.kv th, .card table.kv td { font-size: var(--fs-sm); white-space: normal; padding-right: 8px; }
 
 /* phone */
 @media (max-width: 640px) {
