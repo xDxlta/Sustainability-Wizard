@@ -7,12 +7,11 @@ Clear the browser's site data first so the intro page appears. About six minutes
 - Owner: "a basic sustainability wizard addressing drinking water related questions", for decision-making
   and awareness. Sales manager: multiple choice, no typing. Marriott procurement: ROI first, efficiency
   second, sustainability last; the market lacks help choosing the device and the filtration.
-- Version 2 is a tool for the hotel: six steps, every question changes the result, no sales questions.
+- Version 2 is a tool for the hotel: three steps, nine answers, every answer changes a number or a product.
 
 ## 2. Scenario: select-service new build in Surabaya (2.5 min)
-Indonesia; 250 rooms; select-service; new build; occupancy "not sure"; complimentary plastic bottles;
-bottles "not sure"; 600 ml; price "not sure"; areas rooms + staff areas; about 50 bottles elsewhere;
-placement "not sure"; chilled and ambient; mains; chlorine taste; Halal yes.
+Indonesia; 250 rooms; occupancy "not sure"; plastic bottles, free; bottles "not sure"; 600 ml; price
+"not sure"; areas rooms + staff areas; chilled. (Nine clicks, under a minute.)
 - Tiles: about 107,000 bottles, 1.2 t plastic, 4.6 t CO2e, about Rp227 million spend, about 890 hours.
   Point at the labels: "Sourced, unverified" (BPS occupancy, Aqua carton price), "Assumption" (2 bottles,
   1 minute per room). Explain the unverified label and VERIFY.md.
@@ -22,19 +21,19 @@ placement "not sure"; chilled and ambient; mains; chlorine taste; Halal yes.
   contract costs more than the water it replaces. Switch the reading to "per unit and 2-year contract" and
   show that even then the payback is decades. This is the honest finding for cheap-water markets: the case
   rests on staff time, storage, deliveries, guest experience and the real contract terms.
-- Set-up: CLIMA Versa+ (Hot, Cold) in the room, CLIMA Versa (Hot, Cold) as the station for staff areas, both
-  named from the price list with their prices. Filtration: generic, chlorine note, Halal certificate requested.
-- Case: efficiency and water safety first because bottled water is cheap; Bali bottled-water rule as context.
+- Units: CLIMA Versa+ (Hot, Cold) in the room, CLIMA Versa (Hot, Cold) as the station for staff areas, both
+  named from the price list with their prices.
+- Under "More": the argument order starts with efficiency and water safety because bottled water is cheap.
 
 ## 3. Switch market (1 min)
-"Change my answers": Malaysia, luxury, bought-in glass at RM2.50, chilled and sparkling. CO2e now uses the
+"Change my answers": Malaysia, glass bottles bought in at RM2.50, chilled and sparkling. CO2e now uses the
 glass factor; no In-Room line prints sparkling, so the page lists the In-Room section and points to the
-CLIMA Vida S station; type an investment from a proposal (e.g. RM450,000) and the cash payback is about two
-years: with premium water the case is a cash case. The argument order starts with guest experience.
+CLIMA Vida S station; type an investment from a proposal (e.g. RM450,000) and the cash payback is about
+three years: with premium water the case is a cash case.
 
 ## 4. Proposal request (1 min)
-Fill the optional form (timing and approval are optional here, not in the flow), open the summary text,
-copy it. No backend, nothing sent automatically.
+Fill the optional form (water supply, Halal, timing and approval live here, not in the flow), open the
+summary text, copy it. No backend, nothing sent automatically.
 
 ## 5. Transparency (30 s)
 Open "Sources and assumptions": choice rules, every factor with quote, link, date and status.

@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 2.1 (branch claude/wizard-v2), 30 October 2026
+
+- Flow cut to three steps and nine answers: market, rooms, occupancy; what guests find in the room today
+  (rephrased), bottles per night, bottle size, price; areas, water in the room. Removed from the flow: brand
+  tier, building, placement, water source, known issues, Halal (they changed only text). Water supply and
+  Halal are optional fields of the proposal form; bottles outside rooms is a default (0) in the adjust panel.
+- Result page reduced to five tiles, payback and the matching price-list units; logistics, argument order,
+  assumptions and sources are collapsed; the water-supply and "how to present the case" cards are gone.
+- Visual redesign of the whole site (tokens, type, alignment, phone width) without logic changes.
+
 ## Version 2 (branch claude/wizard-v2), October 2026
 
 Purpose shift: the wizard is a decision-support tool for the hotel on Swisspro's website, not a sales

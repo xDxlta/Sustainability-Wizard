@@ -27,6 +27,8 @@ Let R = rooms, O = occupancy, B = bottles per occupied room-night, D = 365, X = 
 6. Bottled-water spend avoided `= Q x price per bottle` (local currency; sourced carton prices or the user's own).
 7. Housekeeping time `= N x minutes per room / 60 + (Q / 24) x minutes per carton / 60` hours; value `= hours x hourly wage`, where hourly wage = monthly reference wage / (2080/12).
 8. Logistics: cartons `= Q / 24`; pallets `= Q / (1872 x 500/size)`; peak pallets `= pallets x stock weeks / 52`; store area `= peak pallets x 1.2 m2 x aisle multiplier`; deliveries `= 52 / stock weeks`; tonnes carried `= Q x (size/1000 + w/1000) / 1000`.
+Bottles used outside the rooms (X) default to 0 and are set in the adjust panel.
+
 9. Service contract per year `= in-room units x s + stations x 350.00`, where `s` is the reading of the 85.00 In-Room line: per change every m months `= 85 x 12 / m` (default, m = 9: 113.33), per year `= 85`, per 2-year contract `= 42.50`; converted from the list currency (SGD, assumption) with the register's exchange rates. Units `= rooms (in-room) + one station per other area` (assumption).
 10. Investment `= sum over areas of (lowest-priced matching list line x units)`; if an area has no matching line (in-room sparkling), the hotel enters the figure from its proposal.
 11. Payback: cash savings `= spend avoided - annual service`; full savings `= cash savings + labour value`; payback years `= investment / savings` (no payback when savings are not positive); five-year net `= 5 x savings - investment`.
@@ -39,13 +41,13 @@ Let R = rooms, O = occupancy, B = bottles per occupied room-night, D = 365, X = 
 - No credit for transport, chilling, disposal or the Fairmont-style marketing value.
 
 ## Argument order and solution fit
-`js/recommend.js` orders the arguments ROI > efficiency > sustainability > safety by default (Marriott interview), switches to efficiency and safety first where the bottle price is below US$0.25 (provisional threshold, labelled assumption), to guest experience first for luxury, and to safety first for wells or reported microbial issues. There is no lead score in version 2.
+`js/recommend.js` orders the arguments ROI > efficiency > sustainability > safety by default (Marriott interview) and efficiency > safety > ROI > sustainability where the bottle price is below US$0.25 (provisional threshold, labelled assumption). The order is shown collapsed under "More". There is no lead score.
 
-Solutions are described per price-list area: In-Room (tap for ambient; chilled or hot-and-chilled unit at the minibar; chilled and sparkling unit for suites) and F&B / Drinking Station (self-serve station, back-of-house filling point). Models and prices come only from `js/pricelist.js`, matched on the section and the printed water types (see `docs/PRICING-HOWTO.md`); the filtration is described generically and confirmed in the proposal after a water test where the supply answers call for one. Halal is asked, never assumed.
+Solutions are named per price-list area: In-Room (ambient tap; chilled or hot-and-chilled unit; chilled and sparkling) and F&B / Drinking Station. Models and prices come only from `js/pricelist.js`, matched on the section and the printed water types (see `docs/PRICING-HOWTO.md`). Filtration specification, water test and installation are confirmed in the proposal; water supply and Halal are optional fields of the proposal form.
 
 ## Validation
 - 2,030 rooms at 81.9% occupancy and 2 bottles per room-night gives about 1.2 million bottles a year; Fairmont Singapore and Swissotel The Stamford report avoiding 1.5 million (hotel website).
-- 34 unit tests (`npm test`) cover the formulas, defaults, overrides, register integrity and recommendation rules; `node tools/walkthrough.js` drives the UI end-to-end in headless Chromium for three scenarios (Kuala Lumpur luxury 150 rooms existing, Surabaya select-service 250 rooms new build, Manila premium 300 rooms existing) on desktop and mobile, and fails on console errors, forbidden texts (filter ratings, lead score) or a missing "unverified" label.
+- 32 unit tests (`npm test`) cover the formulas, defaults, overrides, register integrity and recommendation rules; `node tools/walkthrough.js` drives the UI end-to-end in headless Chromium for three scenarios (Kuala Lumpur luxury 150 rooms existing, Surabaya select-service 250 rooms new build, Manila premium 300 rooms existing) on desktop and mobile, and fails on console errors, forbidden texts (filter ratings, lead score) or a missing "unverified" label.
 
 ## Known limitations
 - The price list lines were transcribed from the team's copy; the PDF itself is not in the repository yet.

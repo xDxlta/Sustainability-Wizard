@@ -18,25 +18,24 @@ See CHANGELOG.md for what changed against version 1 and VERIFY.md for the status
   http://localhost:8080/ . Opening `index.html` directly from disk also works (classic scripts, no modules).
 
 ## What the user sees
-1. Six short steps: market; rooms, tier, building, occupancy; water in rooms today (bottles, size, price);
-   areas; in-room placement and water type; water supply and Halal. Every numeric question has "not sure"
-   backed by a market reference value; only the room count is typed.
+1. Three steps, nine answers: market, rooms, occupancy; what guests find in the room today, bottles per
+   night, bottle size, price; areas and water in the room. Every numeric question has "not sure" backed by
+   a market reference value; only the room count is typed.
 2. A result page with five tiles, each labelled with the provenance of its inputs (sourced, unverified /
-   derived / assumption / your input), the payback with the service contract from the price list (interval
-   and currency as visible assumptions), logistics behind "show more", the solution per price-list area
-   (In-Room, F&B / Drinking Station), the water-supply notes, the argument order for the internal case with
-   a neutral note on approval thresholds, an "adjust the assumptions" panel, the sources used, and an
-   optional "request a proposal" form (timing and approval are optional fields there).
+   derived / assumption / your input), the payback with investment and service contract from the price
+   list (service reading and currency as visible assumptions), the matching price-list units per area, and,
+   collapsed, logistics and argument order, the adjustable assumptions, the sources, and an optional
+   "request a proposal" form (water supply, Halal, timing and approval are optional fields there).
 3. A sources page (`sources.html`) with the choice rules and the whole register, quotes, links and status.
 
 ![Results](docs/screenshots/03-results-kl_luxury_150-desktop.png)
 
 ## Design decisions
-- **Only result-changing questions.** Ownership, approval, timing, drivers and the lead score of version 1
-  are gone; timing and approval survive as optional fields of the proposal form.
-- **ROI first, sustainability last** in the presentation order (Marriott interview); guest experience first
-  for luxury; efficiency and water safety first where bottled water is cheap (below US$0.25 per bottle,
-  a labelled provisional rule).
+- **Only result-changing questions.** Nine answers change a number or a product; everything that only
+  changed text (tier, building, placement, water source, issues, Halal) and everything that served lead
+  sorting (ownership, approval, timing, drivers, lead score) is gone from the flow.
+- **ROI first, sustainability last** in the collapsed argument order (Marriott interview); efficiency and
+  water safety first where bottled water is cheap (below US$0.25 per bottle, a labelled provisional rule).
 - **No invented numbers.** `js/factors.js` is the single register; every value carries a `kind` and, for
   sourced values, a verification `status`. Because the build environment could not open any page, all
   sourced values are "unverified" and listed in VERIFY.md with URL and quoted wording. One choice rule per
@@ -59,9 +58,9 @@ js/engine.js          pure calculation functions (unit-tested)
 js/model.js           answers -> engine inputs, applying labelled defaults
 js/recommend.js       solution per price-list area, filtration notes, argument order, approval note
 js/pricelist.js       Hospitality price list (to transcribe), servicing line, interval and currency assumptions
-js/questions.js       the six steps and the optional proposal fields
+js/questions.js       the three steps and the optional proposal fields
 js/app.js             UI rendering, local storage, proposal summary
-test/*.test.js        node --test unit tests (34)
+test/*.test.js        node --test unit tests (32)
 tools/walkthrough.js  headless Chromium end-to-end run with screenshots (three market scenarios)
 tools/build-artifact.js single-file build for hosted previews
 VERIFY.md             every factor with value, URL, quote and whether the page was opened
