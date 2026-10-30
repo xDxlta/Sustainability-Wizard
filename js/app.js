@@ -5,6 +5,11 @@
       M = window.SW.model, R = window.SW.recommend, fmt = window.SW.format;
   var STORE = 'swisspro-wizard-v2';
   var ARTIFACT = !!window.SW_ARTIFACT; // hosted preview frame: no print dialog, no mailto, no confirm()
+  var EMBED = /[?&]embed=1/.test(location.search) || document.documentElement.hasAttribute('data-embed');
+  if (EMBED) document.documentElement.setAttribute('data-embed', '');
+  // When embedded in Swisspro's site, tell the parent page our height so the iframe can grow with the content.
+  function postHeight() { try { if (window.parent !== window) window.parent.postMessage({ swissproWizardHeight: document.documentElement.scrollHeight }, '*'); } catch (e) { /* ignore */ } }
+  if (EMBED) { new MutationObserver(postHeight).observe(document.body, { childList: true, subtree: true }); window.addEventListener('load', postHeight); window.addEventListener('resize', postHeight); }
   var app = document.getElementById('app');
   var state = load() || { view: 'intro', step: 0, answers: {}, overrides: {}, proposal: {} };
   state.proposal = state.proposal || {};

@@ -228,3 +228,8 @@ details.fine summary { font-weight: 600; }
   .tiles { grid-template-columns: repeat(3, 1fr); }
   a { text-decoration: none; color: inherit; }
 }
+
+/* Embed mode (?embed=1): no site chrome, transparent page, content only. */
+:root[data-embed] body { background: transparent; }
+:root[data-embed] .site-header, :root[data-embed] .site-footer { display: none; }
+:root[data-embed] .hero { padding-top: var(--s-6, 24px); }
