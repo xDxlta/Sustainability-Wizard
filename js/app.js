@@ -42,15 +42,18 @@
   /* ------------------------------------------------------------------ intro */
   function renderIntro() {
     app.innerHTML = '';
+    var resume = Object.keys(state.answers).length;
     app.appendChild(el('section', { class: 'hero' },
-      el('p', { class: 'eyebrow', text: 'Swisspro Sustainability Wizard' }),
-      el('h1', { text: 'What does filtered water instead of bottled water mean for your hotel?' }),
-      el('p', { class: 'lead', text: 'Nine quick answers. You get the bottles, plastic and CO2e avoided, the money and staff time, the payback, and the Swisspro set-up that fits.' }),
-      el('div', { class: 'actions' },
-        el('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); } }, 'Start'),
-        Object.keys(state.answers).length ? el('button', { class: 'btn btn-secondary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; save(); render(); } }, 'Continue') : null
-      ),
-      el('p', { class: 'small muted', text: 'About one minute.' })
+      el('div', { class: 'hero-copy' },
+        el('h1', { text: 'What does filtered water instead of bottled water mean for your hotel?' }),
+        el('p', { class: 'lead', text: 'Answer nine questions about your rooms and the water you buy today. You see the bottles, plastic and CO2e avoided, what you spend now, the payback and the Swisspro set-up that fits.' }),
+        el('div', { class: 'actions' },
+          el('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); } }, resume ? 'Start again' : 'Start'),
+          resume ? el('button', { class: 'btn btn-secondary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; save(); render(); } }, 'Continue where I left off') : null)),
+      el('dl', { class: 'hero-facts' },
+        el('div', {}, el('dt', { text: 'Time' }), el('dd', { text: 'About one minute' })),
+        el('div', {}, el('dt', { text: 'Markets' }), el('dd', { text: 'Malaysia, Indonesia, the Philippines, Singapore' })),
+        el('div', {}, el('dt', { text: 'Sign-up' }), el('dd', { text: 'None. Your answers stay in this browser.' })))
     ));
   }
 
@@ -62,7 +65,19 @@
     var step = steps[state.step];
     var a = state.answers;
 
-    app.appendChild(el('div', { class: 'progress' },
+    var layout = el('div', { class: 'wizard' });
+    var rail = el('nav', { class: 'rail', 'aria-label': 'Steps' });
+    var ol = el('ol', {});
+    steps.forEach(function (s, i) {
+      var cls = i === state.step ? 'is-current' : (i < state.step ? 'is-done' : '');
+      var head = i < state.step
+        ? el('button', { type: 'button', class: 'rail-link', onclick: function () { state.step = i; save(); renderStep(); scrollTop(); } }, s.title)
+        : el('span', { class: 'rail-link', 'aria-current': i === state.step ? 'step' : null }, s.title);
+      ol.appendChild(el('li', { class: cls }, el('span', { class: 'rail-num', text: String(i + 1) }), el('div', {}, head, i < state.step ? el('span', { class: 'rail-answer', text: stepSummary(s) }) : null)));
+    });
+    rail.appendChild(ol);
+    layout.appendChild(rail);
+    layout.appendChild(el('div', { class: 'progress', 'aria-hidden': 'true' },
       el('span', { text: 'Step ' + (state.step + 1) + ' of ' + steps.length }),
       el('div', { class: 'progress-bar' }, el('span', { style: 'width:' + Math.round((state.step + 1) / steps.length * 100) + '%' }))));
 
@@ -79,7 +94,9 @@
       if (f.type === 'single' || f.type === 'multi') {
         var opts = fieldOptions(f);
         var listMode = opts.some(function (o) { return o.desc && o.desc.length > 40; });
-        var group = el('div', { class: 'options' + (listMode ? ' options-list' : ''), role: f.type === 'single' ? 'radiogroup' : 'group', 'aria-labelledby': f.label ? 'lbl-' + f.id : 'step-title' });
+        var longest = Math.max.apply(null, opts.map(function (o) { return o.label.length; }));
+        var shape = listMode ? ' options-list' : (longest <= 12 ? ' options-row' + (opts[0].desc ? ' lead-wide' : '') : ' options-wide');
+        var group = el('div', { class: 'options' + shape, style: '--n:' + opts.length + ';--rest:' + (opts.length - 1), role: f.type === 'single' ? 'radiogroup' : 'group', 'aria-labelledby': f.label ? 'lbl-' + f.id : 'step-title' });
         opts.forEach(function (o) {
           var selected = f.type === 'single' ? a[f.id] === o.id : has(a[f.id], o.id);
           group.appendChild(el('button', { type: 'button', class: 'opt' + (selected ? ' selected' : ''), role: f.type === 'single' ? 'radio' : 'checkbox', 'aria-checked': selected ? 'true' : 'false', 'data-opt': o.id,
@@ -94,12 +111,13 @@
         });
         wrap.appendChild(group);
       } else if (f.type === 'number' || f.type === 'text' || f.type === 'email') {
-        wrap.appendChild(el('input', { class: 'input', type: f.type, id: 'in-' + f.id, placeholder: f.placeholder || '', value: a[f.id] != null ? a[f.id] : '', min: f.min, max: f.max, step: f.step, inputmode: f.type === 'number' ? 'decimal' : null, 'aria-labelledby': 'lbl-' + f.id,
+        var ctl = el('div', { class: 'field-control' }); wrap.appendChild(ctl);
+        ctl.appendChild(el('input', { class: 'input', type: f.type, id: 'in-' + f.id, placeholder: f.placeholder || '', value: a[f.id] != null ? a[f.id] : '', min: f.min, max: f.max, step: f.step, inputmode: f.type === 'number' ? 'decimal' : null, 'aria-labelledby': 'lbl-' + f.id,
           oninput: function (e) { a[f.id] = e.target.value; save(); } }));
         if (f.chips) {
           var chips = el('div', { class: 'chips' });
           f.chips.forEach(function (c) { chips.appendChild(el('button', { type: 'button', class: 'chip' + (String(a[f.id]) === String(c) ? ' selected' : ''), onclick: function () { a[f.id] = String(c); save(); renderStep(); } }, String(c))); });
-          wrap.appendChild(chips);
+          ctl.appendChild(chips);
         }
       }
       wrap.appendChild(el('div', { class: 'error', id: 'err-' + f.id, hidden: true }));
@@ -109,8 +127,26 @@
     card.appendChild(el('div', { class: 'nav-row' },
       el('button', { type: 'button', class: 'btn btn-secondary', onclick: back }, state.step === 0 ? 'Intro' : 'Back'),
       el('button', { type: 'button', class: 'btn btn-primary', onclick: next }, state.step === steps.length - 1 ? 'See my results' : 'Next')));
-    app.appendChild(card);
+    layout.appendChild(card);
+    app.appendChild(layout);
     document.getElementById('restart-top').hidden = false;
+  }
+
+  /** Short text of the answers already given in a step, for the step rail. */
+  function stepSummary(step) {
+    var a = state.answers, parts = [];
+    step.fields.forEach(function (f) {
+      if (f.showIf && !f.showIf(a)) return;
+      var v = a[f.id]; if (v == null || v === '' || f.id === 'priceCustom') return;
+      if (f.type === 'number') { parts.push(v + ' ' + (f.id === 'rooms' ? 'rooms' : '')); return; }
+      var opts = fieldOptions(f);
+      var ids = Array.isArray(v) ? v : [v];
+      var labels = ids.map(function (id) { var o = opts.filter(function (x) { return x.id === id; })[0]; return o ? o.label : id; });
+      if (f.id === 'priceBand' && v === 'custom') labels = [(F.countries[a.country] || F.countries.OTHER).symbol + a.priceCustom + ' per bottle'];
+      if (labels.length === 1 && labels[0] === 'Not sure') labels = [(f.label || '').toLowerCase() + ' not sure'];
+      parts.push(labels.join(', '));
+    });
+    return parts.join(' / ');
   }
 
   function validate(step) {
@@ -264,19 +300,20 @@
     app.innerHTML = '';
     var root = el('div', { class: 'results' });
     var occAssumed = prov.occupancy.kind !== 'user', bpnAssumed = prov.bottlesPerRoomNight.kind !== 'user', sizeAssumed = prov.bottleSizeMl.kind !== 'user';
+    var facts = [
+      fmt.pct(inp.occupancy) + ' occupancy' + (occAssumed ? ' (national average)' : ''),
+      rec.segment.current,
+      inp.bottlesPerRoomNight ? inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per night' + (bpnAssumed || sizeAssumed ? ' (assumed)' : '') : null,
+      inp.pricePerBottle > 0 ? fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (prov.pricePerBottle.kind !== 'user' ? ' (reference price)' : '') : null,
+      rec.segment.areas.join(', '),
+      rec.segment.temps ? (rec.segment.lowerCost ? 'filtered tap in the room instead of ' + rec.segment.temps : rec.segment.temps + ' water in the room') : null
+    ].filter(Boolean);
     root.appendChild(el('header', { class: 'results-head' },
-      el('p', { class: 'eyebrow', text: 'Your result' }),
-      el('h2', { text: fmt.int(inp.rooms) + ' rooms in ' + n.country.name + (state.proposal.hotel ? ', ' + state.proposal.hotel : '') }),
-      el('div', { class: 'summary-chips' },
-        el('span', { text: fmt.pct(inp.occupancy) + ' occupancy' + (occAssumed ? ', national average' : '') }),
-        el('span', { text: rec.segment.current }),
-        inp.bottlesPerRoomNight ? el('span', { text: inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per night' + (bpnAssumed || sizeAssumed ? ', assumed' : '') }) : null,
-        inp.pricePerBottle > 0 ? el('span', { text: fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (prov.pricePerBottle.kind !== 'user' ? ', reference price' : '') }) : null,
-        el('span', { text: rec.segment.areas.join(', ') }),
-        rec.segment.temps ? el('span', { class: rec.segment.lowerCost ? 'chip-switched' : null, text: rec.segment.lowerCost ? 'Showing the filtered tap instead of ' + rec.segment.temps + ' water in the room' : fmt.cap(rec.segment.temps) + ' water in the room' }) : null)));
+      el('h1', { text: fmt.int(inp.rooms) + ' rooms in ' + n.country.name + (state.proposal.hotel ? ', ' + state.proposal.hotel : '') }),
+      el('p', { class: 'facts' }, facts.join(' \u00b7 '), ' ', el('button', { type: 'button', class: 'link-btn', onclick: function () { state.view = 'wizard'; state.step = 0; delete state.overrides.inRoomTap; save(); render(); scrollTop(); } }, 'Change'))));
 
     var v = verdict(ctx);
-    root.appendChild(el('section', { class: 'card verdict verdict-' + v.tone },
+    root.appendChild(el('section', { class: 'verdict verdict-' + v.tone },
       el('p', { class: 'verdict-head', text: v.head }),
       v.sub ? el('p', { class: 'verdict-sub', text: v.sub }) : null,
       rec.segment.lowerCost ? el('p', { class: 'verdict-alt' }, 'You are looking at the lower-cost option: a filtered tap in the room. Your original choice was ' + rec.segment.temps + ' water. ', el('button', { type: 'button', class: 'link-btn', onclick: backToChoice }, 'Back to ' + rec.segment.temps)) : null,
@@ -286,7 +323,8 @@
     function tile(label, value, unit, sub) {
       return el('div', { class: 'tile' }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length >= 9 ? ' value-long' : ''), text: value }, unit ? el('span', { class: 'unit', text: ' ' + unit }) : null), el('div', { class: 'sub', text: sub || '' }));
     }
-    tiles.appendChild(tile('Bottles avoided', fmt.int(c.bottles.total), null, fmt.int(c.env.litres) + ' litres a year'));
+    var outsideAreas = ['fnb', 'meetings', 'boh'].some(function (k) { return has(a.areas, k); });
+    tiles.appendChild(tile('Bottles avoided', fmt.int(c.bottles.total), null, fmt.int(c.env.litres) + ' litres a year' + (inp.otherBottlesPerDay > 0 ? ', ' + fmt.int(inp.otherBottlesPerDay) + ' a day outside the rooms included' : (outsideAreas ? ', guest rooms only' : ''))));
     if (c.env.packagingKg != null) tiles.appendChild(tile('Plastic avoided', fmt.int(c.env.packagingKg), 'kg', fmt.dec(c.env.bottleWeightG, 1) + ' g per bottle'));
     else tiles.appendChild(tile('Cartons avoided', fmt.int(c.logistics.cartonsPerYear), null, fmt.int(c.logistics.palletsPerYear) + ' pallets a year'));
     tiles.appendChild(tile('CO2e avoided', c.env.quantified ? fmt.dec(c.env.co2eKg / 1000, 1) : '-', c.env.quantified ? 't' : null, c.env.quantified ? (fmt.int(c.env.co2eCarKm) + ' km by car' + (inp.bottleMaterial === 'glass' && !inp.glassReusable ? ', at least' : '')) : 'Not estimated'));
@@ -294,12 +332,14 @@
     tiles.appendChild(tile('Staff time freed', fmt.int(c.labour.hours), 'hours', c.labour.quantified ? 'about ' + moneyShort(ctx, c.labour.costLocal) + ' a year, not counted as cash' : 'per year'));
     root.appendChild(tiles);
 
-    root.appendChild(renderPayback(ctx));
-    root.appendChild(renderSolution(ctx));
-    root.appendChild(renderMore(ctx));
-    root.appendChild(renderAdjust(ctx));
-    root.appendChild(renderSources(ctx));
-    root.appendChild(renderProposal(ctx));
+    var main = el('div', { class: 'results-main' }), aside = el('aside', { class: 'results-aside' });
+    main.appendChild(renderPayback(ctx));
+    main.appendChild(renderSolution(ctx));
+    main.appendChild(renderMore(ctx));
+    main.appendChild(renderAdjust(ctx));
+    main.appendChild(renderSources(ctx));
+    aside.appendChild(renderProposal(ctx));
+    root.appendChild(el('div', { class: 'results-body' }, main, aside));
     app.appendChild(root);
     document.getElementById('restart-top').hidden = false;
   }
@@ -343,7 +383,7 @@
       if (pr.alt && pr.alt.payback) {
         var ap = pr.alt.payback;
         card.appendChild(el('div', { class: 'alt-box' },
-          el('p', {}, el('strong', { text: 'Lower-cost option: filtered tap in the room' }), ' (' + modelName(pr.alt.product) + ', ' + listPrice(pr.alt.product) + ' per room). Investment ' + money(ctx, pr.alt.capexLocal) + ', cash payback ' + fmt.years(ap.cashPaybackYears) + ', five-year net saving ' + money(ctx, ap.fiveYearNetCash) + '. Same service contract.'),
+          el('p', {}, el('strong', { text: 'Lower-cost option: filtered tap in the room' }), ' (' + modelName(pr.alt.product) + ', ' + listPrice(pr.alt.product) + ' per room). Investment ' + money(ctx, pr.alt.capexLocal) + ', ' + (isFinite(ap.cashPaybackYears) ? 'cash payback ' + fmt.years(ap.cashPaybackYears) : 'no cash payback either') + ', five-year net saving ' + money(ctx, ap.fiveYearNetCash) + '. Same service contract.'),
           el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: showLowerCost }, 'Calculate with the filtered tap')));
       }
       if (rec.segment.lowerCost) card.appendChild(el('p', { class: 'small', style: 'margin-top:12px' }, el('button', { type: 'button', class: 'link-btn', onclick: backToChoice }, 'Back to ' + rec.segment.temps + ' water in the room')));
@@ -426,7 +466,7 @@
     field(g1, 'occupancy', 'Occupancy (%)', Math.round(inp.occupancy * 1000) / 10, 1, { max: 100 }, ctx.n.provenance.occupancy.kind === 'user' ? 'Your figure' : 'National average');
     field(g1, 'bottlesPerRoomNight', 'Bottles per room and night', inp.bottlesPerRoomNight, 0.5);
     field(g1, 'pricePerBottle', 'Price per bottle (' + inp.currency + ')', Math.round(inp.pricePerBottle * 1000) / 1000, 0.01, null, ctx.n.provenance.pricePerBottle.kind === 'user' ? 'Your price' : 'Reference price');
-    field(g1, 'otherBottlesPerDay', 'Bottles outside the rooms per day', inp.otherBottlesPerDay, 1);
+    field(g1, 'otherBottlesPerDay', 'Bottles outside the rooms per day', inp.otherBottlesPerDay, 1, null, inp.otherBottlesPerDay > 0 ? 'Your figure' : 'Not counted unless you enter them');
     if (c.env.packagingKg != null) field(g1, 'bottleWeightG', 'Empty bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1);
     var g2 = group('Investment and service');
     field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, (pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list')) + (pr.capexLocal != null ? ', ' + money(ctx, pr.capexLocal) : ''));
@@ -497,7 +537,7 @@
     if (extra.length) L.push(extra.join('. ') + '.');
     L.push('');
     L.push('Indicative figures per year');
-    L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' litres)');
+    L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' litres)' + (inp.otherBottlesPerDay > 0 ? ', including ' + fmt.int(inp.otherBottlesPerDay) + ' a day outside the rooms' : ', guest rooms only'));
     if (c.env.packagingKg != null) L.push('- Plastic avoided: ' + fmt.int(c.env.packagingKg) + ' kg');
     if (c.env.quantified) L.push('- CO2e avoided: ' + fmt.dec(c.env.co2eKg / 1000, 1) + ' t');
     if (inp.pricePerBottle > 0) L.push('- Bottled water bought today: ' + m(c.spend.annualLocal));
@@ -520,7 +560,7 @@
     var p = state.proposal;
     var card = el('section', { class: 'card', id: 'proposal' });
     card.appendChild(el('h3', { text: 'Request a proposal' }));
-    card.appendChild(el('p', { class: 'muted', text: 'Swisspro replies with a proposal for your hotel. Nothing is sent until you click the button.' }));
+    card.appendChild(el('p', { class: 'muted form-intro', text: 'Swisspro replies with a proposal for your hotel. Nothing is sent until you click the button.' }));
     var grid = el('div', { class: 'adjust' });
     var REQUIRED = { name: true, hotel: true, email: true };
     Q.proposalFields.forEach(function (f) {

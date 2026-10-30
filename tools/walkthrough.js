@@ -107,18 +107,20 @@ const scenarios = {
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
       // lower-cost option: the recomputed investment must equal the figure promised in the box
       if (await page.$('.alt-box .btn')) {
-        const promised = await page.$eval('.alt-box p', e => (e.textContent.match(/Investment (\S+), cash/) || [])[1]);
+        const promised = await page.$eval('.alt-box p', e => (e.textContent.match(/Investment (\S+), (?:cash|no cash)/) || [])[1]);
         await page.click('.alt-box .btn'); await page.waitForTimeout(150);
         const shown = await page.$eval('.lead-line', e => (e.textContent.match(/Investment ([^ ]+) /) || [])[1]);
         if (promised !== shown) errors.push(`lower-cost option mismatch: promised ${promised}, shown ${shown}`);
-        if (!(await page.$('.chip-switched'))) errors.push('no switched chip after lower-cost option');
+        if (!(await page.$eval('.facts', e => /filtered tap in the room instead of/.test(e.textContent)))) errors.push('answer line does not show the lower-cost switch');
         await page.click('.verdict .link-btn'); await page.waitForTimeout(150);
-        if (await page.$('.chip-switched')) errors.push('back link did not restore the choice');
+        if (await page.$eval('.facts', e => /instead of/.test(e.textContent))) errors.push('back link did not restore the choice');
         await openAll();
       }
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
       ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });
       const verdict = await page.$eval('.verdict-head', e => e.textContent).catch(() => '');
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+      if (overflow) errors.push('horizontal overflow on the result page');
       const titles = await page.$$eval('.product h4', els => els.map(e => e.textContent.trim()));
       if (viewport.tag === 'desktop') { await shot(page, `04-results-${name}-quote.png`, { fullPage: true }); }
       const sources = await page.goto(`http://127.0.0.1:${port}/sources.html`);
