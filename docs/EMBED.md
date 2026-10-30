@@ -16,9 +16,9 @@ web server (not `docs/`, `tools/`, `test/` or `artifact/`, which are internal), 
 Embed mode hides the wizard's own header and footer, makes the page background transparent and posts its
 content height to the parent page so the iframe grows with the result page.
 
-Brand: all colours and fonts are tokens at the top of `styles.css` (`--brand`, `--brand-deep`, `--accent`,
-`--font-display`, `--font-body`). Replace them with the values of the site's stylesheet; the Google Fonts
-link in `index.html` and `sources.html` can be removed if the site serves its own fonts.
+Brand: all colours, the font, the radius and the content width are tokens in `:root` at the top of
+`styles.css`. Read the real values from the live site with
+`node tools/extract-brand.js https://swissprowater.com` and follow `.claude/skills/swisspro-design/SKILL.md`.
 
 Lead email: `leadEmail` in `js/pricelist.js`. The "Send the request" button opens the visitor's email program with
 the summary addressed to that email. To send without an email program, set `leadEndpoint` in `js/pricelist.js` to a
