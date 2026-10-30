@@ -20,7 +20,7 @@ test('solutions are limited to the two price-list areas and follow the answers',
 test('in-room solution follows the water type only', () => {
   assert.deepEqual(R.inRoomSolution({ temps: 'ambient' }).requiredTemps, ['ambient']);
   assert.deepEqual(R.inRoomSolution({ temps: 'cold' }).requiredTemps, ['cold']);
-  assert.deepEqual(R.inRoomSolution({ temps: 'sparkling' }).requiredTemps, ['cold', 'sparkling']);
+  assert.deepEqual(R.inRoomSolution({ temps: 'sparkling' }).requiredTemps, ['cold']); // sparkling comes from a station
   assert.match(R.inRoomSolution({ temps: 'hotcold' }).title, /Hot and chilled/);
 });
 
@@ -30,10 +30,18 @@ test('products come only from the price list, only from the solution\'s area, ma
   assert.equal(s.exactMatch, true);
   const amb = R.solutions(Object.assign({}, base, { temps: 'ambient' }), PL)[0];
   assert.deepEqual(amb.products.map(p => p.label), ['SMART Classic+', 'SAN Classic+', 'CLIMA Unico+ (Hot, Ambient)']);
-  const spark = R.solutions(Object.assign({}, base, { temps: 'sparkling' }), PL)[0];
-  assert.equal(spark.exactMatch, false);
-  assert.equal(spark.products.length, 4);
-  assert.match(spark.notes.join(' '), /CLIMA Vida S/);
+  const sparkSols = R.solutions(Object.assign({}, base, { temps: 'sparkling' }), PL);
+  assert.equal(sparkSols.length, 2); // chilled in the room plus a sparkling station
+  assert.equal(sparkSols[0].exactMatch, true);
+  assert.equal(sparkSols[0].products[0].label, 'CLIMA Versa+ (Hot, Cold)');
+  assert.match(sparkSols[0].notes.join(' '), /Sparkling water comes from a drinking station/);
+  assert.equal(sparkSols[1].products[0].label, 'CLIMA Vida S (Hot, Cold, Sparkling)');
+  assert.equal(R.unitPlan(Object.assign({}, base, { temps: 'sparkling' })).stations, 1);
+  assert.equal(R.unitPlan(base, { stations: 4 }).stations, 4);
+  assert.equal(R.alternative(base, PL).products[0].label, 'SMART Classic+');
+  assert.equal(R.alternative(Object.assign({}, base, { temps: 'ambient' }), PL), null);
+  assert.equal(R.describe(PL.byId(PL.pricelist.items, 'ir_versa_plus')), 'Hot and chilled water');
+  assert.equal(R.describe(PL.byId(PL.pricelist.items, 'ir_smart_plus')), 'Filtered tap, ambient water');
   const station = R.solutions(Object.assign({}, base, { areas: ['fnb'] }), PL)[0];
   assert.equal(station.products[0].label, 'CLIMA Versa (Hot, Cold)');
   station.products.forEach(p => assert.equal(p.area, 'fnb'));

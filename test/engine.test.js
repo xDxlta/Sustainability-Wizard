@@ -132,3 +132,21 @@ test('calculate() runs end to end and reproduces the Fairmont-scale order of mag
 test('missing factor throws instead of silently returning 0', () => {
   assert.throws(() => E.environmentalImpact({ factors: {} }, base, E.annualBottles(base)), /Missing factor/);
 });
+
+test('format: sign before symbol, short money, payback words', () => {
+  const fmt = require('../js/format.js');
+  assert.equal(fmt.money('Rp', -123456), '-Rp123,456');
+  assert.equal(fmt.moneyShort('Rp', 1234567890), 'Rp1.23B');
+  assert.equal(fmt.moneyShort('₱', 3456789), '₱3.46M');
+  assert.equal(fmt.moneyShort('RM', 155490.4), 'RM155,490');
+  assert.equal(fmt.years(Infinity), 'No payback');
+  assert.equal(fmt.years(37), 'More than 30 years');
+});
+
+test('labour: new handling time is netted off, never below zero', () => {
+  const inp = { rooms: 100, occupancy: 0.5, bottlesPerRoomNight: 2, bottleSizeMl: 500, minutesPerRoomPerDay: 1, minutesPerCarton: 0, newMinutesPerRoomPerDay: 0.5, wageHourly: 10 };
+  const b = E.annualBottles(inp);
+  const l = E.labour(F, inp, b);
+  assert.ok(Math.abs(l.hours - b.occupiedRoomNights * 0.5 / 60) < 1e-9);
+  assert.equal(E.labour(F, Object.assign({}, inp, { newMinutesPerRoomPerDay: 5 }), b).hours, 0);
+});

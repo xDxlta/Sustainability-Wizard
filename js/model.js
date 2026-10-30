@@ -15,7 +15,7 @@
       return { id: b.id, label: b.label, desc: c.symbol + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle', value: b.price, kind: b.kind, status: b.status, url: b.url };
     });
     if (opts.length) opts.unshift({ id: 'unknown', label: 'Not sure', desc: 'We use the lowest reference price' });
-    opts.push({ id: 'custom', label: 'Enter our price' });
+    opts.push({ id: 'custom', label: 'Enter our price', desc: 'Premium or branded water, or your contract price' });
     return opts;
   }
 
@@ -70,7 +70,7 @@
       bottleMaterial: material, glassReusable: a.current === 'glass_own',
       bottleWeightOverrideG: overrides.bottleWeightG != null ? num(overrides.bottleWeightG, null) : null,
       pricePerBottle: price, otherBottlesPerDay: overrides.otherBottlesPerDay != null ? num(overrides.otherBottlesPerDay, 0) : num(a.otherBottlesPerDay, 0),
-      minutesPerRoomPerDay: minutesPerRoom, minutesPerCarton: minutesPerCarton, wageHourly: wage, stockWeeks: stockWeeks,
+      minutesPerRoomPerDay: minutesPerRoom, minutesPerCarton: minutesPerCarton, newMinutesPerRoomPerDay: overrides.newMinutesPerRoomPerDay != null ? num(overrides.newMinutesPerRoomPerDay, 0) : 0, wageHourly: wage, stockWeeks: stockWeeks,
       capex: overrides.capex != null ? num(overrides.capex, null) : null,
       annualService: overrides.annualService != null ? num(overrides.annualService, 0) : null
     };

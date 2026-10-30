@@ -16,7 +16,7 @@
         ] },
         { id: 'rooms', type: 'number', label: 'Guest rooms', required: true, min: 1, max: 5000, chips: [80, 150, 250, 400, 600], placeholder: 'e.g. 250' },
         { id: 'occupancy', type: 'single', label: 'Average occupancy', required: true, options: [
-          { id: 'default', label: 'Not sure', desc: 'Latest published national figure' },
+          { id: 'default', label: 'Not sure', desc: 'National average' },
           { id: '0.5', label: '50%' }, { id: '0.6', label: '60%' }, { id: '0.7', label: '70%' }, { id: '0.8', label: '80%' }, { id: '0.9', label: '90%' }
         ] }
       ]
@@ -44,7 +44,7 @@
     {
       id: 'wish', title: 'What you want',
       fields: [
-        { id: 'areas', type: 'multi', label: 'Where filtered water should go', required: true, options: [
+        { id: 'areas', type: 'multi', label: 'Where filtered water should go (choose all that apply)', required: true, options: [
           { id: 'rooms', label: 'Guest rooms' }, { id: 'fnb', label: 'Restaurants and bars' }, { id: 'meetings', label: 'Meetings and events' }, { id: 'boh', label: 'Staff areas' }
         ] },
         { id: 'temps', type: 'single', label: 'Water in the room', required: true, showIf: function (a) { return (a.areas || []).indexOf('rooms') >= 0; }, options: [

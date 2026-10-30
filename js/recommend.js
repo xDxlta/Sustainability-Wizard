@@ -17,11 +17,14 @@
 
   function has(arr, v) { return (arr || []).indexOf(v) >= 0; }
 
-  /* One in-room unit per room, one drinking station per other area (planning assumption). */
-  function unitPlan(a) {
+  /* One in-room unit per room, one drinking station per other area (planning assumption, adjustable). */
+  function unitPlan(a, overrides) {
+    overrides = overrides || {};
     var rooms = Math.max(0, Number(a.rooms) || 0);
     var plan = { inRoom: has(a.areas, 'rooms') ? rooms : 0, stations: 0 };
     ['fnb', 'meetings', 'boh'].forEach(function (k) { if (has(a.areas, k)) plan.stations += 1; });
+    if (has(a.areas, 'rooms') && a.temps === 'sparkling' && plan.stations === 0) plan.stations = 1; // sparkling needs a station
+    if (overrides.stations != null && isFinite(Number(overrides.stations))) plan.stations = Math.max(0, Math.round(Number(overrides.stations)));
     plan.note = 'One in-room unit per guest room and one drinking station per other area; the proposal sets the real quantities.';
     return plan;
   }
@@ -30,7 +33,11 @@
     var temps = a.temps || 'ambient';
     var s = { area: 'inRoom', areaLabel: 'In-Room', covers: [LABELS.areas.rooms], requiredTemps: [], notes: [] };
     if (temps === 'ambient') { s.title = 'Filtered tap in the room'; s.requiredTemps = ['ambient']; }
-    else if (temps === 'sparkling') { s.title = 'Chilled and sparkling water in the room'; s.requiredTemps = ['cold', 'sparkling']; }
+    else if (temps === 'sparkling') {
+      s.title = 'Chilled water in the room, sparkling at a station';
+      s.requiredTemps = ['cold'];
+      s.notes.push('Swisspro in-room units give ambient, chilled, or hot and chilled water. Sparkling water comes from a drinking station, which is added below.');
+    }
     else if (temps === 'hotcold') { s.title = 'Hot and chilled water at the minibar'; s.requiredTemps = ['hot', 'cold']; }
     else { s.title = 'Chilled water at the minibar'; s.requiredTemps = ['cold']; }
     return s;
@@ -38,28 +45,46 @@
 
   function stationSolution(a) {
     var covers = ['fnb', 'meetings', 'boh'].filter(function (k) { return has(a.areas, k); }).map(function (k) { return LABELS.areas[k]; });
-    return { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, requiredTemps: ['cold'], notes: [], title: 'Drinking station' };
+    var sparkling = has(a.areas, 'rooms') && a.temps === 'sparkling';
+    if (sparkling && !covers.length) covers.push('Sparkling water for the rooms');
+    return { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, requiredTemps: sparkling ? ['cold', 'sparkling'] : ['cold'], notes: [], title: sparkling ? 'Drinking station with sparkling water' : 'Drinking station' };
+  }
+
+  /* Plain words for what a listed unit gives, from the water types printed on the price list. */
+  function describe(p) {
+    var t = (p.temps || []).map(function (x) { return TEMP_LABEL[x]; });
+    var water = t.length ? t.join(', ').replace(/, ([^,]*)$/, ' and $1') + ' water' : 'water types not printed on the list';
+    if (p.mount === 'tap') return 'Filtered tap, ' + water;
+    if (p.mount === 'station') return 'Tap station, ' + water;
+    return water.charAt(0).toUpperCase() + water.slice(1);
   }
 
   function attachProducts(solution, PL) {
     if (!PL || !PL.loaded()) { solution.products = []; solution.exactMatch = false; solution.productNote = 'Price list not loaded.'; return solution; }
     var matched = PL.match(solution.area, solution.requiredTemps, null);
-    if (matched.length) { solution.products = matched; solution.exactMatch = true; solution.productNote = 'Lowest-priced matching line sets the investment; the proposal sets the model.'; }
-    else {
+    if (matched.length) {
+      solution.products = matched; solution.exactMatch = true; solution.productNote = 'Lowest-priced matching line sets the investment; the proposal sets the model.';
+      var pick = matched[0], extras = (pick.temps || []).filter(function (t) { return solution.requiredTemps.indexOf(t) < 0; });
+      if (extras.length) solution.notes.push(pick.label.replace(/\s*\(.*\)$/, '') + ' is the lowest-priced ' + PL.AREAS[solution.area] + ' unit with ' + solution.requiredTemps.map(function (t) { return TEMP_LABEL[t]; }).join(' and ') + ' water; it also gives ' + extras.map(function (t) { return TEMP_LABEL[t]; }).join(' and ') + ' water.');
+    } else {
       solution.products = PL.areaItems(solution.area); solution.exactMatch = false;
       solution.productNote = 'No ' + PL.AREAS[solution.area] + ' line prints ' + solution.requiredTemps.map(function (t) { return TEMP_LABEL[t]; }).join(' and ') + ' water; the section is listed and the proposal prices it.';
-      if (solution.area === 'inRoom' && has(solution.requiredTemps, 'sparkling')) {
-        var sp = PL.match('fnb', ['sparkling'], null);
-        if (sp.length) solution.notes.push('Sparkling is listed only as a drinking station (' + sp.map(function (p) { return p.label; }).join(', ') + ').');
-      }
     }
+    solution.products.forEach(function (p) { p.describe = describe(p); });
     return solution;
+  }
+
+  /* Lower-cost comparison: a filtered tap (ambient) in the room instead of a chilled or hot unit. */
+  function alternative(a, PL) {
+    if (!has(a.areas, 'rooms') || !a.temps || a.temps === 'ambient') return null;
+    var s = attachProducts(inRoomSolution({ temps: 'ambient' }), PL);
+    return s.exactMatch ? s : null;
   }
 
   function solutions(a, PL) {
     var out = [];
     if (has(a.areas, 'rooms')) out.push(attachProducts(inRoomSolution(a), PL));
-    if (has(a.areas, 'fnb') || has(a.areas, 'meetings') || has(a.areas, 'boh')) out.push(attachProducts(stationSolution(a), PL));
+    if (has(a.areas, 'fnb') || has(a.areas, 'meetings') || has(a.areas, 'boh') || (has(a.areas, 'rooms') && a.temps === 'sparkling')) out.push(attachProducts(stationSolution(a), PL));
     return out;
   }
 
@@ -91,10 +116,10 @@
     return { current: LABELS.current[a.current] || '-', areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; }), temps: LABELS.temps[a.temps] || null };
   }
 
-  function recommend(a, inp, F, PL) {
+  function recommend(a, inp, F, PL, overrides) {
     var args = argumentOrder(inp, F);
-    return { segment: segment(a), unitPlan: unitPlan(a), solutions: solutions(a, PL), arguments: args.order, cheapWater: args.cheapWater, approvalNote: approvalNote, labels: LABELS };
+    return { segment: segment(a), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL), alternative: alternative(a, PL), arguments: args.order, cheapWater: args.cheapWater, approvalNote: approvalNote, labels: LABELS };
   }
 
-  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, approvalNote: approvalNote, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
+  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, approvalNote: approvalNote, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
 });

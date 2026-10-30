@@ -89,21 +89,25 @@ const scenarios = {
       const err = await page.$$eval('.error:not([hidden])', els => els.map(e => e.textContent));
       if (err.length) errors.push('validation errors shown: ' + err.join(' | '));
       const tiles = await page.$$eval('.tile .value', els => els.map(e => e.textContent.trim()));
+      if (viewport.tag === 'mobile') await shot(page, `03-results-${name}-mobile-fold.png`);
       await shot(page, `03-results-${name}-${viewport.tag}.png`, { fullPage: true });
       // texts that must not appear (unverified product claims, sales questions, lead score)
       const bodyText = await page.evaluate(() => document.body.innerText);
-      ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
+      ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead', 'perChange', 'perYear', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'unverified', 'Unverified'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
 
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
-      for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); }
-      if (await page.$('#ov-occupancy')) { await page.fill('#ov-occupancy', '75'); await page.press('#ov-occupancy', 'Tab'); await page.waitForTimeout(100); }
-      if (answers._capex != null) { await page.fill('#ov-capex', String(answers._capex)); await page.press('#ov-capex', 'Tab'); await page.waitForTimeout(100); }
+      const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };
+      await openAll();
+      if (await page.$('#ov-occupancy')) { await page.fill('#ov-occupancy', '75'); await page.press('#ov-occupancy', 'Tab'); await page.waitForTimeout(100); await openAll(); }
+      if (answers._capex != null) { await page.fill('#ov-capex', String(answers._capex)); await page.press('#ov-capex', 'Tab'); await page.waitForTimeout(100); await openAll(); }
       const prop = answers._proposal || {};
       for (const [k, v] of Object.entries(prop)) { const sel = await page.$(`select#pf-${k}`); if (sel) await page.selectOption(`#pf-${k}`, v); else if (await page.$(`#pf-${k}`)) await page.fill(`#pf-${k}`, v); }
       const details = await page.$$('details'); for (const d of details) { await d.evaluate(e => e.open = true); }
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
+      ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });
+      const verdict = await page.$eval('.verdict-head', e => e.textContent).catch(() => '');
       const titles = await page.$$eval('.product h4', els => els.map(e => e.textContent.trim()));
       if (viewport.tag === 'desktop') { await shot(page, `04-results-${name}-quote.png`, { fullPage: true }); }
       const sources = await page.goto(`http://127.0.0.1:${port}/sources.html`);
@@ -111,6 +115,7 @@ const scenarios = {
       if (nFactors < 10) errors.push('sources page rendered ' + nFactors + ' factors');
       if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '05-sources.png', { fullPage: true });
       console.log(`\n== ${name} (${viewport.tag}) ==`);
+      console.log('verdict:', verdict);
       console.log('tiles:', tiles.join(' | '));
       console.log('solutions:', titles.join(' | '));
       console.log('payback cells:', payback.slice(0, 8).join(' | '));

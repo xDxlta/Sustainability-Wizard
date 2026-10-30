@@ -79,11 +79,13 @@
     var roomHours = bottles.occupiedRoomNights * minPerRoomDay / 60;
     var cartons = bottles.total / fv(F, 'bottles_per_carton');
     var cartonHours = cartons * Math.max(0, num(inp.minutesPerCarton, 0)) / 60;
-    var hours = roomHours + cartonHours;
+    // Time the new set-up adds (refilling carafes, wiping taps): 0 unless the hotel enters a figure.
+    var newHours = bottles.occupiedRoomNights * Math.max(0, num(inp.newMinutesPerRoomPerDay, 0)) / 60;
+    var hours = Math.max(0, roomHours + cartonHours - newHours);
     var wage = Math.max(0, num(inp.wageHourly, 0));
     var costLocal = hours * wage;
     return {
-      roomHours: roomHours, cartonHours: cartonHours, hours: hours,
+      roomHours: roomHours, cartonHours: cartonHours, newHours: newHours, hours: hours,
       fteEquivalent: hours / fv(F, 'working_hours_per_fte_year'),
       wageHourly: wage, costLocal: costLocal, costUsd: costLocal * num(inp.usdPerLocal, 0), quantified: wage > 0
     };

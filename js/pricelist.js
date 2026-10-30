@@ -15,6 +15,7 @@
 
   var pricelist = {
     leadEmail: 'info@swisspro.sg', // to be confirmed by Swisspro's sales manager
+    leadEndpoint: '', // optional: URL that accepts a POST with the request as JSON (see docs/EMBED.md); empty = email draft
     source: {
       title: 'Swisspro Price List, Hospitality section',
       file: 'docs/Swisspro_Price_List.pdf',
@@ -93,5 +94,5 @@
   /** Station servicing per unit per year (the quarterly line). */
   function stationServicePerYear() { return byId(pricelist.servicing.fnb, pricelist.servicing.fnbPerStationPerYear.itemId).price; }
 
-  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, AREAS: AREAS, loaded: loaded, match: match, areaItems: areaItems, inRoomServicePerYear: inRoomServicePerYear, stationServicePerYear: stationServicePerYear, byId: byId };
+  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, leadEndpoint: pricelist.leadEndpoint, AREAS: AREAS, loaded: loaded, match: match, areaItems: areaItems, inRoomServicePerYear: inRoomServicePerYear, stationServicePerYear: stationServicePerYear, byId: byId };
 });
