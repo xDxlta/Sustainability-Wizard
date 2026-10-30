@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const F = require('../js/factors.js');
 const M = require('../js/model.js');
 
-const answers = { country: 'MY', tier: 'premium', build: 'existing', rooms: '200', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'], otherBottlesPerDay: '0' };
+const answers = { country: 'MY', rooms: '200', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'] };
 
 test('market defaults are applied and carry kind + verification status', () => {
   const n = M.normalise(F, answers, {});

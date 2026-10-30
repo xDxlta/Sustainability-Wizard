@@ -15,9 +15,9 @@ const server = http.createServer((req, res) => {
 });
 
 const scenarios = {
-  kl_luxury_150: { country: 'MY', rooms: '150', tier: 'luxury', build: 'existing', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], otherBottlesPerDay: '100', placement: 'minibar', temps: 'sparkling', source: 'tank', issues: [], halal: 'notsure', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', timing: '3to12', approval: 'owner' }, _capex: 450000 },
-  surabaya_select_250: { country: 'ID', rooms: '250', tier: 'select', build: 'newbuild', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], otherBottlesPerDay: '50', placement: 'notsure', temps: 'cold', source: 'mains', issues: ['chlorine'], halal: 'yes', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
-  manila_premium_300: { country: 'PH', rooms: '300', tier: 'premium', build: 'existing', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'local', areas: ['rooms', 'fnb', 'meetings', 'boh'], otherBottlesPerDay: '250', placement: 'minibar', temps: 'hotcold', source: 'tank', issues: ['sediment'], halal: 'no', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
+  kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], temps: 'sparkling', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
+  surabaya_select_250: { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
+  manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'local', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
 };
 
 (async () => {
@@ -27,7 +27,7 @@ const scenarios = {
   // Key screenshots go to docs/screenshots (committed); everything else to tools/out (git-ignored).
   const keepDir = path.join(root, 'docs', 'screenshots'); fs.mkdirSync(keepDir, { recursive: true });
   const outDir = path.join(root, 'tools', 'out'); fs.mkdirSync(outDir, { recursive: true });
-  const KEEP = ['01-intro.png', '02-step-02.png', '02-step-05.png', '03-results-kl_luxury_150-desktop.png', '03-results-kl_luxury_150-mobile.png', '03-results-surabaya_select_250-desktop.png', '03-results-manila_premium_300-desktop.png', '04-results-manila_premium_300-quote.png', '05-sources.png'];
+  const KEEP = ['01-intro.png', '02-step-01.png', '02-step-02.png', '02-step-03.png', '03-results-kl_luxury_150-desktop.png', '03-results-kl_luxury_150-mobile.png', '03-results-surabaya_select_250-desktop.png', '03-results-manila_premium_300-desktop.png', '04-results-manila_premium_300-quote.png', '05-sources.png'];
   const shot = (page, name, opts) => page.screenshot(Object.assign({ path: path.join(KEEP.includes(name) ? keepDir : outDir, name) }, opts || {}));
   let failures = 0;
   for (const [name, answers] of Object.entries(scenarios)) {
@@ -42,7 +42,7 @@ const scenarios = {
       await page.evaluate(() => localStorage.clear());
       await page.reload();
       if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '01-intro.png', { fullPage: true });
-      await page.click('text=Start, about 2 minutes');
+      await page.click('.hero .btn-primary');
       // drive the wizard by clicking the option buttons / filling inputs for each visible step
       for (let guard = 0; guard < 20; guard++) {
         const title = await page.textContent('#step-title');
@@ -93,9 +93,10 @@ const scenarios = {
       // texts that must not appear (unverified product claims, sales questions, lead score)
       const bodyText = await page.evaluate(() => document.body.innerText);
       ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
-      if (!/unverified/.test(bodyText)) errors.push('no "unverified" label visible');
+      if (!/unverified/i.test(bodyText)) errors.push('no "unverified" label visible');
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
+      for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); }
       if (await page.$('#ov-occupancy')) { await page.fill('#ov-occupancy', '75'); await page.press('#ov-occupancy', 'Tab'); await page.waitForTimeout(100); }
       if (answers._capex != null) { await page.fill('#ov-capex', String(answers._capex)); await page.press('#ov-capex', 'Tab'); await page.waitForTimeout(100); }
       const prop = answers._proposal || {};

@@ -69,7 +69,7 @@
       rooms: num(a.rooms, 0), occupancy: occupancy, bottlesPerRoomNight: bpn, bottleSizeMl: size,
       bottleMaterial: material, glassReusable: a.current === 'glass_own',
       bottleWeightOverrideG: overrides.bottleWeightG != null ? num(overrides.bottleWeightG, null) : null,
-      pricePerBottle: price, otherBottlesPerDay: num(a.otherBottlesPerDay, 0),
+      pricePerBottle: price, otherBottlesPerDay: overrides.otherBottlesPerDay != null ? num(overrides.otherBottlesPerDay, 0) : num(a.otherBottlesPerDay, 0),
       minutesPerRoomPerDay: minutesPerRoom, minutesPerCarton: minutesPerCarton, wageHourly: wage, stockWeeks: stockWeeks,
       capex: overrides.capex != null ? num(overrides.capex, null) : null,
       annualService: overrides.annualService != null ? num(overrides.annualService, 0) : null
