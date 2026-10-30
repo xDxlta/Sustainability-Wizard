@@ -62,10 +62,10 @@
       note: 'Used only to translate tonnes of CO2e into something tangible.'
     },
     glass_co2e: {
-      value: null, unit: 'kg CO2e per bottle', kind: 'sourced', status: 'missing',
-      label: 'Greenhouse-gas factor for glass bottles (reusable or bought-in)',
-      source: { publisher: 'Garfi, Cadena, Sanchez-Ramos, Ferrer (2016), Journal of Cleaner Production 137, 997-1003', title: 'Life cycle assessment of drinking water: comparing conventional water treatment, reverse osmosis and mineral water in glass and plastic bottles', url: 'https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf', quote: '(per-cubic-metre global-warming results not retrievable without opening the paper)', year: '2016', accessed: ACCESSED },
-      note: 'WHY MISSING: the candidate source (Garfi et al. 2016, glass bottles reused 8 times) could not be opened, and its global-warming results per m3 did not appear in any excerpt. Secondary excerpts only state that the paper found PET preferable to glass overall, so guessing a glass value would risk the wrong sign. The wizard therefore shows "not estimated" for glass and explains this; once the paper is opened, enter the kg CO2e per m3 for the glass scenario here (divided by bottles per m3).'
+      value: 0.061, unit: 'kg CO2e per litre of water in glass bottles (glass scenario of the study)', kind: 'sourced', status: 'team-opened',
+      label: 'Greenhouse-gas factor for glass bottles',
+      source: { publisher: 'Garfi, Cadena, Sanchez-Ramos, Ferrer (2016), Journal of Cleaner Production 137, 997-1003', title: 'Life cycle assessment of drinking water: comparing conventional water treatment, reverse osmosis and mineral water in glass and plastic bottles', url: 'https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf', quote: '(0.061 kg CO2 per litre, glass scenario; exact wording to be pasted into VERIFY.md by the team)', year: '2016', accessed: '2026-10-30', openedBy: 'project team, 30 Oct 2026' },
+      note: 'Opened and read by the project team, not by the author of this register; the quoted wording is still to be added. The study models glass bottles reused 8 times, so the factor describes reusable glass; applied to bought-in single-use glass it understates the impact. Applied per litre of water, so it covers every bottle size.'
     },
 
     /* ------------------------------------------------------------------ logistics */

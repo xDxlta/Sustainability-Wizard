@@ -86,9 +86,9 @@
         ] },
         { id: 'temps', type: 'single', label: 'Which water should guests get?', required: true, options: [
           { id: 'ambient', label: 'Ambient only', desc: 'A filtered tap, no electricity.' },
-          { id: 'cold', label: 'Chilled and ambient' },
+          { id: 'cold', label: 'Chilled', desc: 'Chilled filtered water on demand.' },
           { id: 'hotcold', label: 'Hot and chilled', desc: 'Replaces the kettle as well.' },
-          { id: 'sparkling', label: 'Chilled, ambient and sparkling', desc: 'Suites and luxury rooms.' }
+          { id: 'sparkling', label: 'Chilled and sparkling', desc: 'Suites and luxury rooms.' }
         ] }
       ]
     },

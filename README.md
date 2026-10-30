@@ -41,9 +41,10 @@ See CHANGELOG.md for what changed against version 1 and VERIFY.md for the status
   sourced values, a verification `status`. Because the build environment could not open any page, all
   sourced values are "unverified" and listed in VERIFY.md with URL and quoted wording. One choice rule per
   disputed factor is stated once.
-- **Products only from the price list.** `js/pricelist.js` mirrors the Hospitality section (In-Room vs
-  F&B / Drinking Station). The PDF was not available during the build, so the wizard names no model yet;
-  the servicing line from the brief drives the service cost with the interval and currency as assumptions.
+- **Products only from the price list.** `js/pricelist.js` holds the Hospitality section verbatim (In-Room
+  vs F&B / Drinking Station, PDF dated 16 Sep 2026, prices excl. GST). Lines are matched on the printed
+  water types; the cheapest match sets the investment. The 85.00 servicing line has three readings with the
+  most conservative (per change every 9 months) as default; currency SGD is a labelled assumption.
 - **No unverified product claims**: filtration is described generically and confirmed in the proposal.
 - **Conservative defaults**: lightest documented bottle weight, cheapest reference bottle price, statutory
   floor wages, cradle-to-gate emissions only.
@@ -87,6 +88,6 @@ three market scenarios on desktop and mobile, fails on console errors or forbidd
 GitHub Actions runs the unit tests on every push.
 
 ## Status
-See `docs/OPEN-ITEMS.md`. The main gaps are the Hospitality price list (not available during the build),
-the verification of every source (no page could be opened from the build environment), a glass emission
-factor, and Swisspro's confirmation of the service interval and the lead email address.
+See `docs/OPEN-ITEMS.md`. The main gaps are the verification of every web source (no page could be opened
+from the build environment), the PDF of the price list in the repository, and Swisspro's confirmation of
+the service-line reading and the lead email address.

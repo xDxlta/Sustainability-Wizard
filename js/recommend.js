@@ -14,7 +14,7 @@
     timing: { lt3: 'Within 3 months', '3to12': 'In 3 to 12 months', gt12: 'In more than 12 months' },
     approval: { gm: 'Hotel management', owner: 'Owner or asset manager' }
   };
-  var TEMP_LABEL = { ambient: 'ambient', chilled: 'chilled', hot: 'hot', sparkling: 'sparkling' };
+  var TEMP_LABEL = { ambient: 'ambient', cold: 'chilled', hot: 'hot', sparkling: 'sparkling' };
 
   function has(arr, v) { return (arr || []).indexOf(v) >= 0; }
 
@@ -38,16 +38,16 @@
         : 'A dedicated filtered tap at the minibar counter with the cartridge concealed below. No electricity, no drain beyond a drip tray.';
       s.requiredTemps = ['ambient']; s.mount = 'tap';
     } else if (temps === 'sparkling') {
-      s.title = 'Still, chilled and sparkling water in the room';
-      s.description = 'An in-room unit that dispenses chilled, ambient and sparkling filtered water at the minibar, replacing both the still and the sparkling bottles. Typical for suites and luxury rooms; it needs a power point and a CO2 supply.';
-      s.requiredTemps = ['chilled', 'sparkling']; s.mount = null;
+      s.title = 'Chilled and sparkling water in the room';
+      s.description = 'An in-room unit that dispenses chilled and sparkling filtered water at the minibar, replacing both the still and the sparkling bottles. Typical for suites and luxury rooms; it needs a power point and a CO2 supply.';
+      s.requiredTemps = ['cold', 'sparkling']; s.mount = null;
     } else {
       s.title = temps === 'hotcold' ? 'Hot and chilled filtered water at the minibar' : 'Chilled filtered water at the minibar';
       s.description = (temps === 'hotcold'
         ? 'A compact under-counter or countertop unit at the minibar that gives chilled and hot filtered water on demand, so the kettle goes as well. '
-        : 'A compact under-counter or countertop unit at the minibar that gives chilled and ambient filtered water on demand. ')
+        : 'A compact under-counter or countertop unit at the minibar that gives chilled filtered water on demand. ')
         + 'The hotel\'s own carafe or glass bottle sits next to it for the guest to fill.';
-      s.requiredTemps = temps === 'hotcold' ? ['hot', 'chilled'] : ['chilled']; s.mount = null;
+      s.requiredTemps = temps === 'hotcold' ? ['hot', 'cold'] : ['cold']; s.mount = null;
       if (placement === 'vanity') s.notes.push('Chilled or hot water needs a power point and cabinet space, which the vanity rarely has. The minibar counter is the practical location.');
     }
     if (placement === 'notsure') s.notes.push('Placement advice: the minibar counter is preferred by guests and operators (interview feedback); the vanity suits an ambient tap only.');
@@ -59,7 +59,7 @@
 
   function stationSolution(a) {
     var covers = ['fnb', 'meetings', 'boh'].filter(function (k) { return has(a.areas, k); }).map(function (k) { return LABELS.areas[k]; });
-    var s = { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, notes: [], requiredTemps: ['chilled'], mount: 'station' };
+    var s = { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, notes: [], requiredTemps: ['cold'], mount: 'station' };
     s.title = 'Self-serve drinking station';
     s.description = 'A drinking station with chilled and ambient filtered water (sparkling as an option) for restaurants, bars, pre-function areas and staff canteens. Staff can also fill the hotel\'s own glass carafes for table service and for meeting rooms, so no bottles are carried to the ballroom.';
     if (has(a.areas, 'meetings')) s.notes.push('For events, a station in the pre-function area works better than one in a corridor (interview feedback); carafes filled back of house cover the meeting rooms themselves.');
@@ -74,10 +74,16 @@
       return solution;
     }
     var matched = PL.match(solution.area, solution.requiredTemps, null);
-    if (matched.length) { solution.products = matched; solution.productNote = 'Listed in the ' + PL.AREAS[solution.area] + ' section of the Swisspro price list.'; }
-    else {
-      solution.products = PL.match(solution.area, [], null);
-      solution.productNote = 'No ' + PL.AREAS[solution.area] + ' unit on the price list covers every requested water type; the units of that section are listed and Swisspro confirms the fit in the proposal.';
+    if (matched.length) {
+      solution.products = matched; solution.exactMatch = true;
+      solution.productNote = 'Listed in the ' + PL.AREAS[solution.area] + ' section of the Swisspro price list (' + PL.pricelist.source.dated + ', prices excl. GST, currency assumed ' + PL.pricelist.currency.value + '). The lowest-priced matching line is used for the investment; the proposal sets the model.';
+    } else {
+      solution.products = PL.areaItems(solution.area); solution.exactMatch = false;
+      solution.productNote = 'No ' + PL.AREAS[solution.area] + ' line on the price list prints every requested water type (' + solution.requiredTemps.join(', ') + '). The lines of that section are listed; Swisspro confirms the fit and the price in the proposal.';
+      if (solution.area === 'inRoom' && solution.requiredTemps.indexOf('sparkling') >= 0) {
+        var sparkling = PL.match('fnb', ['sparkling'], null);
+        if (sparkling.length) solution.notes.push('The price list offers sparkling water only in the F&B / Drinking Station section (' + sparkling.map(function (p) { return p.label; }).join(', ') + '); ask Swisspro whether an in-room sparkling option can be quoted.');
+      }
     }
     return solution;
   }

@@ -1,26 +1,28 @@
-# Loading the Swisspro Hospitality price list
+# The Swisspro Hospitality price list in the wizard
 
-The wizard names products and prices only from the Hospitality section of `docs/Swisspro_Price_List.pdf`.
-The PDF was not available when version 2 was built, so `js/pricelist.js` holds the structure and the one
-servicing line known from the project brief. To load the list:
+`js/pricelist.js` holds the Hospitality section of `docs/Swisspro_Price_List.pdf` (PDF dated 16 Sep 2026,
+prices excl. GST, currency not printed), transcribed verbatim on 30 Oct 2026. It is the only source for
+products, product names and prices.
 
-1. Put the PDF at `docs/Swisspro_Price_List.pdf` (it is the reference for every line below).
-2. Open `js/pricelist.js` and add one entry per Hospitality line to `items`:
-   ```js
-   { id: 'ir_01', area: 'inRoom', name: '<name exactly as printed>', price: 1234.00, unit: 'per unit',
-     temps: ['chilled', 'hot'],            // water types the unit dispenses: ambient, chilled, hot, sparkling
-     mount: 'undercounter',                // tap | undercounter | countertop | builtin | station (optional)
-     page: 3 }                             // page of the PDF
-   ```
-   Use `area: 'inRoom'` for lines the list places under In-Room and `area: 'fnb'` for F&B / Drinking Station.
-   Do not add products from the website, the online shop or memory.
-3. Set `source.status` to `'loaded'` and, if the list prints a currency, replace the SGD assumption in `currency`.
-4. If the servicing line reads differently from the brief, correct `servicing.name` and `servicing.price`;
-   set `servicing.intervalYears.value` once Swisspro confirms the replacement interval (the UI keeps it
-   adjustable and labelled as an assumption until the `kind` is changed to `'sourced'`).
-5. Run `npm test` and the walkthrough. The result page then shows the matching lines with their prices under
-   "The Swisspro set-up that fits" and pre-fills the investment in "Payback".
+## Structure
+- `items`: one entry per PRODUCT line. `area` is the section the list prints the line under (`inRoom` =
+  "PRODUCT (In-Room)", `fnb` = "PRODUCT (F&B, Drinking Station)"); `label` and `name` are the two text
+  columns as printed; `price` as printed. `temps` is the reading of the words in parentheses (Hot, Cold,
+  Ambient, Sparkling); SMART and SAN taps are read as "ambient"; the Triple Tap prints no water type.
+- `servicing.inRoom` and `servicing.fnb`: the SERVICING lines as printed.
+- `servicing.readings`: the three readings of the 85.00 line; `defaultReading` is `perChange`;
+  `changeIntervalMonths` (9) comes from the residential section as reported by the team.
 
-Matching rule (`js/recommend.js` and `pricelist.match`): a line matches when its `area` equals the solution's
-area and its `temps` cover every water type the hotel asked for. If no line covers them all, every line of that
-area is listed and the proposal confirms the fit.
+## Matching and pricing rules
+- A product matches when its `area` equals the solution's area and its `temps` cover every water type the
+  hotel asked for. Matches are listed sorted by price; the cheapest sets the investment (list price x units;
+  installation is not included unless the proposal says so). If no line matches, every line of the section
+  is listed and the investment has to be entered from the proposal.
+- Yearly service contract = in-room units x (85.00 read as chosen) + stations x 350.00, converted from SGD
+  (assumption) with the register's exchange rates; the hotel can overwrite the total.
+
+## Editing
+Correct a line only against the PDF. Change `currency` if the list prints one. If Swisspro confirms the
+reading of the 85.00 line, set `defaultReading` and change the reading's `note`; set the `kind` of
+`changeIntervalMonths` to `'sourced'` with `status: 'opened'` once the residential line is checked.
+Run `npm test` and `node tools/walkthrough.js` after every change.

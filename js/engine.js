@@ -52,7 +52,7 @@
       // Glass: no opened source gives a weight or an emission factor; see factors.glass_co2e.note for why.
       var g = F.factors.glass_co2e;
       if (g && g.value != null) {
-        var co2Glass = bottles.total * g.value;
+        var co2Glass = litres * g.value; // factor is per litre of water
         return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: co2Glass, co2eCarKm: co2Glass / fv(F, 'co2e_kg_per_car_km'), quantified: true, reason: null };
       }
       return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false, reason: g ? g.note : 'No sourced factor for glass.' };

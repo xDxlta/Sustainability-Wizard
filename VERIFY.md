@@ -1,10 +1,16 @@
 # VERIFY.md: every factor, its value, URL, quoted wording, and whether the page was opened
 
-Status on 29 October 2026: the build environment could not open any external page (every host was
-denied by the network policy). Therefore **no sourced value in this version has been verified by
-opening its page**. Each row below says "opened: no". The quoted wording is what a search-engine
+Status on 30 October 2026: the build environment could not open any external page (every host was
+denied by the network policy). Therefore **no sourced web value has been verified by the author by
+opening its page**. Each such row says "opened: no". The quoted wording is what a search-engine
 excerpt of the page returned; it must be checked against the page before the wizard goes live.
 The wizard labels these values "Sourced, unverified" in the UI and in `js/factors.js`.
+
+Two kinds of rows are different: values the project team opened or reported themselves ("opened: team")
+and the price-list lines, which the team transcribed verbatim from the PDF ("source: price list").
+To verify from outside this environment: repository `xDxlta/Sustainability-Wizard`, branch
+`claude/wizard-v2`, this file, plus `js/factors.js` for the exact values. After checking a row, set
+`status: 'opened'` on the entry in `js/factors.js` and paste the confirmed wording into the row.
 
 Choice rules where sources disagree (applied once per factor): see `js/factors.js` (`rules`) and the
 "Choice rule" column.
@@ -14,7 +20,7 @@ Choice rules where sources disagree (applied once per factor): see `js/factors.j
 | Empty 500 ml PET bottle weight | 9.89 g | https://bottledwater.org/?p=652 | "the average 16.9-ounce PET bottle fell 48 percent to 9.89 grams between 2000 and 2014" | no | IBWA/BMC 2014 average; a 2015 IBWA release revised the series to 9.25 g |
 | PET emission factor | 3,861.58 kg CO2e/t | https://greencalculus.com/data/defra-emission-factors/ (official: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025) | "PET primary production value of 3861.58251 kg CO2e per tonne, with a closed-loop figure of 2211.58251" | no | Newest UK Government set (2025), PET primary incl. forming; other third-party quotes 3,121 to 4,032 |
 | Average petrol car | 0.16272 kg CO2e/km | https://greencalculus.com/guides/defra-conversion-factors-what-changed/ | "Average car, petrol ... kg CO2e per km \| 0.16272" | no | 2025 set |
-| Glass bottle emission factor | none (missing) | https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf (Garfi et al. 2016, J. Cleaner Production 137, 997-1003) | per-m3 global-warming results not retrievable without opening the paper; excerpts only report inventories (glass bottles reused 8 times; 154 kg/m3 material, 4,900 MJ/m3 energy for glass vs 130 kg/m3, 1,000 MJ/m3 for PET) | no | Left missing on purpose; see factors.js glass_co2e.note |
+| Glass bottle emission factor | 0.061 kg CO2e per litre (glass scenario) | https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf (Garfi et al. 2016, J. Cleaner Production 137, 997-1003) | exact wording still to be pasted here by the team (value reported as "0,061 kg CO2 pro Liter") | team (30 Oct 2026) | Study assumes glass bottles reused 8 times; applied per litre to every glass answer, understates single-use glass |
 | Bottles per carton | 24 | https://www.water.com/fr-ca/product/pure-life-water-plastic-bottle-16-oz-24-pack-pallet/ | "packs of 24 ... 78 cases, or 1,872 bottles, per pallet" | no | |
 | Bottles per pallet (500 ml) | 1,872 | same | same | no | Costco/Niagara list 1,920 |
 | Pallet footprint | 1.2 m2 | https://palletgauge.com/pallet-size-comparison | "1200 x 1000 mm - 1.200 m2" | no | |
@@ -39,13 +45,18 @@ Choice rules where sources disagree (applied once per factor): see `js/factors.j
 | Market context Indonesia | Bali Circular Letter 9/2025; PDAM study | https://www.socialexpat.net/bali-governor-bans-single-use-plastic-bottled-water-under-one-litre/ ; https://ideas.repec.org/a/gam/jsusta/v16y2024i16p7082-d1458770.html | "bans producing, distributing, and selling single-use plastic bottled water under one litre"; "sporadic microbial contamination was detected due to the depletion of residual chlorine" | no | |
 | Market context Philippines | RA 11898; Boracay Ordinance 386 | https://lawphil.net/statutes/repacts/ra2022/ra_11898_2022.html ; https://denr.gov.ph/news-events/denr-backs-ordinance-banning-single-use-plastics-in-boracay/ | "50% for the footprint generated in 2025, 60% for 2026, 70% for 2027, and 80% from 2028 onward" (secondary guide); "prohibits the use of single-use or disposable plastic items by hotels, resorts, restaurants and establishments in the accommodation business" | no | |
 | Market context Singapore | STB roadmap | https://www.stb.gov.sg/about-stb/media-publications/media-centre/launch-of-the-hotel-sustainability-roadmap-by-stb-and-sha/ | "60% of hotel room stock in Singapore to attain internationally-recognised hotel sustainability certification by 2025" | no | |
-| Service contract line | 85.00 per unit | docs/Swisspro_Price_List.pdf (Hospitality section), line quoted in the project brief | "Comprehensive SUPERSWISS Replacement, 2 or 3 Year Contract Price with labour and change of parts, 85.00" | PDF not available in the build environment; wording taken from the brief | Interval (2 years) and currency (SGD) are labelled assumptions |
+| Price list, In-Room products | SMART Classic+ 140.00; SAN Classic+ 350.00; CLIMA Unico+ (Hot, Ambient) 780.00; CLIMA Versa+ (Hot, Cold) 980.00 | docs/Swisspro_Price_List.pdf, Hospitality section, PDF dated 16 Sep 2026, prices excl. GST | lines transcribed verbatim in `js/pricelist.js` (label, description, price) | price list (lines provided by the team, 30 Oct 2026) | Currency not printed: SGD assumed |
+| Price list, F&B / Drinking Station products | SMART Classic 350.00; CLIMA Unico 750.00; CLIMA Versa 890.00; CLIMA Mesa 1,299.00; CLIMA Piso 1,399.00; CLIMA Vida 1,399.00; CLIMA Vida S 1,599.00; Triple Tap + Icebank (90L/hr) 5,999.00 (New Product) | same | same | price list (team) | Water types in parentheses as printed drive the matching; Triple Tap prints none |
+| Price list, In-Room servicing | Comprehensive SUPERSWISS Replacement 85.00 ("2 or 3 Year Contract Price with labour and change of parts", comment "Original Price average"); Ala-Carte 70.00 (delivery only); UPGRADE Comprehensive 90.00 (3 year contract + free faucet) | same | same | price list (team) | The 85.00 line states no interval: three readings on the result page, default per change every 9 months (most conservative) |
+| Price list, F&B servicing | 3 STAGE REPLACEMENT Ala Carte 80.00; Quarterly 350.00 ("4x Replace CleanswissP, Carboswiss, Clean/Replace Ceraswiss") | same | same | price list (team) | Quarterly line used as the yearly price per station |
+| Filter change interval, residential section | 9 months | docs/Swisspro_Price_List.pdf, residential section | line not transcribed; reported by the team ("die Endkundenliste nennt einen Wechsel alle 9 Monate") | team-reported (30 Oct 2026) | Drives the default service reading; adjustable |
 
 ## Not sourced at all (labelled assumptions, adjustable on the result page)
 Bottles per room-night (2), bottle weight scaling for other sizes, housekeeping minutes per room (1), handling
-minutes per carton (2), stock weeks (2), storage aisle multiplier (1), hours per FTE (2,080), service interval
-(2 years), price list currency (SGD), unit counts (1 per room, 1 station per other area), cheap-water
-threshold for the argument order (US$0.25 per bottle).
+minutes per carton (2), stock weeks (2), storage aisle multiplier (1), hours per FTE (2,080), reading of the
+85.00 service line (default: per change every 9 months), price list currency (SGD), unit counts (1 per room,
+1 station per other area), cheap-water threshold for the argument order (US$0.25 per bottle), water types of
+SMART/SAN taps read as "ambient".
 
 ## How to verify
 Open each URL, confirm the quoted wording, then set `status: 'opened'` on that entry in `js/factors.js`

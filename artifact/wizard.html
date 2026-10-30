@@ -230,10 +230,10 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       note: 'Used only to translate tonnes of CO2e into something tangible.'
     },
     glass_co2e: {
-      value: null, unit: 'kg CO2e per bottle', kind: 'sourced', status: 'missing',
-      label: 'Greenhouse-gas factor for glass bottles (reusable or bought-in)',
-      source: { publisher: 'Garfi, Cadena, Sanchez-Ramos, Ferrer (2016), Journal of Cleaner Production 137, 997-1003', title: 'Life cycle assessment of drinking water: comparing conventional water treatment, reverse osmosis and mineral water in glass and plastic bottles', url: 'https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf', quote: '(per-cubic-metre global-warming results not retrievable without opening the paper)', year: '2016', accessed: ACCESSED },
-      note: 'WHY MISSING: the candidate source (Garfi et al. 2016, glass bottles reused 8 times) could not be opened, and its global-warming results per m3 did not appear in any excerpt. Secondary excerpts only state that the paper found PET preferable to glass overall, so guessing a glass value would risk the wrong sign. The wizard therefore shows "not estimated" for glass and explains this; once the paper is opened, enter the kg CO2e per m3 for the glass scenario here (divided by bottles per m3).'
+      value: 0.061, unit: 'kg CO2e per litre of water in glass bottles (glass scenario of the study)', kind: 'sourced', status: 'team-opened',
+      label: 'Greenhouse-gas factor for glass bottles',
+      source: { publisher: 'Garfi, Cadena, Sanchez-Ramos, Ferrer (2016), Journal of Cleaner Production 137, 997-1003', title: 'Life cycle assessment of drinking water: comparing conventional water treatment, reverse osmosis and mineral water in glass and plastic bottles', url: 'https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf', quote: '(0.061 kg CO2 per litre, glass scenario; exact wording to be pasted into VERIFY.md by the team)', year: '2016', accessed: '2026-10-30', openedBy: 'project team, 30 Oct 2026' },
+      note: 'Opened and read by the project team, not by the author of this register; the quoted wording is still to be added. The study models glass bottles reused 8 times, so the factor describes reusable glass; applied to bought-in single-use glass it understates the impact. Applied per litre of water, so it covers every bottle size.'
     },
 
     /* ------------------------------------------------------------------ logistics */
@@ -433,7 +433,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       // Glass: no opened source gives a weight or an emission factor; see factors.glass_co2e.note for why.
       var g = F.factors.glass_co2e;
       if (g && g.value != null) {
-        var co2Glass = bottles.total * g.value;
+        var co2Glass = litres * g.value; // factor is per litre of water
         return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: co2Glass, co2eCarKm: co2Glass / fv(F, 'co2e_kg_per_car_km'), quantified: true, reason: null };
       }
       return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false, reason: g ? g.note : 'No sourced factor for glass.' };
@@ -523,15 +523,13 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
   };
 });
 
-/* Swisspro Hospitality price list (docs/Swisspro_Price_List.pdf) - the ONLY source for products,
- * product names and prices in the wizard.
+/* Swisspro Hospitality price list (docs/Swisspro_Price_List.pdf, PDF dated 16 Sep 2026, prices excl. GST,
+ * currency not printed). The ONLY source for products, product names and prices in the wizard.
  *
- * STATUS 2026-10-29: the PDF was not available in the build environment. The structure below is
- * ready for the Hospitality section to be transcribed line by line (name exactly as printed, price
- * as printed, area as the list assigns it: In-Room or F&B / Drinking Station). Until `items` holds
- * at least one product, the wizard names no Swisspro model and asks for proposal figures instead.
- *
- * The one line known from the project brief is the servicing line, kept here verbatim.
+ * The Hospitality lines were transcribed verbatim from the list as provided by the project team on
+ * 30 Oct 2026 (the PDF itself is not in the repository). `label` and `name` are the two text columns as
+ * printed; `price` as printed. `temps` and `mount` are READINGS of the printed label (the words in
+ * parentheses, or "tap" for SMART/SAN) and drive the match to the hotel's answers.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) { module.exports = factory(); }
@@ -545,33 +543,57 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     source: {
       title: 'Swisspro Price List, Hospitality section',
       file: 'docs/Swisspro_Price_List.pdf',
-      status: 'not-loaded',
-      note: 'The PDF was not available when this version was built. Transcribe the Hospitality section into `items` below; do not add products from any other source.'
+      dated: '2026-09-16',
+      status: 'loaded',
+      note: 'Hospitality lines transcribed verbatim on 30 Oct 2026 from the list as provided by the project team. Prices excl. GST. The PDF is not in the repository; place it at docs/Swisspro_Price_List.pdf for reference.'
     },
     currency: {
       value: 'SGD', kind: 'assumption',
       note: 'The price list does not print a currency. Singapore dollars are assumed because Swisspro Pte Ltd is based in Singapore. Change here if the list is in another currency.'
     },
     areas: AREAS,
-    /* One entry per Hospitality line. Tags drive the match to the hotel's answers:
-       area: 'inRoom' | 'fnb'; temps: any of 'ambient','chilled','hot','sparkling'; mount: 'tap' | 'undercounter' | 'countertop' | 'builtin' | 'station'.
-       Example (REMOVE once real lines are entered):
-       { id: 'ir_example', area: 'inRoom', name: '<name exactly as printed>', price: 0, unit: 'per unit', temps: ['chilled'], mount: 'undercounter', page: 0 } */
-    items: [],
+    /* PRODUCT lines. area: 'inRoom' = "PRODUCT (In-Room)", 'fnb' = "PRODUCT (F&B, Drinking Station)". */
+    items: [
+      { id: 'ir_smart_plus', area: 'inRoom', label: 'SMART Classic+', name: 'SWISPRO SMART CLASSIC N PLUS (SUPERSWISS PNP)', price: 140.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'ir_san_plus', area: 'inRoom', label: 'SAN Classic+', name: 'SWISPRO SAN CLASSIC PLUS (SUPERSWISS PNP)', price: 350.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'ir_unico_plus', area: 'inRoom', label: 'CLIMA Unico+ (Hot, Ambient)', name: 'SWISPRO CLIMA UNICO PLUS (SUPERSWISS PNP)', price: 780.00, temps: ['hot', 'ambient'], mount: null },
+      { id: 'ir_versa_plus', area: 'inRoom', label: 'CLIMA Versa+ (Hot, Cold)', name: 'SWISPRO CLIMA VERSA PLUS (SUPERSWISS PNP)', price: 980.00, temps: ['hot', 'cold'], mount: null },
+      { id: 'fb_smart', area: 'fnb', label: 'SMART Classic', name: 'SWISPRO SMART CLASSIC N with 3 Stage', price: 350.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'fb_unico', area: 'fnb', label: 'CLIMA Unico (Hot, Ambient)', name: 'SWISPRO CLIMA UNICO with 3 Stage', price: 750.00, temps: ['hot', 'ambient'], mount: null },
+      { id: 'fb_versa', area: 'fnb', label: 'CLIMA Versa (Hot, Cold)', name: 'SWISPRO CLIMA VERSA with 3 Stage', price: 890.00, temps: ['hot', 'cold'], mount: null },
+      { id: 'fb_mesa', area: 'fnb', label: 'CLIMA Mesa (Hot, Cold, Ambient)', name: 'SWISPRO CLIMA MESAV2 with 3 Stage Filtration', price: 1299.00, temps: ['hot', 'cold', 'ambient'], mount: null },
+      { id: 'fb_piso', area: 'fnb', label: 'CLIMA Piso (Hot, Cold, Ambient)', name: 'SWISPRO CLIMA PISOV2 with 3 Stage Filtration', price: 1399.00, temps: ['hot', 'cold', 'ambient'], mount: null },
+      { id: 'fb_vida', area: 'fnb', label: 'CLIMA Vida (Hot, Cold, Ambient)', name: 'SWISPRO CLIMA VIDA with 3 Stage', price: 1399.00, temps: ['hot', 'cold', 'ambient'], mount: null },
+      { id: 'fb_vida_s', area: 'fnb', label: 'CLIMA Vida S (Hot, Cold, Sparkling)', name: 'SWISPRO CLIMA VIDA S with 3 Stage', price: 1599.00, temps: ['hot', 'cold', 'sparkling'], mount: null },
+      { id: 'fb_triple_tap', area: 'fnb', label: 'Triple Tap + Icebank (90L/hr)', name: 'Triple Tap with 3 stage', price: 5999.00, temps: [], mount: 'station', comment: 'New Product', reading: 'water types not printed; listed only when no other station fits' }
+    ],
+    /* SERVICING lines. */
     servicing: {
-      id: 'superswiss_contract',
-      name: 'Comprehensive SUPERSWISS Replacement, 2 or 3 Year Contract Price with labour and change of parts',
-      price: 85.00,
-      kind: 'sourced',
-      source: 'Swisspro price list, Hospitality servicing line, as quoted in the project brief (29 Oct 2026)',
-      reading: { kind: 'assumption', note: 'Read as the price per unit for one comprehensive replacement visit within a 2 or 3 year contract.' },
-      intervalYears: { value: 2, kind: 'assumption', min: 1, max: 5, note: 'The line says "2 or 3 Year Contract" without stating the replacement interval. 2 years is assumed (the more expensive reading). Adjustable on the result page.' }
+      inRoom: [
+        { id: 'sv_ir_comprehensive', label: 'Comprehensive - SUPERSWISS Replacement', name: '2 or 3 Year Contract Price with labour and change of parts', price: 85.00, comment: 'Original Price average' },
+        { id: 'sv_ir_alacarte', label: 'Ala-Carte - SUPERSWISS Replacement', name: 'Delivery of SUPERSWISS Replacement to site only', price: 70.00 },
+        { id: 'sv_ir_upgrade', label: 'UPGRADE Comprehensive - SUPERSWISS', name: '3 Year Contract Price with labour and change of parts + free faucet', price: 90.00 }
+      ],
+      fnb: [
+        { id: 'sv_fb_alacarte', label: '3 STAGE REPLACEMENT (Ala Carte)', name: 'Replace CleanswissP, Carboswiss, Clean/Replace Ceraswiss', price: 80.00 },
+        { id: 'sv_fb_quarterly', label: '3 STAGE REPLACEMENT (Quarterly)', name: '4x Replace CleanswissP, Carboswiss, Clean/Replace Ceraswiss', price: 350.00 }
+      ],
+      /* The 85.00 line does not state its interval. Three readings; the first is the default (most conservative). */
+      readings: [
+        { id: 'perChange', label: 'Per filter change (change every 9 months)', note: 'The residential section of the price list names a SUPERSWISS replacement every 9 months (reported by the project team, 30 Oct 2026, line not transcribed). Consistent with the 70.00 delivery-only line: 85.00 with labour is a price per change.' },
+        { id: 'perYear', label: 'Per unit and year', note: 'Reading used in the team\'s Excel skeleton.' },
+        { id: 'perContract2y', label: 'Per unit and 2-year contract', note: 'Reads "2 or 3 Year Contract Price" as the price of the whole contract.' }
+      ],
+      defaultReading: 'perChange',
+      changeIntervalMonths: { value: 9, kind: 'sourced', status: 'team-reported', note: 'Replacement interval named in the residential section of the price list, as reported by the project team on 30 Oct 2026; the line itself was not transcribed. Adjustable.' },
+      fnbPerStationPerYear: { itemId: 'sv_fb_quarterly', note: 'The quarterly line states 4 replacements per year, so it is a yearly price per station.' }
     }
   };
 
   function loaded() { return pricelist.items.length > 0; }
+  function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
 
-  /** Products of one area whose tags cover the required temperatures and, if given, the mount. */
+  /** Products of one area whose printed water types cover every required one (sorted by price). */
   function match(area, requiredTemps, mount) {
     return pricelist.items.filter(function (it) {
       if (it.area !== area) return false;
@@ -579,17 +601,24 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       var ok = (requiredTemps || []).every(function (t) { return temps.indexOf(t) >= 0; });
       if (mount && it.mount && it.mount !== mount) ok = false;
       return ok;
-    });
+    }).sort(function (a, b) { return a.price - b.price; });
   }
+  function areaItems(area) { return pricelist.items.filter(function (it) { return it.area === area; }).sort(function (a, b) { return a.price - b.price; }); }
 
-  /** Annual servicing cost per unit in the price list currency. */
-  function servicingPerUnitPerYear(intervalYears) {
-    var iv = intervalYears != null ? Number(intervalYears) : pricelist.servicing.intervalYears.value;
-    if (!(iv > 0)) iv = pricelist.servicing.intervalYears.value;
-    return pricelist.servicing.price / iv;
+  /** In-room servicing per unit per year in the list currency for a reading. */
+  function inRoomServicePerYear(readingId, changeMonths) {
+    var line = byId(pricelist.servicing.inRoom, 'sv_ir_comprehensive').price;
+    var months = changeMonths != null && Number(changeMonths) > 0 ? Number(changeMonths) : pricelist.servicing.changeIntervalMonths.value;
+    switch (readingId || pricelist.servicing.defaultReading) {
+      case 'perYear': return line;
+      case 'perContract2y': return line / 2;
+      default: return line * 12 / months;
+    }
   }
+  /** Station servicing per unit per year (the quarterly line). */
+  function stationServicePerYear() { return byId(pricelist.servicing.fnb, pricelist.servicing.fnbPerStationPerYear.itemId).price; }
 
-  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, AREAS: AREAS, loaded: loaded, match: match, servicingPerUnitPerYear: servicingPerUnitPerYear };
+  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, AREAS: AREAS, loaded: loaded, match: match, areaItems: areaItems, inRoomServicePerYear: inRoomServicePerYear, stationServicePerYear: stationServicePerYear, byId: byId };
 });
 
 /* Wizard definition (version 2): six short steps. Every question stays only because its answer
@@ -680,9 +709,9 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
         ] },
         { id: 'temps', type: 'single', label: 'Which water should guests get?', required: true, options: [
           { id: 'ambient', label: 'Ambient only', desc: 'A filtered tap, no electricity.' },
-          { id: 'cold', label: 'Chilled and ambient' },
+          { id: 'cold', label: 'Chilled', desc: 'Chilled filtered water on demand.' },
           { id: 'hotcold', label: 'Hot and chilled', desc: 'Replaces the kettle as well.' },
-          { id: 'sparkling', label: 'Chilled, ambient and sparkling', desc: 'Suites and luxury rooms.' }
+          { id: 'sparkling', label: 'Chilled and sparkling', desc: 'Suites and luxury rooms.' }
         ] }
       ]
     },
@@ -821,7 +850,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     timing: { lt3: 'Within 3 months', '3to12': 'In 3 to 12 months', gt12: 'In more than 12 months' },
     approval: { gm: 'Hotel management', owner: 'Owner or asset manager' }
   };
-  var TEMP_LABEL = { ambient: 'ambient', chilled: 'chilled', hot: 'hot', sparkling: 'sparkling' };
+  var TEMP_LABEL = { ambient: 'ambient', cold: 'chilled', hot: 'hot', sparkling: 'sparkling' };
 
   function has(arr, v) { return (arr || []).indexOf(v) >= 0; }
 
@@ -845,16 +874,16 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
         : 'A dedicated filtered tap at the minibar counter with the cartridge concealed below. No electricity, no drain beyond a drip tray.';
       s.requiredTemps = ['ambient']; s.mount = 'tap';
     } else if (temps === 'sparkling') {
-      s.title = 'Still, chilled and sparkling water in the room';
-      s.description = 'An in-room unit that dispenses chilled, ambient and sparkling filtered water at the minibar, replacing both the still and the sparkling bottles. Typical for suites and luxury rooms; it needs a power point and a CO2 supply.';
-      s.requiredTemps = ['chilled', 'sparkling']; s.mount = null;
+      s.title = 'Chilled and sparkling water in the room';
+      s.description = 'An in-room unit that dispenses chilled and sparkling filtered water at the minibar, replacing both the still and the sparkling bottles. Typical for suites and luxury rooms; it needs a power point and a CO2 supply.';
+      s.requiredTemps = ['cold', 'sparkling']; s.mount = null;
     } else {
       s.title = temps === 'hotcold' ? 'Hot and chilled filtered water at the minibar' : 'Chilled filtered water at the minibar';
       s.description = (temps === 'hotcold'
         ? 'A compact under-counter or countertop unit at the minibar that gives chilled and hot filtered water on demand, so the kettle goes as well. '
-        : 'A compact under-counter or countertop unit at the minibar that gives chilled and ambient filtered water on demand. ')
+        : 'A compact under-counter or countertop unit at the minibar that gives chilled filtered water on demand. ')
         + 'The hotel\'s own carafe or glass bottle sits next to it for the guest to fill.';
-      s.requiredTemps = temps === 'hotcold' ? ['hot', 'chilled'] : ['chilled']; s.mount = null;
+      s.requiredTemps = temps === 'hotcold' ? ['hot', 'cold'] : ['cold']; s.mount = null;
       if (placement === 'vanity') s.notes.push('Chilled or hot water needs a power point and cabinet space, which the vanity rarely has. The minibar counter is the practical location.');
     }
     if (placement === 'notsure') s.notes.push('Placement advice: the minibar counter is preferred by guests and operators (interview feedback); the vanity suits an ambient tap only.');
@@ -866,7 +895,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
 
   function stationSolution(a) {
     var covers = ['fnb', 'meetings', 'boh'].filter(function (k) { return has(a.areas, k); }).map(function (k) { return LABELS.areas[k]; });
-    var s = { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, notes: [], requiredTemps: ['chilled'], mount: 'station' };
+    var s = { area: 'fnb', areaLabel: 'F&B / Drinking Station', covers: covers, notes: [], requiredTemps: ['cold'], mount: 'station' };
     s.title = 'Self-serve drinking station';
     s.description = 'A drinking station with chilled and ambient filtered water (sparkling as an option) for restaurants, bars, pre-function areas and staff canteens. Staff can also fill the hotel\'s own glass carafes for table service and for meeting rooms, so no bottles are carried to the ballroom.';
     if (has(a.areas, 'meetings')) s.notes.push('For events, a station in the pre-function area works better than one in a corridor (interview feedback); carafes filled back of house cover the meeting rooms themselves.');
@@ -881,10 +910,16 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       return solution;
     }
     var matched = PL.match(solution.area, solution.requiredTemps, null);
-    if (matched.length) { solution.products = matched; solution.productNote = 'Listed in the ' + PL.AREAS[solution.area] + ' section of the Swisspro price list.'; }
-    else {
-      solution.products = PL.match(solution.area, [], null);
-      solution.productNote = 'No ' + PL.AREAS[solution.area] + ' unit on the price list covers every requested water type; the units of that section are listed and Swisspro confirms the fit in the proposal.';
+    if (matched.length) {
+      solution.products = matched; solution.exactMatch = true;
+      solution.productNote = 'Listed in the ' + PL.AREAS[solution.area] + ' section of the Swisspro price list (' + PL.pricelist.source.dated + ', prices excl. GST, currency assumed ' + PL.pricelist.currency.value + '). The lowest-priced matching line is used for the investment; the proposal sets the model.';
+    } else {
+      solution.products = PL.areaItems(solution.area); solution.exactMatch = false;
+      solution.productNote = 'No ' + PL.AREAS[solution.area] + ' line on the price list prints every requested water type (' + solution.requiredTemps.join(', ') + '). The lines of that section are listed; Swisspro confirms the fit and the price in the proposal.';
+      if (solution.area === 'inRoom' && solution.requiredTemps.indexOf('sparkling') >= 0) {
+        var sparkling = PL.match('fnb', ['sparkling'], null);
+        if (sparkling.length) solution.notes.push('The price list offers sparkling water only in the F&B / Drinking Station section (' + sparkling.map(function (p) { return p.label; }).join(', ') + '); ask Swisspro whether an in-room sparkling option can be quoted.');
+      }
     }
     return solution;
   }
@@ -1011,6 +1046,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     var kind = p.kind === 'user' ? 'user' : p.kind;
     var label = text || KIND_NAMES[kind] || kind;
     if ((kind === 'sourced' || kind === 'derived') && p.status === F.UNVERIFIED) { label += ', unverified'; return el('span', { class: 'tag tag-unverified', text: label }); }
+    if (kind === 'sourced' && (p.status === 'team-opened' || p.status === 'team-reported')) { label += p.status === 'team-opened' ? ', opened by the team' : ', reported by the team'; return el('span', { class: 'tag tag-sourced', text: label }); }
     if (p.status === 'missing') return el('span', { class: 'tag tag-missing', text: label });
     return el('span', { class: 'tag tag-' + kind, text: label });
   }
@@ -1147,21 +1183,26 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
   }
 
   function pricing(rec, inputs) {
-    var o = state.overrides, toLocal = listToLocal(inputs);
-    var units = rec.unitPlan.inRoom + rec.unitPlan.stations;
-    var interval = o.serviceIntervalYears != null ? Number(o.serviceIntervalYears) : PL.pricelist.servicing.intervalYears.value;
-    var servicingListPerYear = units * PL.servicingPerUnitPerYear(interval);
+    var o = state.overrides, toLocal = listToLocal(inputs), SV = PL.pricelist.servicing;
+    var inRoomUnits = rec.unitPlan.inRoom, stations = rec.unitPlan.stations, units = inRoomUnits + stations;
+    var reading = o.serviceReading || SV.defaultReading;
+    var months = o.changeMonths != null ? Number(o.changeMonths) : SV.changeIntervalMonths.value;
+    var inRoomPerYear = PL.inRoomServicePerYear(reading, months);
+    var stationPerYear = PL.stationServicePerYear();
+    var servicingListPerYear = inRoomUnits * inRoomPerYear + stations * stationPerYear;
     var servicingLocal = o.annualService != null ? Number(o.annualService) : toLocal(servicingListPerYear);
-    var capexLocal = null, capexSource = 'none', lines = [];
+    var lines = [], unpriced = [], capexList = 0;
+    rec.solutions.forEach(function (sol) {
+      var n = sol.area === 'inRoom' ? inRoomUnits : stations;
+      if (sol.exactMatch && sol.products.length) { var p = sol.products[0]; lines.push({ area: sol.areaLabel, product: p.label, units: n, unitPrice: p.price, list: p.price * n, local: toLocal(p.price * n) }); capexList += p.price * n; }
+      else unpriced.push({ area: sol.areaLabel, units: n });
+    });
+    var capexLocal = null, capexSource = 'none';
     if (o.capex != null && Number(o.capex) > 0) { capexLocal = Number(o.capex); capexSource = 'user'; }
-    else if (PL.loaded()) {
-      rec.solutions.forEach(function (s) {
-        var p = s.products && s.products[0]; var n = s.area === 'inRoom' ? rec.unitPlan.inRoom : rec.unitPlan.stations;
-        if (p && p.price != null) { lines.push({ title: p.name, units: n, local: toLocal(p.price * n) }); capexLocal = (capexLocal || 0) + toLocal(p.price * n); }
-      });
-      if (capexLocal != null) capexSource = 'pricelist';
-    }
-    return { units: units, interval: interval, servicingListPerYear: servicingListPerYear, servicingLocal: servicingLocal, servicingSource: o.annualService != null ? 'user' : 'pricelist', capexLocal: capexLocal, capexSource: capexSource, lines: lines, toLocal: toLocal };
+    else if (lines.length && !unpriced.length) { capexLocal = toLocal(capexList); capexSource = 'pricelist'; }
+    return { units: units, inRoomUnits: inRoomUnits, stations: stations, reading: reading, months: months, inRoomPerYear: inRoomPerYear, stationPerYear: stationPerYear,
+      servicingListPerYear: servicingListPerYear, servicingLocal: servicingLocal, servicingSource: o.annualService != null ? 'user' : 'pricelist',
+      capexLocal: capexLocal, capexSource: capexSource, capexListPartial: capexList, lines: lines, unpriced: unpriced, toLocal: toLocal };
   }
 
   /* ------------------------------------------------------------------ results */
@@ -1204,8 +1245,8 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       c.env.packagingKg != null ? basis([{ text: 'bottle weight', tag: inp.bottleWeightOverrideG != null ? tag('user') : (inp.bottleSizeMl === 500 ? tag(F.factors.pet_bottle_weight_500ml_g) : tag({ kind: 'derived' }, 'Derived from 500 ml')) }]) : null));
     tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Greenhouse gas avoided per year' }),
       el('div', { class: 'value', text: c.env.quantified ? fmt.dec(c.env.co2eKg / 1000, 1) : '-' }, el('span', { class: 'unit', text: c.env.quantified ? ' t CO2e' : '' })),
-      el('div', { class: 'sub', text: c.env.quantified ? 'about ' + fmt.int(c.env.co2eCarKm) + ' km in an average petrol car; bottle production only (transport, chilling and disposal not included)' : 'Not estimated for glass bottles: no source for a glass factor could be opened for this version (details under "Where the numbers come from").' }),
-      c.env.quantified ? basis([{ text: 'PET factor ' + fmt.dec(F.factors.co2e_kg_per_kg_pet.value, 2) + ' kg CO2e per kg', tag: tag(F.factors.co2e_kg_per_kg_pet) }]) : null));
+      el('div', { class: 'sub', text: c.env.quantified ? 'about ' + fmt.int(c.env.co2eCarKm) + ' km in an average petrol car; ' + (c.env.material === 'glass' ? 'life-cycle factor for water in glass bottles (study assumes bottles reused 8 times; understates single-use glass)' : 'bottle production only (transport, chilling and disposal not included)') : 'Not estimated for glass bottles: ' + (c.env.reason || '') }),
+      c.env.quantified ? basis([c.env.material === 'glass' ? { text: 'glass factor ' + F.factors.glass_co2e.value + ' kg CO2e per litre', tag: tag(F.factors.glass_co2e) } : { text: 'PET factor ' + fmt.dec(F.factors.co2e_kg_per_kg_pet.value, 2) + ' kg CO2e per kg', tag: tag(F.factors.co2e_kg_per_kg_pet) }]) : null));
     tiles.appendChild(el('div', { class: 'tile' }, el('div', { class: 'label', text: 'Bottled-water spend avoided per year' }),
       el('div', { class: 'value', text: inp.pricePerBottle > 0 ? money(ctx, c.spend.annualLocal) : '-' }),
       el('div', { class: 'sub', text: inp.pricePerBottle > 0 ? 'at ' + fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + usd(ctx, c.spend.annualLocal) : 'No bottle price set; enter one under "Adjust the assumptions".' }),
@@ -1230,24 +1271,36 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
   }
 
   function renderPayback(ctx) {
-    var c = ctx.calc, inp = ctx.n.inputs, pr = ctx.pr, o = state.overrides;
+    var c = ctx.calc, inp = ctx.n.inputs, pr = ctx.pr, o = state.overrides, SV = PL.pricelist.servicing, cur = PL.pricelist.currency.value;
     var card = el('section', { class: 'card' });
     card.appendChild(el('h3', { text: 'Payback' }));
-    card.appendChild(el('p', { class: 'small muted', text: 'Cash payback counts only the bottled-water spend avoided; the second view adds the value of the staff time freed. Both use the yearly service contract from the price list.' }));
-    var grid = el('div', { class: 'adjust', style: 'margin-bottom:14px' });
+    card.appendChild(el('p', { class: 'small muted', text: 'Cash payback counts only the bottled-water spend avoided; the second view adds the value of the staff time freed. Investment and service contract come from the Swisspro price list (prices excl. GST, currency assumed ' + cur + ', converted with the register\'s exchange rates); you can overwrite both with figures from your proposal.' }));
+
+    /* investment */
+    if (pr.lines.length) {
+      var t = el('table', { class: 'kv' });
+      pr.lines.forEach(function (l) { t.appendChild(el('tr', {}, el('th', { text: l.area + ': ' + fmt.int(l.units) + ' x ' + l.product + ' at ' + l.unitPrice.toLocaleString('en-US') + ' ' + cur }), el('td', { text: money(ctx, l.local) }))); });
+      card.appendChild(t);
+    }
+    if (pr.unpriced.length) card.appendChild(el('p', { class: 'notice', text: 'Not priced from the list: ' + pr.unpriced.map(function (u) { return u.area + ' (' + fmt.int(u.units) + ' units)'; }).join('; ') + '. No line prints every requested water type, so enter the investment from your proposal.' }));
+
+    var grid = el('div', { class: 'adjust', style: 'margin:14px 0' });
     grid.appendChild(el('div', {},
-      el('label', { for: 'ov-capex' }, 'Investment for ' + fmt.int(pr.units) + ' units incl. installation (' + inp.currency + ') ', pr.capexSource === 'pricelist' ? tag({ kind: 'sourced' }, 'Price list') : (pr.capexSource === 'user' ? tag('user') : tag({ kind: 'missing' }, 'Not available'))),
-      el('input', { class: 'input', id: 'ov-capex', type: 'number', min: 0, step: 1, value: o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), placeholder: PL.loaded() ? 'from the price list' : 'from your Swisspro proposal', onchange: function (e) { o.capex = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
-    grid.appendChild(el('div', {},
-      el('label', { for: 'ov-interval' }, 'Replacement interval of the service contract (years) ', tag({ kind: 'assumption' })),
-      el('input', { class: 'input', id: 'ov-interval', type: 'number', min: 1, max: 5, step: 1, value: pr.interval, onchange: function (e) { o.serviceIntervalYears = Number(e.target.value) || PL.pricelist.servicing.intervalYears.value; delete o.annualService; save(); renderResults(); } })));
+      el('label', { for: 'ov-capex' }, 'Investment for ' + fmt.int(pr.units) + ' units (' + inp.currency + ') ', pr.capexSource === 'pricelist' ? tag({ kind: 'sourced' }, 'Price list') : (pr.capexSource === 'user' ? tag('user') : tag({ kind: 'missing' }, 'Enter from proposal'))),
+      el('input', { class: 'input', id: 'ov-capex', type: 'number', min: 0, step: 1, value: o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), placeholder: 'from your Swisspro proposal', onchange: function (e) { o.capex = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } }),
+      el('div', { class: 'small muted', text: pr.capexSource === 'pricelist' ? 'List prices x units, installation not included unless the proposal says so.' : '' })));
+    var sel = el('select', { class: 'input', id: 'ov-reading', onchange: function (e) { o.serviceReading = e.target.value; delete o.annualService; save(); renderResults(); } });
+    SV.readings.forEach(function (r) { var opt = el('option', { value: r.id, text: r.label + ': ' + fmt.dec(PL.inRoomServicePerYear(r.id, pr.months), 2) + ' ' + cur + ' per unit and year' }); if (r.id === pr.reading) opt.selected = true; sel.appendChild(opt); });
+    grid.appendChild(el('div', {}, el('label', { for: 'ov-reading' }, 'Reading of the 85.00 service line ', tag({ kind: 'assumption' })), sel));
+    if (pr.reading === 'perChange') grid.appendChild(el('div', {}, el('label', { for: 'ov-months' }, 'Months between filter changes ', tag({ kind: 'sourced', status: 'team-reported' })), el('input', { class: 'input', id: 'ov-months', type: 'number', min: 1, max: 36, step: 1, value: pr.months, onchange: function (e) { o.changeMonths = Number(e.target.value) || SV.changeIntervalMonths.value; delete o.annualService; save(); renderResults(); } })));
     grid.appendChild(el('div', {},
       el('label', { for: 'ov-service' }, 'Yearly service contract, all units (' + inp.currency + ') ', pr.servicingSource === 'user' ? tag('user') : tag({ kind: 'derived' })),
       el('input', { class: 'input', id: 'ov-service', type: 'number', min: 0, step: 1, value: Math.round(pr.servicingLocal), onchange: function (e) { o.annualService = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
     card.appendChild(grid);
+    var readingObj = SV.readings.filter(function (r) { return r.id === pr.reading; })[0];
     card.appendChild(el('p', { class: 'small muted' },
-      'Service contract: "' + PL.pricelist.servicing.name + '" at ' + PL.pricelist.servicing.price.toFixed(2) + ' per unit (price list line, ' + PL.pricelist.currency.value + ' ', tag({ kind: 'assumption' }, 'currency assumed'), '), read as one replacement per unit every ' + pr.interval + ' years ', tag({ kind: 'assumption' }), ': ' + fmt.int(pr.units) + ' units x ' + PL.pricelist.servicing.price.toFixed(2) + ' / ' + pr.interval + ' = ' + fmt.int(pr.servicingListPerYear) + ' ' + PL.pricelist.currency.value + ' per year, converted at the register\'s exchange rates ', tag({ kind: 'sourced', status: F.UNVERIFIED }), '.'));
-    if (!PL.loaded()) card.appendChild(el('p', { class: 'notice', text: 'The Hospitality price list is not loaded in this version, so the investment has to come from your Swisspro proposal. Once the list is loaded, the unit prices fill in automatically.' }));
+      'Service contract: In-Room "' + PL.byId(SV.inRoom, 'sv_ir_comprehensive').label + ', ' + PL.byId(SV.inRoom, 'sv_ir_comprehensive').name + '" at 85.00 per unit, read as ' + readingObj.label.toLowerCase() + ' = ' + fmt.dec(pr.inRoomPerYear, 2) + ' ' + cur + ' per unit and year (' + readingObj.note + ') ', tag({ kind: 'assumption' }), '. Drinking stations: "' + PL.byId(SV.fnb, 'sv_fb_quarterly').label + '" at 350.00 per station and year ', tag({ kind: 'sourced' }, 'Price list'), '. Total ' + fmt.int(pr.inRoomUnits) + ' x ' + fmt.dec(pr.inRoomPerYear, 2) + ' + ' + fmt.int(pr.stations) + ' x 350 = ' + fmt.int(pr.servicingListPerYear) + ' ' + cur + ' per year.'));
+
     if (c.payback.available) {
       var pb = c.payback;
       var two = el('div', { class: 'two-col' });
@@ -1262,6 +1315,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       right.appendChild(el('tr', {}, el('th', { text: 'Five-year net saving, cash' }), el('td', { text: money(ctx, pb.fiveYearNetCash) })));
       right.appendChild(el('tr', {}, el('th', { text: 'Five-year net saving incl. staff time' }), el('td', { text: money(ctx, pb.fiveYearNetFull) })));
       two.appendChild(left); two.appendChild(right); card.appendChild(two);
+      if (pb.cashSavingsPerYear <= 0) card.appendChild(el('p', { class: 'notice', text: 'With the current bottle price the yearly service contract costs more than the bottled water it replaces, so there is no cash payback. The case then rests on staff time, storage, deliveries and guest experience; check the bottle price you really pay, the service reading above and the proposal\'s contract terms.' }));
       if (inp.pricePerBottle === 0) card.appendChild(el('p', { class: 'notice', text: 'No bottle price is set, so the cash payback cannot be computed. Enter a price under "Adjust the assumptions".' }));
       card.appendChild(el('p', { class: 'small muted', text: R.approvalNote(pb.capex * inp.usdPerLocal) }));
     } else {
@@ -1303,7 +1357,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       if (s.requiredTemps.length) box.appendChild(el('p', { class: 'small muted', style: 'margin:6px 0 0', text: 'Water types requested: ' + s.requiredTemps.map(function (t) { return R.TEMP_LABEL[t] || t; }).join(', ') + '.' }));
       if (s.products && s.products.length) {
         var ul = el('ul', {});
-        s.products.forEach(function (p) { ul.appendChild(el('li', { text: p.name + (p.price != null ? ': ' + p.price.toLocaleString('en-US') + ' ' + PL.pricelist.currency.value + ' ' + (p.unit || 'per unit') : '') })); });
+        s.products.forEach(function (p, i) { ul.appendChild(el('li', {}, el('strong', { text: p.label }), ' (' + p.name + '): ' + p.price.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' ' + PL.pricelist.currency.value + ' per unit' + (p.comment ? ', ' + p.comment : '') + (i === 0 && s.exactMatch ? ' (used for the investment)' : ''))); });
         box.appendChild(ul);
       }
       box.appendChild(el('p', { class: 'small', style: 'margin:8px 0 0' }, tag({ kind: PL.loaded() ? 'sourced' : 'missing' }, PL.loaded() ? 'Price list' : 'Price list not loaded'), ' ' + s.productNote));
@@ -1394,7 +1448,8 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       var f = F.factors[k]; list.appendChild(item(f.label, { kind: f.kind, status: f.status, label: (typeof f.value === 'number' ? (Math.round(f.value * 1000) / 1000) + ' ' : (f.value == null ? 'not available ' : '')) + (f.unit || ''), note: f.note, source: f.source, rule: f.rule }));
     });
     if (cc.fx.source) list.appendChild(item('Exchange rate', { kind: cc.fx.kind, status: cc.fx.status, label: cc.fx.source.quote, source: cc.fx.source, rule: cc.fx.rule }));
-    list.appendChild(item('Service contract price', { kind: 'sourced', label: PL.pricelist.servicing.price.toFixed(2) + ' per unit, "' + PL.pricelist.servicing.name + '"', note: PL.pricelist.servicing.source + '. Interval: ' + PL.pricelist.servicing.intervalYears.note + ' Currency: ' + PL.pricelist.currency.note }));
+    list.appendChild(item('Products and prices', { kind: 'sourced', label: PL.pricelist.source.title + ' (' + PL.pricelist.source.dated + ', prices excl. GST)', note: PL.pricelist.source.note + ' ' + PL.pricelist.currency.note }));
+    list.appendChild(item('Service contract', { kind: 'assumption', label: 'Reading of the 85.00 In-Room line: ' + PL.pricelist.servicing.readings.filter(function (r) { return r.id === ctx.pr.reading; })[0].label, note: PL.pricelist.servicing.readings.filter(function (r) { return r.id === ctx.pr.reading; })[0].note + ' Stations: 350.00 per station and year (quarterly line, 4 replacements).' }));
     card.appendChild(list);
     card.appendChild(el('p', { class: 'small muted' }, 'Full register with quotes and access dates: ', el('a', { href: 'sources.html', text: 'Sources and assumptions' }), '. Figures are indicative; a Swisspro site survey and proposal confirm them.'));
     return card;
@@ -1417,10 +1472,11 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     if (c.env.quantified) L.push('- CO2e avoided: ' + fmt.dec(c.env.co2eKg / 1000, 1) + ' t (bottle production only)');
     L.push('- Bottled-water spend avoided: ' + (inp.pricePerBottle > 0 ? fmt.money(sym, c.spend.annualLocal, 0) + ' at ' + fmt.money(sym, inp.pricePerBottle, 2) + ' per bottle' : 'n/a'));
     L.push('- Staff time freed: ' + fmt.int(c.labour.hours) + ' h' + (c.labour.quantified ? ' = ' + fmt.money(sym, c.labour.costLocal, 0) : ''));
+    L.push('- Service contract: ' + fmt.money(sym, ctx.pr.servicingLocal, 0) + ' per year (85.00 line read as ' + ctx.pr.reading + (ctx.pr.reading === 'perChange' ? ', change every ' + ctx.pr.months + ' months' : '') + '; stations 350.00 per year)');
     if (c.payback.available) L.push('- Payback: cash ' + fmt.years(c.payback.cashPaybackYears) + ', incl. staff time ' + fmt.years(c.payback.fullPaybackYears) + ' on ' + fmt.money(sym, c.payback.capex, 0) + ' (' + ctx.pr.capexSource + ')');
     L.push('');
     L.push('SET-UP REQUESTED');
-    rec.solutions.forEach(function (s) { L.push('- ' + s.areaLabel + ' (' + (s.area === 'inRoom' ? rec.unitPlan.inRoom : rec.unitPlan.stations) + ' units): ' + s.title + '; water types: ' + s.requiredTemps.join(', ') + (s.products && s.products.length ? '; listed: ' + s.products.map(function (x) { return x.name; }).join(' / ') : '')); });
+    rec.solutions.forEach(function (s) { L.push('- ' + s.areaLabel + ' (' + (s.area === 'inRoom' ? rec.unitPlan.inRoom : rec.unitPlan.stations) + ' units): ' + s.title + '; water types: ' + s.requiredTemps.join(', ') + (s.products && s.products.length ? (s.exactMatch ? '; price list: ' : '; no exact line, section lists: ') + s.products.map(function (x) { return x.label + ' ' + x.price.toFixed(2); }).join(' / ') : '')); });
     if (has(a.areas, 'rooms')) L.push('- Placement: ' + a.placement + ' | temperatures: ' + a.temps);
     L.push('- Water supply: ' + a.source + (a.issues && a.issues.length ? ' | issues: ' + a.issues.join(', ') : '') + ' | Halal: ' + a.halal);
     var fl = rec.filtration.flags; var want = []; if (fl.waterTest) want.push('water test'); if (fl.pretreatment) want.push('pre-treatment sizing'); if (fl.halal !== 'no') want.push('Halal certificate'); if (want.length) L.push('- For the proposal: ' + want.join(', '));

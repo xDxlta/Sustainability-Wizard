@@ -232,10 +232,10 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       note: 'Used only to translate tonnes of CO2e into something tangible.'
     },
     glass_co2e: {
-      value: null, unit: 'kg CO2e per bottle', kind: 'sourced', status: 'missing',
-      label: 'Greenhouse-gas factor for glass bottles (reusable or bought-in)',
-      source: { publisher: 'Garfi, Cadena, Sanchez-Ramos, Ferrer (2016), Journal of Cleaner Production 137, 997-1003', title: 'Life cycle assessment of drinking water: comparing conventional water treatment, reverse osmosis and mineral water in glass and plastic bottles', url: 'https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf', quote: '(per-cubic-metre global-warming results not retrievable without opening the paper)', year: '2016', accessed: ACCESSED },
-      note: 'WHY MISSING: the candidate source (Garfi et al. 2016, glass bottles reused 8 times) could not be opened, and its global-warming results per m3 did not appear in any excerpt. Secondary excerpts only state that the paper found PET preferable to glass overall, so guessing a glass value would risk the wrong sign. The wizard therefore shows "not estimated" for glass and explains this; once the paper is opened, enter the kg CO2e per m3 for the glass scenario here (divided by bottles per m3).'
+      value: 0.061, unit: 'kg CO2e per litre of water in glass bottles (glass scenario of the study)', kind: 'sourced', status: 'team-opened',
+      label: 'Greenhouse-gas factor for glass bottles',
+      source: { publisher: 'Garfi, Cadena, Sanchez-Ramos, Ferrer (2016), Journal of Cleaner Production 137, 997-1003', title: 'Life cycle assessment of drinking water: comparing conventional water treatment, reverse osmosis and mineral water in glass and plastic bottles', url: 'https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf', quote: '(0.061 kg CO2 per litre, glass scenario; exact wording to be pasted into VERIFY.md by the team)', year: '2016', accessed: '2026-10-30', openedBy: 'project team, 30 Oct 2026' },
+      note: 'Opened and read by the project team, not by the author of this register; the quoted wording is still to be added. The study models glass bottles reused 8 times, so the factor describes reusable glass; applied to bought-in single-use glass it understates the impact. Applied per litre of water, so it covers every bottle size.'
     },
 
     /* ------------------------------------------------------------------ logistics */
@@ -335,7 +335,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     var F = window.SW.factors, PL = window.SW.pricelist;
     document.getElementById('verification-note').textContent = F.verification.note;
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
+    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; if (kind === 'sourced' && status === 'team-opened') return '<span class="tag tag-sourced">Sourced, opened by the team</span>'; if (kind === 'sourced' && status === 'team-reported') return '<span class="tag tag-sourced">Sourced, reported by the team</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
     function src(s) { if (!s) return ''; var h = '<blockquote>' + (s.quote ? '&ldquo;' + esc(s.quote) + '&rdquo; ' : '') + '<br><span class="small">' + esc(s.publisher || '') + (s.title ? ' - ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? ' - <a href="' + esc(s.url) + '" rel="noopener">' + esc(s.url) + '</a>' : '') + (s.accessed ? ' - accessed ' + esc(s.accessed) : '') + '</span></blockquote>'; return h; }
     function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? v.toPrecision(4) : (Math.round(v * 1000) / 1000)) + ' ' + esc(unit || ''); if (v && typeof v === 'object') return esc(JSON.stringify(v)) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
     var h = '<h2>Choice rules</h2><p class="small muted">Applied once per factor wherever sources disagree.</p><ul class="small">';
@@ -369,11 +369,19 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     document.getElementById('interview').innerHTML = h;
 
     var pl = PL.pricelist;
-    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + '). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
+    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + ', dated ' + esc(pl.source.dated) + ', prices excl. GST). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
     h += '<p class="small">' + tag('assumption') + ' Currency: ' + esc(pl.currency.value) + '. ' + esc(pl.currency.note) + '</p>';
-    h += '<p class="small">' + tag('sourced') + ' Servicing line: "' + esc(pl.servicing.name) + '", ' + pl.servicing.price.toFixed(2) + ' per unit. ' + esc(pl.servicing.source) + '. ' + tag('assumption') + ' ' + esc(pl.servicing.reading.note) + ' ' + tag('assumption') + ' Interval ' + pl.servicing.intervalYears.value + ' years: ' + esc(pl.servicing.intervalYears.note) + '</p>';
-    if (pl.items.length) { h += '<table class="kv"><tr><th>Area</th><th>Product (as printed)</th><th>Price</th></tr>'; pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.name) + '</td><td>' + (it.price != null ? it.price.toLocaleString('en-US') : '-') + '</td></tr>'; }); h += '</table>'; }
-    else h += '<p class="small muted">No product lines loaded yet: the wizard describes the fitting solution type per area and names no model.</p>';
+    h += '<table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Product (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th><th style="text-align:left">Reading used for matching</th></tr>';
+    pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.label) + '</td><td style="text-align:left">' + esc(it.name) + (it.comment ? ' (' + esc(it.comment) + ')' : '') + '</td><td>' + it.price.toLocaleString('en-US', { minimumFractionDigits: 2 }) + '</td><td style="text-align:left;font-weight:400" class="small muted">' + (it.temps.length ? esc(it.temps.join(', ')) : 'none printed') + (it.reading ? '; ' + esc(it.reading) : '') + '</td></tr>'; });
+    h += '</table>';
+    h += '<h3>Servicing lines</h3><table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Line (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th></tr>';
+    pl.servicing.inRoom.forEach(function (x) { h += '<tr><th>In-Room</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + (x.comment ? ' (' + esc(x.comment) + ')' : '') + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    pl.servicing.fnb.forEach(function (x) { h += '<tr><th>F&B / Drinking Station</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    h += '</table>';
+    h += '<p class="small">' + tag('assumption') + ' The 85.00 In-Room line does not state its interval. Three readings are offered on the result page; the default is the most conservative:</p><ul class="small">';
+    pl.servicing.readings.forEach(function (r) { h += '<li>' + (r.id === pl.servicing.defaultReading ? '<strong>Default: </strong>' : '') + esc(r.label) + ' = ' + PL.inRoomServicePerYear(r.id).toFixed(2) + ' per unit and year. ' + esc(r.note) + '</li>'; });
+    h += '</ul><p class="small">' + tag('sourced', 'team-reported') + ' Change interval ' + pl.servicing.changeIntervalMonths.value + ' months: ' + esc(pl.servicing.changeIntervalMonths.note) + '</p>';
+    h += '<p class="small">' + tag('sourced') + ' Drinking stations: ' + esc(PL.byId(pl.servicing.fnb, pl.servicing.fnbPerStationPerYear.itemId).label) + ' at 350.00 per station and year. ' + esc(pl.servicing.fnbPerStationPerYear.note) + '</p>';
     document.getElementById('swisspro').innerHTML = h;
   })();
   </script>
@@ -403,7 +411,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     var F = window.SW.factors, PL = window.SW.pricelist;
     document.getElementById('verification-note').textContent = F.verification.note;
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
+    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; if (kind === 'sourced' && status === 'team-opened') return '<span class="tag tag-sourced">Sourced, opened by the team</span>'; if (kind === 'sourced' && status === 'team-reported') return '<span class="tag tag-sourced">Sourced, reported by the team</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
     function src(s) { if (!s) return ''; var h = '<blockquote>' + (s.quote ? '&ldquo;' + esc(s.quote) + '&rdquo; ' : '') + '<br><span class="small">' + esc(s.publisher || '') + (s.title ? ' - ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? ' - <a href="' + esc(s.url) + '" rel="noopener">' + esc(s.url) + '</a>' : '') + (s.accessed ? ' - accessed ' + esc(s.accessed) : '') + '</span></blockquote>'; return h; }
     function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? v.toPrecision(4) : (Math.round(v * 1000) / 1000)) + ' ' + esc(unit || ''); if (v && typeof v === 'object') return esc(JSON.stringify(v)) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
     var h = '<h2>Choice rules</h2><p class="small muted">Applied once per factor wherever sources disagree.</p><ul class="small">';
@@ -437,11 +445,19 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     document.getElementById('interview').innerHTML = h;
 
     var pl = PL.pricelist;
-    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + '). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
+    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + ', dated ' + esc(pl.source.dated) + ', prices excl. GST). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
     h += '<p class="small">' + tag('assumption') + ' Currency: ' + esc(pl.currency.value) + '. ' + esc(pl.currency.note) + '</p>';
-    h += '<p class="small">' + tag('sourced') + ' Servicing line: "' + esc(pl.servicing.name) + '", ' + pl.servicing.price.toFixed(2) + ' per unit. ' + esc(pl.servicing.source) + '. ' + tag('assumption') + ' ' + esc(pl.servicing.reading.note) + ' ' + tag('assumption') + ' Interval ' + pl.servicing.intervalYears.value + ' years: ' + esc(pl.servicing.intervalYears.note) + '</p>';
-    if (pl.items.length) { h += '<table class="kv"><tr><th>Area</th><th>Product (as printed)</th><th>Price</th></tr>'; pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.name) + '</td><td>' + (it.price != null ? it.price.toLocaleString('en-US') : '-') + '</td></tr>'; }); h += '</table>'; }
-    else h += '<p class="small muted">No product lines loaded yet: the wizard describes the fitting solution type per area and names no model.</p>';
+    h += '<table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Product (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th><th style="text-align:left">Reading used for matching</th></tr>';
+    pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.label) + '</td><td style="text-align:left">' + esc(it.name) + (it.comment ? ' (' + esc(it.comment) + ')' : '') + '</td><td>' + it.price.toLocaleString('en-US', { minimumFractionDigits: 2 }) + '</td><td style="text-align:left;font-weight:400" class="small muted">' + (it.temps.length ? esc(it.temps.join(', ')) : 'none printed') + (it.reading ? '; ' + esc(it.reading) : '') + '</td></tr>'; });
+    h += '</table>';
+    h += '<h3>Servicing lines</h3><table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Line (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th></tr>';
+    pl.servicing.inRoom.forEach(function (x) { h += '<tr><th>In-Room</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + (x.comment ? ' (' + esc(x.comment) + ')' : '') + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    pl.servicing.fnb.forEach(function (x) { h += '<tr><th>F&B / Drinking Station</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    h += '</table>';
+    h += '<p class="small">' + tag('assumption') + ' The 85.00 In-Room line does not state its interval. Three readings are offered on the result page; the default is the most conservative:</p><ul class="small">';
+    pl.servicing.readings.forEach(function (r) { h += '<li>' + (r.id === pl.servicing.defaultReading ? '<strong>Default: </strong>' : '') + esc(r.label) + ' = ' + PL.inRoomServicePerYear(r.id).toFixed(2) + ' per unit and year. ' + esc(r.note) + '</li>'; });
+    h += '</ul><p class="small">' + tag('sourced', 'team-reported') + ' Change interval ' + pl.servicing.changeIntervalMonths.value + ' months: ' + esc(pl.servicing.changeIntervalMonths.note) + '</p>';
+    h += '<p class="small">' + tag('sourced') + ' Drinking stations: ' + esc(PL.byId(pl.servicing.fnb, pl.servicing.fnbPerStationPerYear.itemId).label) + ' at 350.00 per station and year. ' + esc(pl.servicing.fnbPerStationPerYear.note) + '</p>';
     document.getElementById('swisspro').innerHTML = h;
   })();
   </script>
@@ -481,15 +497,13 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
   };
 });
 
-/* Swisspro Hospitality price list (docs/Swisspro_Price_List.pdf) - the ONLY source for products,
- * product names and prices in the wizard.
+/* Swisspro Hospitality price list (docs/Swisspro_Price_List.pdf, PDF dated 16 Sep 2026, prices excl. GST,
+ * currency not printed). The ONLY source for products, product names and prices in the wizard.
  *
- * STATUS 2026-10-29: the PDF was not available in the build environment. The structure below is
- * ready for the Hospitality section to be transcribed line by line (name exactly as printed, price
- * as printed, area as the list assigns it: In-Room or F&B / Drinking Station). Until `items` holds
- * at least one product, the wizard names no Swisspro model and asks for proposal figures instead.
- *
- * The one line known from the project brief is the servicing line, kept here verbatim.
+ * The Hospitality lines were transcribed verbatim from the list as provided by the project team on
+ * 30 Oct 2026 (the PDF itself is not in the repository). `label` and `name` are the two text columns as
+ * printed; `price` as printed. `temps` and `mount` are READINGS of the printed label (the words in
+ * parentheses, or "tap" for SMART/SAN) and drive the match to the hotel's answers.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) { module.exports = factory(); }
@@ -503,33 +517,57 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     source: {
       title: 'Swisspro Price List, Hospitality section',
       file: 'docs/Swisspro_Price_List.pdf',
-      status: 'not-loaded',
-      note: 'The PDF was not available when this version was built. Transcribe the Hospitality section into `items` below; do not add products from any other source.'
+      dated: '2026-09-16',
+      status: 'loaded',
+      note: 'Hospitality lines transcribed verbatim on 30 Oct 2026 from the list as provided by the project team. Prices excl. GST. The PDF is not in the repository; place it at docs/Swisspro_Price_List.pdf for reference.'
     },
     currency: {
       value: 'SGD', kind: 'assumption',
       note: 'The price list does not print a currency. Singapore dollars are assumed because Swisspro Pte Ltd is based in Singapore. Change here if the list is in another currency.'
     },
     areas: AREAS,
-    /* One entry per Hospitality line. Tags drive the match to the hotel's answers:
-       area: 'inRoom' | 'fnb'; temps: any of 'ambient','chilled','hot','sparkling'; mount: 'tap' | 'undercounter' | 'countertop' | 'builtin' | 'station'.
-       Example (REMOVE once real lines are entered):
-       { id: 'ir_example', area: 'inRoom', name: '<name exactly as printed>', price: 0, unit: 'per unit', temps: ['chilled'], mount: 'undercounter', page: 0 } */
-    items: [],
+    /* PRODUCT lines. area: 'inRoom' = "PRODUCT (In-Room)", 'fnb' = "PRODUCT (F&B, Drinking Station)". */
+    items: [
+      { id: 'ir_smart_plus', area: 'inRoom', label: 'SMART Classic+', name: 'SWISPRO SMART CLASSIC N PLUS (SUPERSWISS PNP)', price: 140.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'ir_san_plus', area: 'inRoom', label: 'SAN Classic+', name: 'SWISPRO SAN CLASSIC PLUS (SUPERSWISS PNP)', price: 350.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'ir_unico_plus', area: 'inRoom', label: 'CLIMA Unico+ (Hot, Ambient)', name: 'SWISPRO CLIMA UNICO PLUS (SUPERSWISS PNP)', price: 780.00, temps: ['hot', 'ambient'], mount: null },
+      { id: 'ir_versa_plus', area: 'inRoom', label: 'CLIMA Versa+ (Hot, Cold)', name: 'SWISPRO CLIMA VERSA PLUS (SUPERSWISS PNP)', price: 980.00, temps: ['hot', 'cold'], mount: null },
+      { id: 'fb_smart', area: 'fnb', label: 'SMART Classic', name: 'SWISPRO SMART CLASSIC N with 3 Stage', price: 350.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'fb_unico', area: 'fnb', label: 'CLIMA Unico (Hot, Ambient)', name: 'SWISPRO CLIMA UNICO with 3 Stage', price: 750.00, temps: ['hot', 'ambient'], mount: null },
+      { id: 'fb_versa', area: 'fnb', label: 'CLIMA Versa (Hot, Cold)', name: 'SWISPRO CLIMA VERSA with 3 Stage', price: 890.00, temps: ['hot', 'cold'], mount: null },
+      { id: 'fb_mesa', area: 'fnb', label: 'CLIMA Mesa (Hot, Cold, Ambient)', name: 'SWISPRO CLIMA MESAV2 with 3 Stage Filtration', price: 1299.00, temps: ['hot', 'cold', 'ambient'], mount: null },
+      { id: 'fb_piso', area: 'fnb', label: 'CLIMA Piso (Hot, Cold, Ambient)', name: 'SWISPRO CLIMA PISOV2 with 3 Stage Filtration', price: 1399.00, temps: ['hot', 'cold', 'ambient'], mount: null },
+      { id: 'fb_vida', area: 'fnb', label: 'CLIMA Vida (Hot, Cold, Ambient)', name: 'SWISPRO CLIMA VIDA with 3 Stage', price: 1399.00, temps: ['hot', 'cold', 'ambient'], mount: null },
+      { id: 'fb_vida_s', area: 'fnb', label: 'CLIMA Vida S (Hot, Cold, Sparkling)', name: 'SWISPRO CLIMA VIDA S with 3 Stage', price: 1599.00, temps: ['hot', 'cold', 'sparkling'], mount: null },
+      { id: 'fb_triple_tap', area: 'fnb', label: 'Triple Tap + Icebank (90L/hr)', name: 'Triple Tap with 3 stage', price: 5999.00, temps: [], mount: 'station', comment: 'New Product', reading: 'water types not printed; listed only when no other station fits' }
+    ],
+    /* SERVICING lines. */
     servicing: {
-      id: 'superswiss_contract',
-      name: 'Comprehensive SUPERSWISS Replacement, 2 or 3 Year Contract Price with labour and change of parts',
-      price: 85.00,
-      kind: 'sourced',
-      source: 'Swisspro price list, Hospitality servicing line, as quoted in the project brief (29 Oct 2026)',
-      reading: { kind: 'assumption', note: 'Read as the price per unit for one comprehensive replacement visit within a 2 or 3 year contract.' },
-      intervalYears: { value: 2, kind: 'assumption', min: 1, max: 5, note: 'The line says "2 or 3 Year Contract" without stating the replacement interval. 2 years is assumed (the more expensive reading). Adjustable on the result page.' }
+      inRoom: [
+        { id: 'sv_ir_comprehensive', label: 'Comprehensive - SUPERSWISS Replacement', name: '2 or 3 Year Contract Price with labour and change of parts', price: 85.00, comment: 'Original Price average' },
+        { id: 'sv_ir_alacarte', label: 'Ala-Carte - SUPERSWISS Replacement', name: 'Delivery of SUPERSWISS Replacement to site only', price: 70.00 },
+        { id: 'sv_ir_upgrade', label: 'UPGRADE Comprehensive - SUPERSWISS', name: '3 Year Contract Price with labour and change of parts + free faucet', price: 90.00 }
+      ],
+      fnb: [
+        { id: 'sv_fb_alacarte', label: '3 STAGE REPLACEMENT (Ala Carte)', name: 'Replace CleanswissP, Carboswiss, Clean/Replace Ceraswiss', price: 80.00 },
+        { id: 'sv_fb_quarterly', label: '3 STAGE REPLACEMENT (Quarterly)', name: '4x Replace CleanswissP, Carboswiss, Clean/Replace Ceraswiss', price: 350.00 }
+      ],
+      /* The 85.00 line does not state its interval. Three readings; the first is the default (most conservative). */
+      readings: [
+        { id: 'perChange', label: 'Per filter change (change every 9 months)', note: 'The residential section of the price list names a SUPERSWISS replacement every 9 months (reported by the project team, 30 Oct 2026, line not transcribed). Consistent with the 70.00 delivery-only line: 85.00 with labour is a price per change.' },
+        { id: 'perYear', label: 'Per unit and year', note: 'Reading used in the team\'s Excel skeleton.' },
+        { id: 'perContract2y', label: 'Per unit and 2-year contract', note: 'Reads "2 or 3 Year Contract Price" as the price of the whole contract.' }
+      ],
+      defaultReading: 'perChange',
+      changeIntervalMonths: { value: 9, kind: 'sourced', status: 'team-reported', note: 'Replacement interval named in the residential section of the price list, as reported by the project team on 30 Oct 2026; the line itself was not transcribed. Adjustable.' },
+      fnbPerStationPerYear: { itemId: 'sv_fb_quarterly', note: 'The quarterly line states 4 replacements per year, so it is a yearly price per station.' }
     }
   };
 
   function loaded() { return pricelist.items.length > 0; }
+  function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
 
-  /** Products of one area whose tags cover the required temperatures and, if given, the mount. */
+  /** Products of one area whose printed water types cover every required one (sorted by price). */
   function match(area, requiredTemps, mount) {
     return pricelist.items.filter(function (it) {
       if (it.area !== area) return false;
@@ -537,17 +575,24 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
       var ok = (requiredTemps || []).every(function (t) { return temps.indexOf(t) >= 0; });
       if (mount && it.mount && it.mount !== mount) ok = false;
       return ok;
-    });
+    }).sort(function (a, b) { return a.price - b.price; });
   }
+  function areaItems(area) { return pricelist.items.filter(function (it) { return it.area === area; }).sort(function (a, b) { return a.price - b.price; }); }
 
-  /** Annual servicing cost per unit in the price list currency. */
-  function servicingPerUnitPerYear(intervalYears) {
-    var iv = intervalYears != null ? Number(intervalYears) : pricelist.servicing.intervalYears.value;
-    if (!(iv > 0)) iv = pricelist.servicing.intervalYears.value;
-    return pricelist.servicing.price / iv;
+  /** In-room servicing per unit per year in the list currency for a reading. */
+  function inRoomServicePerYear(readingId, changeMonths) {
+    var line = byId(pricelist.servicing.inRoom, 'sv_ir_comprehensive').price;
+    var months = changeMonths != null && Number(changeMonths) > 0 ? Number(changeMonths) : pricelist.servicing.changeIntervalMonths.value;
+    switch (readingId || pricelist.servicing.defaultReading) {
+      case 'perYear': return line;
+      case 'perContract2y': return line / 2;
+      default: return line * 12 / months;
+    }
   }
+  /** Station servicing per unit per year (the quarterly line). */
+  function stationServicePerYear() { return byId(pricelist.servicing.fnb, pricelist.servicing.fnbPerStationPerYear.itemId).price; }
 
-  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, AREAS: AREAS, loaded: loaded, match: match, servicingPerUnitPerYear: servicingPerUnitPerYear };
+  return { pricelist: pricelist, leadEmail: pricelist.leadEmail, AREAS: AREAS, loaded: loaded, match: match, areaItems: areaItems, inRoomServicePerYear: inRoomServicePerYear, stationServicePerYear: stationServicePerYear, byId: byId };
 });
 
 </script>
@@ -556,7 +601,7 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     var F = window.SW.factors, PL = window.SW.pricelist;
     document.getElementById('verification-note').textContent = F.verification.note;
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
+    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; if (kind === 'sourced' && status === 'team-opened') return '<span class="tag tag-sourced">Sourced, opened by the team</span>'; if (kind === 'sourced' && status === 'team-reported') return '<span class="tag tag-sourced">Sourced, reported by the team</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
     function src(s) { if (!s) return ''; var h = '<blockquote>' + (s.quote ? '&ldquo;' + esc(s.quote) + '&rdquo; ' : '') + '<br><span class="small">' + esc(s.publisher || '') + (s.title ? ' - ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? ' - <a href="' + esc(s.url) + '" rel="noopener">' + esc(s.url) + '</a>' : '') + (s.accessed ? ' - accessed ' + esc(s.accessed) : '') + '</span></blockquote>'; return h; }
     function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? v.toPrecision(4) : (Math.round(v * 1000) / 1000)) + ' ' + esc(unit || ''); if (v && typeof v === 'object') return esc(JSON.stringify(v)) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
     var h = '<h2>Choice rules</h2><p class="small muted">Applied once per factor wherever sources disagree.</p><ul class="small">';
@@ -590,11 +635,19 @@ details summary { cursor: pointer; font-weight: 600; color: var(--navy-700); }
     document.getElementById('interview').innerHTML = h;
 
     var pl = PL.pricelist;
-    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + '). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
+    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + ', dated ' + esc(pl.source.dated) + ', prices excl. GST). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
     h += '<p class="small">' + tag('assumption') + ' Currency: ' + esc(pl.currency.value) + '. ' + esc(pl.currency.note) + '</p>';
-    h += '<p class="small">' + tag('sourced') + ' Servicing line: "' + esc(pl.servicing.name) + '", ' + pl.servicing.price.toFixed(2) + ' per unit. ' + esc(pl.servicing.source) + '. ' + tag('assumption') + ' ' + esc(pl.servicing.reading.note) + ' ' + tag('assumption') + ' Interval ' + pl.servicing.intervalYears.value + ' years: ' + esc(pl.servicing.intervalYears.note) + '</p>';
-    if (pl.items.length) { h += '<table class="kv"><tr><th>Area</th><th>Product (as printed)</th><th>Price</th></tr>'; pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.name) + '</td><td>' + (it.price != null ? it.price.toLocaleString('en-US') : '-') + '</td></tr>'; }); h += '</table>'; }
-    else h += '<p class="small muted">No product lines loaded yet: the wizard describes the fitting solution type per area and names no model.</p>';
+    h += '<table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Product (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th><th style="text-align:left">Reading used for matching</th></tr>';
+    pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.label) + '</td><td style="text-align:left">' + esc(it.name) + (it.comment ? ' (' + esc(it.comment) + ')' : '') + '</td><td>' + it.price.toLocaleString('en-US', { minimumFractionDigits: 2 }) + '</td><td style="text-align:left;font-weight:400" class="small muted">' + (it.temps.length ? esc(it.temps.join(', ')) : 'none printed') + (it.reading ? '; ' + esc(it.reading) : '') + '</td></tr>'; });
+    h += '</table>';
+    h += '<h3>Servicing lines</h3><table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Line (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th></tr>';
+    pl.servicing.inRoom.forEach(function (x) { h += '<tr><th>In-Room</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + (x.comment ? ' (' + esc(x.comment) + ')' : '') + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    pl.servicing.fnb.forEach(function (x) { h += '<tr><th>F&B / Drinking Station</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    h += '</table>';
+    h += '<p class="small">' + tag('assumption') + ' The 85.00 In-Room line does not state its interval. Three readings are offered on the result page; the default is the most conservative:</p><ul class="small">';
+    pl.servicing.readings.forEach(function (r) { h += '<li>' + (r.id === pl.servicing.defaultReading ? '<strong>Default: </strong>' : '') + esc(r.label) + ' = ' + PL.inRoomServicePerYear(r.id).toFixed(2) + ' per unit and year. ' + esc(r.note) + '</li>'; });
+    h += '</ul><p class="small">' + tag('sourced', 'team-reported') + ' Change interval ' + pl.servicing.changeIntervalMonths.value + ' months: ' + esc(pl.servicing.changeIntervalMonths.note) + '</p>';
+    h += '<p class="small">' + tag('sourced') + ' Drinking stations: ' + esc(PL.byId(pl.servicing.fnb, pl.servicing.fnbPerStationPerYear.itemId).label) + ' at 350.00 per station and year. ' + esc(pl.servicing.fnbPerStationPerYear.note) + '</p>';
     document.getElementById('swisspro').innerHTML = h;
   })();
   </script>

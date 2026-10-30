@@ -10,7 +10,7 @@ const inp = { pricePerBottle: 0.61, usdPerLocal: 1 / 4.0745 };
 test('solutions are limited to the two price-list areas and follow the answers', () => {
   const s = R.solutions(base, PL);
   assert.equal(s.length, 1); assert.equal(s[0].area, 'inRoom');
-  assert.deepEqual(s[0].requiredTemps, ['hot', 'chilled']);
+  assert.deepEqual(s[0].requiredTemps, ['hot', 'cold']);
   const both = R.solutions(Object.assign({}, base, { areas: ['rooms', 'fnb', 'meetings'] }), PL);
   assert.deepEqual(both.map(x => x.area), ['inRoom', 'fnb']);
   assert.deepEqual(both[1].covers, ['Restaurants and bars', 'Meeting rooms and events']);
@@ -29,16 +29,22 @@ test('in-room solution type follows temperature and placement', () => {
   assert.match(R.inRoomSolution(Object.assign({}, base, { build: 'existing' })).notes.join(' '), /Retrofit/);
 });
 
-test('without the price list no model is named; with it, only matching lines of the same area', () => {
-  const s = R.solutions(base, PL)[0];
-  assert.deepEqual(s.products, []);
-  assert.match(s.productNote, /not loaded/);
-  const fake = { AREAS: PL.AREAS, loaded: () => true, match: (area, temps) => [{ id: 'x', area: 'inRoom', name: 'Line A', price: 100, temps: ['hot', 'chilled'] }].filter(it => it.area === area && temps.every(t => it.temps.includes(t))) };
-  const withList = R.solutions(base, fake)[0];
-  assert.equal(withList.products.length, 1);
-  assert.equal(withList.products[0].name, 'Line A');
-  const noFit = R.solutions(Object.assign({}, base, { temps: 'sparkling' }), fake)[0];
-  assert.match(noFit.productNote, /No In-Room unit/);
+test('products come only from the price list, only from the solution\'s area, matched on printed water types', () => {
+  const s = R.solutions(base, PL)[0];                       // hot + cold in room
+  assert.deepEqual(s.products.map(p => p.label), ['CLIMA Versa+ (Hot, Cold)']);
+  assert.equal(s.exactMatch, true);
+  s.products.forEach(p => assert.equal(p.area, 'inRoom'));
+  const amb = R.solutions(Object.assign({}, base, { temps: 'ambient' }), PL)[0];
+  assert.deepEqual(amb.products.map(p => p.label), ['SMART Classic+', 'SAN Classic+', 'CLIMA Unico+ (Hot, Ambient)']); // cheapest first; the tap is used for the investment
+  const spark = R.solutions(Object.assign({}, base, { temps: 'sparkling' }), PL)[0];
+  assert.equal(spark.exactMatch, false);
+  assert.equal(spark.products.length, 4);                    // all In-Room lines listed
+  assert.match(spark.notes.join(' '), /CLIMA Vida S/);
+  const station = R.solutions(Object.assign({}, base, { areas: ['fnb'] }), PL)[0];
+  assert.equal(station.products[0].label, 'CLIMA Versa (Hot, Cold)');
+  station.products.forEach(p => assert.equal(p.area, 'fnb'));
+  const empty = { AREAS: PL.AREAS, loaded: () => false };
+  assert.match(R.solutions(base, empty)[0].productNote, /not loaded/);
 });
 
 test('filtration text is generic (no micron claims) and flags follow the supply answers', () => {

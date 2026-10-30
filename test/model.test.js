@@ -72,7 +72,7 @@ test('register integrity: kinds, statuses, URLs, rules, assumption notes', () =>
     const f = F.factors[k];
     assert.ok(kinds.includes(f.kind), k + ' kind');
     if (f.kind === 'sourced') {
-      assert.ok(['opened', 'unverified', 'missing'].includes(f.status), k + ' status');
+      assert.ok(['opened', 'team-opened', 'unverified', 'missing'].includes(f.status), k + ' status');
       assert.ok(f.source && /^https?:\/\//.test(f.source.url), k + ' url');
       if (f.status === 'missing') assert.equal(f.value, null);
     }
