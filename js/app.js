@@ -51,12 +51,12 @@
     app.appendChild(el('section', { class: 'hero' },
       el('p', { class: 'eyebrow', text: 'Swisspro Sustainability Wizard' }),
       el('h1', { text: 'What does filtered water instead of bottled water mean for your hotel?' }),
-      el('p', { class: 'lead', text: 'Nine quick answers. You get the bottles, plastic and CO2e avoided, the money and staff time saved, the payback, and the Swisspro unit that fits, with every source shown.' }),
+      el('p', { class: 'lead', text: 'Nine quick answers. You get the bottles, plastic and CO2e avoided, the money and staff time saved, the payback, and the Swisspro unit that fits.' }),
       el('div', { class: 'actions' },
         el('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); } }, 'Start'),
         Object.keys(state.answers).length ? el('button', { class: 'btn btn-secondary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; save(); render(); } }, 'Continue') : null
       ),
-      el('p', { class: 'small muted', text: 'About one minute. Nothing is sent unless you request a proposal.' })
+      el('p', { class: 'small muted', text: 'About one minute.' })
     ));
   }
 
@@ -95,8 +95,7 @@
               if (f.type === 'single' && singleAuto) setTimeout(next, 160); else renderStep();
             } },
             el('span', { class: 'opt-label', text: o.label }),
-            o.desc ? el('span', { class: 'opt-desc', text: o.desc }) : null,
-            o.kind ? tag({ kind: o.kind, status: o.status }) : null));
+            o.desc ? el('span', { class: 'opt-desc', text: o.desc }) : null));
         });
         wrap.appendChild(group);
       } else if (f.type === 'number' || f.type === 'text' || f.type === 'email') {
@@ -227,18 +226,17 @@
       if (tags && tags.length) { var b = el('div', { class: 'basis' }); tags.forEach(function (x) { b.appendChild(x); }); t.appendChild(b); }
       return t;
     }
-    tiles.appendChild(tile('Bottles avoided per year', fmt.int(c.bottles.total), null, fmt.int(c.env.litres) + ' litres', [tag(prov.occupancy), tag(prov.bottlesPerRoomNight)]));
-    tiles.appendChild(tile('Plastic avoided per year', c.env.packagingKg != null ? fmt.int(c.env.packagingKg) : 'none', c.env.packagingKg != null ? 'kg' : null, c.env.packagingKg != null ? fmt.dec(c.env.bottleWeightG, 1) + ' g per bottle' : 'Glass bottles', c.env.packagingKg != null ? [inp.bottleSizeMl === 500 ? tag(F.factors.pet_bottle_weight_500ml_g) : tag({ kind: 'derived' })] : []));
-    tiles.appendChild(tile('CO2e avoided per year', c.env.quantified ? fmt.dec(c.env.co2eKg / 1000, 1) : '-', c.env.quantified ? 't' : null, c.env.quantified ? fmt.int(c.env.co2eCarKm) + ' km by car' : 'Not estimated', c.env.quantified ? [tag(c.env.material === 'glass' ? F.factors.glass_co2e : F.factors.co2e_kg_per_kg_pet)] : []));
-    tiles.appendChild(tile('Bottled-water spend avoided per year', inp.pricePerBottle > 0 ? money(ctx, c.spend.annualLocal) : '-', null, inp.pricePerBottle > 0 ? fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + usd(ctx, c.spend.annualLocal) : 'No price set', [tag(prov.pricePerBottle)]));
-    tiles.appendChild(tile('Staff time freed per year', fmt.int(c.labour.hours), 'hours', c.labour.quantified ? 'worth ' + money(ctx, c.labour.costLocal) : null, [tag(prov.minutesPerRoomPerDay), tag(prov.wageHourly)]));
+    tiles.appendChild(tile('Bottles avoided per year', fmt.int(c.bottles.total), null, fmt.int(c.env.litres) + ' litres'));
+    tiles.appendChild(tile('Plastic avoided per year', c.env.packagingKg != null ? fmt.int(c.env.packagingKg) : 'none', c.env.packagingKg != null ? 'kg' : null, c.env.packagingKg != null ? fmt.dec(c.env.bottleWeightG, 1) + ' g per bottle' : 'Glass bottles'));
+    tiles.appendChild(tile('CO2e avoided per year', c.env.quantified ? fmt.dec(c.env.co2eKg / 1000, 1) : '-', c.env.quantified ? 't' : null, c.env.quantified ? fmt.int(c.env.co2eCarKm) + ' km by car' : 'Not estimated'));
+    tiles.appendChild(tile('Bottled-water spend avoided per year', inp.pricePerBottle > 0 ? money(ctx, c.spend.annualLocal) : '-', null, inp.pricePerBottle > 0 ? fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + usd(ctx, c.spend.annualLocal) : 'No price set'));
+    tiles.appendChild(tile('Staff time freed per year', fmt.int(c.labour.hours), 'hours', c.labour.quantified ? 'worth ' + money(ctx, c.labour.costLocal) : null));
     root.appendChild(tiles);
 
     root.appendChild(renderPayback(ctx));
     root.appendChild(renderSolution(ctx));
     root.appendChild(renderMore(ctx));
     root.appendChild(renderAdjust(ctx));
-    root.appendChild(renderSources(ctx));
     root.appendChild(renderProposal(ctx));
     app.appendChild(root);
     document.getElementById('restart-top').hidden = false;
@@ -248,19 +246,18 @@
     var c = ctx.calc, inp = ctx.n.inputs, pr = ctx.pr, o = state.overrides, SV = PL.pricelist.servicing, cur = PL.pricelist.currency.value;
     var card = el('section', { class: 'card' });
     card.appendChild(el('h3', { text: 'Payback' }));
-    var grid = el('div', { class: 'adjust' });
-    grid.appendChild(el('div', {},
-      el('label', { for: 'ov-capex' }, 'Investment, ' + fmt.int(pr.units) + ' units (' + inp.currency + ') ', pr.capexSource === 'pricelist' ? tag({ kind: 'sourced' }, 'Price list') : (pr.capexSource === 'user' ? tag('user') : tag({ kind: 'missing' }, 'From proposal'))),
-      el('input', { class: 'input', id: 'ov-capex', type: 'number', min: 0, step: 1, value: o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), placeholder: 'enter from your proposal', onchange: function (e) { o.capex = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
+    var grid = el('div', { class: 'adjust adjust-4' });
+    grid.appendChild(el('div', {}, el('label', { for: 'ov-capex', text: 'Investment (' + inp.currency + ')' }),
+      el('input', { class: 'input', id: 'ov-capex', type: 'number', min: 0, step: 1, value: o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), placeholder: 'from your proposal', onchange: function (e) { o.capex = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
     var sel = el('select', { class: 'input', id: 'ov-reading', onchange: function (e) { o.serviceReading = e.target.value; delete o.annualService; save(); renderResults(); } });
-    SV.readings.forEach(function (r) { var opt = el('option', { value: r.id, text: r.label + ' (' + fmt.dec(PL.inRoomServicePerYear(r.id, pr.months), 2) + ' ' + cur + ' per unit and year)' }); if (r.id === pr.reading) opt.selected = true; sel.appendChild(opt); });
-    grid.appendChild(el('div', {}, el('label', { for: 'ov-reading' }, 'Service line 85.00 read as ', tag({ kind: 'assumption' })), sel));
-    if (pr.reading === 'perChange') grid.appendChild(el('div', {}, el('label', { for: 'ov-months' }, 'Months between changes ', tag({ kind: 'sourced', status: 'team-reported' })), el('input', { class: 'input', id: 'ov-months', type: 'number', min: 1, max: 36, step: 1, value: pr.months, onchange: function (e) { o.changeMonths = Number(e.target.value) || SV.changeIntervalMonths.value; delete o.annualService; save(); renderResults(); } })));
-    grid.appendChild(el('div', {},
-      el('label', { for: 'ov-service' }, 'Service contract per year (' + inp.currency + ') ', pr.servicingSource === 'user' ? tag('user') : tag({ kind: 'derived' })),
+    var SHORT = { perChange: 'Per filter change', perYear: 'Per year', perContract2y: 'Per 2-year contract' };
+    SV.readings.forEach(function (r) { var opt = el('option', { value: r.id, text: SHORT[r.id] || r.label }); if (r.id === pr.reading) opt.selected = true; sel.appendChild(opt); });
+    grid.appendChild(el('div', {}, el('label', { for: 'ov-reading', text: 'Service price 85.00 is' }), sel));
+    grid.appendChild(el('div', {}, el('label', { for: 'ov-months', text: 'Months between changes' }), el('input', { class: 'input', id: 'ov-months', type: 'number', min: 1, max: 36, step: 1, value: pr.months, disabled: pr.reading === 'perChange' ? null : 'disabled', onchange: function (e) { o.changeMonths = Number(e.target.value) || SV.changeIntervalMonths.value; delete o.annualService; save(); renderResults(); } })));
+    grid.appendChild(el('div', {}, el('label', { for: 'ov-service', text: 'Service per year (' + inp.currency + ')' }),
       el('input', { class: 'input', id: 'ov-service', type: 'number', min: 0, step: 1, value: Math.round(pr.servicingLocal), onchange: function (e) { o.annualService = e.target.value === '' ? null : Number(e.target.value); save(); renderResults(); } })));
     card.appendChild(grid);
-    if (pr.unpriced.length) card.appendChild(el('p', { class: 'notice', text: 'No price-list line matches ' + pr.unpriced.map(function (u) { return u.area; }).join(' and ') + '; enter the investment from your proposal.' }));
+    if (pr.unpriced.length) card.appendChild(el('p', { class: 'notice', text: 'No listed unit for ' + pr.unpriced.map(function (u) { return u.area; }).join(' and ') + '. Enter the investment from your proposal.' }));
     if (c.payback.available) {
       var pb = c.payback;
       var t = el('table', { class: 'kv kv-wide' });
@@ -274,12 +271,10 @@
       row('Five-year net saving, cash', money(ctx, pb.fiveYearNetCash));
       row('Five-year net saving incl. staff time', money(ctx, pb.fiveYearNetFull));
       card.appendChild(t);
-      if (pb.cashSavingsPerYear <= 0) card.appendChild(el('p', { class: 'notice', text: 'At this bottle price the service contract costs more than the water it replaces. Check the price you really pay and the service reading.' }));
+      if (pb.cashSavingsPerYear <= 0) card.appendChild(el('p', { class: 'notice', text: 'At this bottle price the service contract costs more than the water it replaces.' }));
     } else {
       card.appendChild(el('p', { class: 'muted small', text: 'Enter the investment to see the payback.' }));
     }
-    card.appendChild(el('details', { class: 'fine' }, el('summary', { text: 'How this is calculated' }),
-      el('p', { class: 'small muted', text: 'Investment: lowest-priced matching price-list line x units (installation not included). Service: ' + fmt.int(pr.inRoomUnits) + ' in-room units x ' + fmt.dec(pr.inRoomPerYear, 2) + ' + ' + fmt.int(pr.stations) + ' stations x 350.00 = ' + fmt.int(pr.servicingListPerYear) + ' ' + cur + ' per year, converted at the register\'s exchange rates. The 85.00 line prints no interval; the default reads it per change every 9 months (price list, residential section). Currency ' + cur + ' is assumed. ' + R.approvalNote(c.payback.available ? c.payback.capex * inp.usdPerLocal : null) })));
     return card;
   }
 
@@ -290,20 +285,19 @@
     rec.solutions.forEach(function (s) {
       var units = s.area === 'inRoom' ? rec.unitPlan.inRoom : rec.unitPlan.stations;
       var box = el('div', { class: 'product' });
-      box.appendChild(el('div', { class: 'product-head' }, el('h4', { text: s.title }), el('span', { class: 'muted small', text: s.areaLabel + ' section, ' + fmt.int(units) + (units === 1 ? ' unit' : ' units') + ', for ' + s.covers.join(', ') })));
+      box.appendChild(el('div', { class: 'product-head' }, el('h4', { text: s.title }), el('span', { class: 'muted small', text: fmt.int(units) + (units === 1 ? ' unit' : ' units') + ' for ' + s.covers.join(', ') })));
       var ul = el('ul', { class: 'lines' });
       s.products.forEach(function (p, i) { ul.appendChild(el('li', { class: i === 0 && s.exactMatch ? 'pick' : null }, el('span', { class: 'line-name' }, el('strong', { text: p.label }), el('span', { class: 'muted small', text: ' ' + p.name })), el('span', { class: 'line-price', text: p.price.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' ' + cur }))); });
       box.appendChild(ul);
-      box.appendChild(el('p', { class: 'small muted', text: s.productNote + (s.notes.length ? ' ' + s.notes.join(' ') : '') }));
+      if (!s.exactMatch && s.notes.length) box.appendChild(el('p', { class: 'small muted', text: s.notes.join(' ') }));
       card.appendChild(box);
     });
-    card.appendChild(el('p', { class: 'small muted', text: 'Filtration specification, water test and installation are confirmed in the proposal. ' + rec.unitPlan.note }));
     return card;
   }
 
   function renderMore(ctx) {
     var c = ctx.calc, inp = ctx.n.inputs, rec = ctx.rec;
-    var d = el('details', { class: 'card fine' }, el('summary', { text: 'More: logistics, per-room figures, how to argue the case' }));
+    var d = el('details', { class: 'card fine' }, el('summary', { text: 'Logistics and per-room figures' }));
     var t = el('table', { class: 'kv' });
     function row(k, v) { t.appendChild(el('tr', {}, el('th', { text: k }), el('td', { text: v }))); }
     row('Cartons per year', fmt.int(c.logistics.cartonsPerYear));
@@ -314,7 +308,6 @@
     row('Staff time as full-time equivalents', fmt.dec(c.labour.fteEquivalent, 2) + ' FTE');
     if (inp.rooms > 0) { row('Bottles per room per year', fmt.int(c.bottles.roomBottles / inp.rooms)); if (inp.pricePerBottle > 0) row('Spend per room per year', money(ctx, c.spend.annualLocal / inp.rooms)); }
     d.appendChild(t);
-    d.appendChild(el('p', { class: 'small', style: 'margin-top:12px' }, el('strong', { text: 'Order of arguments' + (rec.cheapWater ? ' (bottled water is cheap here)' : '') + ': ' }), rec.arguments.map(function (x) { return x.title; }).join(', ') + '. Source: Marriott VP Procurement APAC, interview, October 2026.'));
     return d;
   }
 
@@ -324,14 +317,14 @@
     var grid = el('div', { class: 'adjust', style: 'margin-top:12px' });
     function field(id, label, value, step, p, extra) {
       var d = el('div', {});
-      d.appendChild(el('label', { for: 'ov-' + id }, label + ' ', tag(p)));
+      d.appendChild(el('label', { for: 'ov-' + id, text: label }));
       d.appendChild(el('input', Object.assign({ class: 'input', id: 'ov-' + id, type: 'number', step: step, min: 0, value: value, onchange: function (e) { if (e.target.value === '') delete o[id]; else o[id] = Number(e.target.value); if (id === 'occupancy' && o[id] != null) o[id] = o[id] / 100; save(); renderResults(); } }, extra || {})));
       return d;
     }
     grid.appendChild(field('occupancy', 'Occupancy (%)', Math.round(inp.occupancy * 1000) / 10, 1, prov.occupancy, { max: 100 }));
     grid.appendChild(field('bottlesPerRoomNight', 'Bottles per room and night', inp.bottlesPerRoomNight, 0.5, prov.bottlesPerRoomNight));
     grid.appendChild(field('pricePerBottle', 'Price per bottle (' + inp.currency + ')', Math.round(inp.pricePerBottle * 1000) / 1000, 0.01, prov.pricePerBottle));
-    grid.appendChild(field('otherBottlesPerDay', 'Bottles outside rooms per day', inp.otherBottlesPerDay, 1, { kind: o.otherBottlesPerDay != null ? 'user' : 'assumption' }));
+    grid.appendChild(field('otherBottlesPerDay', 'Bottles outside rooms per day', inp.otherBottlesPerDay, 1, null));
     if (c.env.packagingKg != null) grid.appendChild(field('bottleWeightG', 'Bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1, inp.bottleWeightOverrideG != null ? { kind: 'user' } : (inp.bottleSizeMl === 500 ? F.factors.pet_bottle_weight_500ml_g : { kind: 'derived' })));
     grid.appendChild(field('minutesPerRoomPerDay', 'Housekeeping minutes per room and day', inp.minutesPerRoomPerDay, 0.5, prov.minutesPerRoomPerDay));
     grid.appendChild(field('minutesPerCarton', 'Minutes per carton', inp.minutesPerCarton, 0.5, prov.minutesPerCarton));
@@ -398,7 +391,7 @@
     var p = state.proposal;
     var card = el('section', { class: 'card' });
     card.appendChild(el('h3', { text: 'Request a proposal' }));
-    card.appendChild(el('p', { class: 'small muted', text: 'All fields optional. Nothing is sent automatically.' }));
+
     var grid = el('div', { class: 'adjust' });
     Q.proposalFields.forEach(function (f) {
       var d = el('div', {});
@@ -425,7 +418,7 @@
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); scrollTop(); } }, 'Change my answers'),
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: restart }, 'Start over'));
     card.appendChild(actions);
-    card.appendChild(el('p', { class: 'small muted', text: (ARTIFACT ? 'In this preview the email button may do nothing. ' : '') + 'Or send the summary to ' + PL.leadEmail + ' yourself.' }));
+    if (ARTIFACT) card.appendChild(el('p', { class: 'small muted', text: 'In this preview the email button may do nothing; copy the summary instead.' }));
     card.appendChild(el('details', {}, el('summary', { text: 'Show the summary text' }), ta));
     return card;
   }

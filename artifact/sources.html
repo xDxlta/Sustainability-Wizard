@@ -63,7 +63,7 @@ a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 
 /* ------------------------------------------------------------------ header / footer */
-.site-header { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+.site-header { background: var(--surface); border-bottom: 1px solid var(--line); position: static; top: 0; z-index: 10; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); min-height: 64px; }
 .brand { display: flex; align-items: center; gap: var(--s-3); color: var(--brand-700); text-decoration: none; }
 .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(160deg, var(--accent) 0%, var(--brand) 100%); position: relative; flex: none; }
@@ -187,7 +187,11 @@ details.card > .kv { width: calc(100% - 2 * var(--s-6)); margin-top: var(--s-3);
 details.fine > p, details.fine > .actions { margin-top: var(--s-3); }
 .adjust { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-4); }
 .adjust > div { display: grid; gap: var(--s-2); align-content: start; min-width: 0; }
-.adjust label { font-size: var(--fs-sm); color: var(--ink-2); display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); line-height: 1.3; min-height: 2.6em; align-content: end; }
+.adjust label { font-size: var(--fs-sm); color: var(--ink-2); display: block; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adjust-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 860px) { .adjust-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .adjust-4 { grid-template-columns: 1fr; } }
+.adjust .input:disabled { opacity: .45; }
 .adjust .input { max-width: none; }
 .adjust .small.muted { font-size: var(--fs-xs); }
 .sources-list { margin: 0; padding-left: 0; list-style: none; display: grid; gap: var(--s-2); font-size: var(--fs-sm); }

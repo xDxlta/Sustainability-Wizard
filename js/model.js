@@ -12,10 +12,10 @@
   function bottlePriceOptions(F, countryCode) {
     var c = F.countries[countryCode] || F.countries.OTHER;
     var opts = c.bottlePrices.map(function (b) {
-      return { id: b.id, label: b.label, desc: c.symbol + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle: ' + b.ref, value: b.price, kind: b.kind, status: b.status, url: b.url };
+      return { id: b.id, label: b.label, desc: c.symbol + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle', value: b.price, kind: b.kind, status: b.status, url: b.url };
     });
-    if (opts.length) opts.unshift({ id: 'unknown', label: 'Not sure, use the lowest reference price', desc: 'Conservative: the cheapest published carton price for the market.' });
-    opts.push({ id: 'custom', label: 'I know our price, let me enter it' });
+    if (opts.length) opts.unshift({ id: 'unknown', label: 'Not sure', desc: 'We use the lowest reference price' });
+    opts.push({ id: 'custom', label: 'Enter our price' });
     return opts;
   }
 

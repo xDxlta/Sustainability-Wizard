@@ -93,7 +93,7 @@ const scenarios = {
       // texts that must not appear (unverified product claims, sales questions, lead score)
       const bodyText = await page.evaluate(() => document.body.innerText);
       ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
-      if (!/unverified/i.test(bodyText)) errors.push('no "unverified" label visible');
+
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
       for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); }
