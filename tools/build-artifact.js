@@ -9,9 +9,9 @@ if (/<\/script/i.test(scripts) || /<\/style/i.test(css)) throw new Error('cannot
 let body = read('index.html').match(/<body>([\s\S]*)<\/body>/)[1].replace(/\s*<script[^>]*><\/script>/g, '');
 const wizard = `<title>Swisspro Sustainability Wizard</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<style>\n${css}\n</style>\n${body.trim()}\n<script>window.SW_ARTIFACT = true;</script>\n<script>\n${scripts}\n</script>\n`;
 let sources = read('sources.html')
-  .replace('<link rel="stylesheet" href="styles.css">', `<style>\n${css}\n</style>`)
+  .replace(/<link rel="stylesheet" href="styles\.css(\?[^"]*)?">/, () => `<style>\n${css}\n</style>`)
   .replace(/\s*<link rel="icon"[^>]*>/, '')
-  .replace('<script src="js/factors.js"></script>\n  <script src="js/pricelist.js"></script>', `<script>\n${read('js/factors.js')}\n${read('js/pricelist.js')}\n</script>`);
+  .replace(/<script src="js\/factors\.js(\?[^"]*)?"><\/script>\s*<script src="js\/pricelist\.js(\?[^"]*)?"><\/script>/, () => `<script>\n${read('js/factors.js')}\n${read('js/pricelist.js')}\n</script>`);
 if (sources.includes('src="js/')) throw new Error('sources.html: script tags not inlined');
 fs.mkdirSync(path.join(root, 'artifact'), { recursive: true });
 fs.writeFileSync(path.join(root, 'artifact', 'wizard.html'), wizard);
