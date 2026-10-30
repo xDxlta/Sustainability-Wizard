@@ -15,10 +15,10 @@ The wizard turns ten multiple-choice answers into an indicative business case. A
 Where sources disagree, one value per factor is chosen by a rule stated once in `js/factors.js` (`rules`): newest official national occupancy figure (official year-to-date if the year is incomplete, named consultancy if no official series); statutory minimum wage 2025 (Bali for Indonesia); lowest published national-brand carton price; one USD rate per currency on a single reference date; newest UK Government PET factor; IBWA 500 ml bottle weight.
 
 ## Formulas
-Let R = rooms, O = occupancy, B = bottles per occupied room-night, D = 365, X = bottles used outside rooms per day.
+Let R = rooms, O = occupancy, B = bottles per occupied room-night, D = 365.
 
 1. Occupied room-nights `N = R x O x D`
-2. Bottles avoided per year `Q = N x B + X x D`
+2. Bottles avoided per year `Q = N x B` (guest rooms only; no published figure exists for bottles used outside the rooms, so they are not counted)
 3. Litres `= Q x size / 1000`
 4. Plastic avoided `= Q x w(size) / 1000` kg, where `w(500) = 9.89 g` (IBWA/BMC) and `w(s) = 9.89 x (s/500)^(2/3)` for other sizes (assumption).
    Glass bottles: no opened source for a weight, so not quantified; reusable glass already avoids single-use packaging.
@@ -27,7 +27,6 @@ Let R = rooms, O = occupancy, B = bottles per occupied room-night, D = 365, X = 
 6. Bottled-water spend avoided `= Q x price per bottle` (local currency; sourced carton prices or the user's own).
 7. Housekeeping time `= N x minutes per room / 60 + (Q / 24) x minutes per carton / 60` hours; value `= hours x hourly wage`, where hourly wage = monthly reference wage / (2080/12).
 8. Logistics: cartons `= Q / 24`; pallets `= Q / (1872 x 500/size)`; peak pallets `= pallets x stock weeks / 52`; store area `= peak pallets x 1.2 m2 x aisle multiplier`; deliveries `= 52 / stock weeks`; tonnes carried `= Q x (size/1000 + w/1000) / 1000`.
-Bottles used outside the rooms (X) default to 0 and are set in the adjust panel.
 
 9. Service contract per year `= in-room units x s + stations x 350.00`, where `s` is the reading of the 85.00 In-Room line: per change every m months `= 85 x 12 / m` (default, m = 9: 113.33), per year `= 85`, per 2-year contract `= 42.50`; converted from the list currency (SGD, assumption) with the register's exchange rates. Units `= rooms (in-room) + one station per other area` (assumption).
 10. Investment `= sum over areas of (lowest-priced matching list line x units)`; if an area has no matching line (in-room sparkling), the hotel enters the figure from its proposal.

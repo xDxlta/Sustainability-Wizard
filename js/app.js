@@ -323,8 +323,7 @@
     function tile(label, value, unit, sub) {
       return el('div', { class: 'tile' }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length >= 9 ? ' value-long' : ''), text: value }, unit ? el('span', { class: 'unit', text: ' ' + unit }) : null), el('div', { class: 'sub', text: sub || '' }));
     }
-    var outsideAreas = ['fnb', 'meetings', 'boh'].some(function (k) { return has(a.areas, k); });
-    tiles.appendChild(tile('Bottles avoided', fmt.int(c.bottles.total), null, fmt.int(c.env.litres) + ' litres a year' + (inp.otherBottlesPerDay > 0 ? ', ' + fmt.int(inp.otherBottlesPerDay) + ' a day outside the rooms included' : (outsideAreas ? ', guest rooms only' : ''))));
+    tiles.appendChild(tile('Bottles avoided', fmt.int(c.bottles.total), null, fmt.int(c.env.litres) + ' litres a year'));
     if (c.env.packagingKg != null) tiles.appendChild(tile('Plastic avoided', fmt.int(c.env.packagingKg), 'kg', fmt.dec(c.env.bottleWeightG, 1) + ' g per bottle'));
     else tiles.appendChild(tile('Cartons avoided', fmt.int(c.logistics.cartonsPerYear), null, fmt.int(c.logistics.palletsPerYear) + ' pallets a year'));
     tiles.appendChild(tile('CO2e avoided', c.env.quantified ? fmt.dec(c.env.co2eKg / 1000, 1) : '-', c.env.quantified ? 't' : null, c.env.quantified ? (fmt.int(c.env.co2eCarKm) + ' km by car' + (inp.bottleMaterial === 'glass' && !inp.glassReusable ? ', at least' : '')) : 'Not estimated'));
@@ -466,7 +465,6 @@
     field(g1, 'occupancy', 'Occupancy (%)', Math.round(inp.occupancy * 1000) / 10, 1, { max: 100 }, ctx.n.provenance.occupancy.kind === 'user' ? 'Your figure' : 'National average');
     field(g1, 'bottlesPerRoomNight', 'Bottles per room and night', inp.bottlesPerRoomNight, 0.5);
     field(g1, 'pricePerBottle', 'Price per bottle (' + inp.currency + ')', Math.round(inp.pricePerBottle * 1000) / 1000, 0.01, null, ctx.n.provenance.pricePerBottle.kind === 'user' ? 'Your price' : 'Reference price');
-    field(g1, 'otherBottlesPerDay', 'Bottles outside the rooms per day', inp.otherBottlesPerDay, 1, null, inp.otherBottlesPerDay > 0 ? 'Your figure' : 'Not counted unless you enter them');
     if (c.env.packagingKg != null) field(g1, 'bottleWeightG', 'Empty bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1);
     var g2 = group('Investment and service');
     field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, (pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list')) + (pr.capexLocal != null ? ', ' + money(ctx, pr.capexLocal) : ''));
@@ -483,7 +481,7 @@
     var g3 = group('Staff time');
     field(g3, 'minutesPerRoomPerDay', 'Minutes per room and day, bottles', inp.minutesPerRoomPerDay, 0.5);
     field(g3, 'minutesPerCarton', 'Minutes per carton', inp.minutesPerCarton, 0.5);
-    field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day, filtered', inp.newMinutesPerRoomPerDay, 0.5, null, state.answers.temps === 'sparkling' ? 'Not counted yet; add time for refilling sparkling water' : 'Refilling carafes, for example');
+    field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day, filtered', inp.newMinutesPerRoomPerDay, 0.5);
     field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : (ctx.n.country.wageMonthly.label || 'Minimum wage') + ', adjust for your property');
     field(g3, 'stockWeeks', 'Weeks of stock on site', inp.stockWeeks, 1);
     card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; save(); renderResults(); } }, 'Reset to the defaults')));
@@ -537,7 +535,7 @@
     if (extra.length) L.push(extra.join('. ') + '.');
     L.push('');
     L.push('Indicative figures per year');
-    L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' litres)' + (inp.otherBottlesPerDay > 0 ? ', including ' + fmt.int(inp.otherBottlesPerDay) + ' a day outside the rooms' : ', guest rooms only'));
+    L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' litres)');
     if (c.env.packagingKg != null) L.push('- Plastic avoided: ' + fmt.int(c.env.packagingKg) + ' kg');
     if (c.env.quantified) L.push('- CO2e avoided: ' + fmt.dec(c.env.co2eKg / 1000, 1) + ' t');
     if (inp.pricePerBottle > 0) L.push('- Bottled water bought today: ' + m(c.spend.annualLocal));
