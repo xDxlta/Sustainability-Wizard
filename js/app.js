@@ -70,7 +70,7 @@
 
     app.appendChild(el('div', { class: 'progress' },
       el('span', { text: 'Step ' + (state.step + 1) + ' of ' + steps.length }),
-      el('div', { class: 'progress-bar' }, el('span', { style: 'width:' + Math.round(state.step / steps.length * 100) + '%' }))));
+      el('div', { class: 'progress-bar' }, el('span', { style: 'width:' + Math.round((state.step + 1) / steps.length * 100) + '%' }))));
 
     var card = el('section', { class: 'card step', 'aria-labelledby': 'step-title' });
     card.appendChild(el('h2', { id: 'step-title', text: step.title }));
@@ -83,7 +83,8 @@
       if (f.label) wrap.appendChild(el('div', { class: 'field-label', id: 'lbl-' + f.id, text: f.label }));
       if (f.type === 'single' || f.type === 'multi') {
         var opts = fieldOptions(f);
-        var group = el('div', { class: 'options', role: f.type === 'single' ? 'radiogroup' : 'group', 'aria-labelledby': f.label ? 'lbl-' + f.id : 'step-title' });
+        var listMode = opts.some(function (o) { return o.desc && o.desc.length > 40; });
+        var group = el('div', { class: 'options' + (listMode ? ' options-list' : ''), role: f.type === 'single' ? 'radiogroup' : 'group', 'aria-labelledby': f.label ? 'lbl-' + f.id : 'step-title' });
         opts.forEach(function (o) {
           var selected = f.type === 'single' ? a[f.id] === o.id : has(a[f.id], o.id);
           group.appendChild(el('button', { type: 'button', class: 'opt' + (selected ? ' selected' : ''), role: f.type === 'single' ? 'radio' : 'checkbox', 'aria-checked': selected ? 'true' : 'false', 'data-opt': o.id,
@@ -222,7 +223,7 @@
 
     var tiles = el('div', { class: 'tiles' });
     function tile(label, value, unit, sub, tags) {
-      var t = el('div', { class: 'tile' }, el('div', { class: 'label', text: label }), el('div', { class: 'value', text: value }, unit ? el('span', { class: 'unit', text: ' ' + unit }) : null), sub ? el('div', { class: 'sub', text: sub }) : null);
+      var t = el('div', { class: 'tile' }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length > 9 ? ' value-long' : ''), text: value }, unit ? el('span', { class: 'unit', text: ' ' + unit }) : null), sub ? el('div', { class: 'sub', text: sub }) : null);
       if (tags && tags.length) { var b = el('div', { class: 'basis' }); tags.forEach(function (x) { b.appendChild(x); }); t.appendChild(b); }
       return t;
     }
