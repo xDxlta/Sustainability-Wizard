@@ -44,7 +44,6 @@
       minutes_per_carton_default: 'Receiving, storing and distributing one carton.',
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
-      cheap_water_threshold_usd: 'Below this price the result page leads with efficiency instead of cost.'
     };
     var h = '<h2>Calculation factors</h2>';
     Object.keys(F.factors).forEach(function (k) {
@@ -56,7 +55,7 @@
     h = '<h2>Market reference values</h2><p class="small muted">Used when you answer "Not sure". Occupancy: the newest official national figure for the latest full year. Labour: the statutory minimum wage in force, so the staff-time value is conservative. Bottle price: the lowest published carton price of a national brand in 500 or 600 ml bottles. Exchange rate: one published US-dollar rate per currency on a reference date in late October 2026.</p>';
     F.marketOrder.filter(function (code) { return code !== 'OTHER'; }).forEach(function (code) {
       var c = F.countries[code];
-      h += '<div class="factor"><h3>' + esc(c.name) + ' (' + esc(c.currency) + ')</h3>';
+      h += '<div class="factor"><h3>' + esc(c.name.charAt(0).toUpperCase() + c.name.slice(1)) + ' (' + esc(c.currency) + ')</h3>';
       h += '<p><strong>Exchange rate:</strong> ' + val(1 / c.fx.value, c.currency + ' per USD') + '</p>' + src(c.fx.source);
       h += '<p><strong>Occupancy:</strong> ' + val(Math.round(c.occupancy.value * 1000) / 10, '%, ' + (c.occupancy.unit || '')) + '</p>' + src(c.occupancy.source);
       h += '<p><strong>Labour cost reference:</strong> ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + '</p>' + src(c.wageMonthly.source);

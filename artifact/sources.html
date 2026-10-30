@@ -217,7 +217,7 @@ details.card > .kv { width: calc(100% - 2 * var(--s-6)); margin-top: var(--s-3);
 details.fine > p, details.fine > .actions { margin-top: var(--s-3); }
 .adjust { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-4); }
 .adjust > div { display: grid; gap: var(--s-2); align-content: start; min-width: 0; }
-.adjust label { font-size: var(--fs-sm); color: var(--ink-2); display: block; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adjust label { font-size: var(--fs-sm); color: var(--ink-2); display: block; line-height: 1.3; min-height: 2.6em; display: flex; align-items: flex-end; }
 .adjust-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 860px) { .adjust-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 460px) { .adjust-4 { grid-template-columns: 1fr; } }
@@ -388,8 +388,8 @@ details.fine summary { font-weight: 600; }
 
     /* ------------------------------------------------------------------ labour */
     working_hours_per_fte_year: { value: 2080, unit: 'hours per full-time employee per year', kind: 'assumption', label: 'Hours per full-time equivalent', note: '40 hours x 52 weeks; used to convert monthly wages to hourly (2080 / 12 = 173.3 h per month) and hours to FTE. Statutory weeks in the region are 40 to 45 h.' },
-    minutes_per_room_per_day_default: { value: 1, unit: 'minutes of housekeeping time per occupied room per day', kind: 'assumption', label: 'Bottle handling time per occupied room', note: 'No published figure exists. Covers restocking bottles from the trolley, removing empties and reloading the trolley. Adjustable (0.5 to 3 min).' },
-    minutes_per_carton_default: { value: 2, unit: 'minutes of receiving, storing and distributing time per carton', kind: 'assumption', label: 'Handling time per carton', note: 'Receiving the delivery, moving cartons to the store and up to floor pantries, opening cartons, disposing of shrink-wrap. Adjustable.' },
+    minutes_per_room_per_day_default: { value: 1, unit: 'minute(s) of housekeeping time per occupied room per day', kind: 'assumption', label: 'Bottle handling time per occupied room', note: 'No published figure exists. Covers restocking bottles from the trolley, removing empties and reloading the trolley. Adjustable (0.5 to 3 min).' },
+    minutes_per_carton_default: { value: 2, unit: 'minute(s) of receiving, storing and distributing time per carton', kind: 'assumption', label: 'Handling time per carton', note: 'Receiving the delivery, moving cartons to the store and up to floor pantries, opening cartons, disposing of shrink-wrap. Adjustable.' },
     bottles_per_room_night_default: {
       value: 2, unit: 'complimentary bottles per occupied room per night', kind: 'assumption', label: 'Bottles per occupied room-night',
       note: 'Industry case studies describe "two bottles a night" (Aquablu, Sheraton Brussels Airport) and "two 750 ml bottles per room per day" (Topia Water model). Fairmont Singapore and Swissotel The Stamford report avoiding 1.5 million bottles a year across 2,030 rooms (about 2 per room per day). All three pages unverified: https://www.aquablu.com/stories/the-future-of-hospitality-embracing-sustainability-in-hotels , https://topiawater.com/case-study-streamline-200/ , https://www.swissotel-singapore-stamford.com/the-hotel/blog/sustainability-at-fairmont-singapore-swissotel-the-stamford/'
@@ -440,7 +440,7 @@ details.fine summary { font-weight: 600; }
       ]
     },
     PH: {
-      code: 'PH', name: 'Philippines', currency: 'PHP', symbol: '₱', decimals: 2,
+      code: 'PH', name: 'the Philippines', currency: 'PHP', symbol: '₱', decimals: 2,
       fx: { value: 1 / 63.453, unit: 'USD per PHP', kind: 'sourced', status: UNVERIFIED, rule: rules.fx,
         source: { publisher: 'Bangko Sentral ng Pilipinas reference rate (via taxcalculator.com.ph)', url: 'https://taxcalculator.com.ph/exchange-rates', quote: 'US$1 = ₱63.4530 on the bulletin of 26 October 2026', year: '2026-10-26', accessed: ACCESSED } },
       occupancy: { value: 0.60, unit: 'average hotel occupancy 2025', kind: 'sourced', status: UNVERIFIED, rule: rules.occupancy,
@@ -477,7 +477,6 @@ details.fine summary { font-weight: 600; }
       minutes_per_carton_default: 'Receiving, storing and distributing one carton.',
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
-      cheap_water_threshold_usd: 'Below this price the result page leads with efficiency instead of cost.'
     };
     var h = '<h2>Calculation factors</h2>';
     Object.keys(F.factors).forEach(function (k) {
@@ -489,7 +488,7 @@ details.fine summary { font-weight: 600; }
     h = '<h2>Market reference values</h2><p class="small muted">Used when you answer "Not sure". Occupancy: the newest official national figure for the latest full year. Labour: the statutory minimum wage in force, so the staff-time value is conservative. Bottle price: the lowest published carton price of a national brand in 500 or 600 ml bottles. Exchange rate: one published US-dollar rate per currency on a reference date in late October 2026.</p>';
     F.marketOrder.filter(function (code) { return code !== 'OTHER'; }).forEach(function (code) {
       var c = F.countries[code];
-      h += '<div class="factor"><h3>' + esc(c.name) + ' (' + esc(c.currency) + ')</h3>';
+      h += '<div class="factor"><h3>' + esc(c.name.charAt(0).toUpperCase() + c.name.slice(1)) + ' (' + esc(c.currency) + ')</h3>';
       h += '<p><strong>Exchange rate:</strong> ' + val(1 / c.fx.value, c.currency + ' per USD') + '</p>' + src(c.fx.source);
       h += '<p><strong>Occupancy:</strong> ' + val(Math.round(c.occupancy.value * 1000) / 10, '%, ' + (c.occupancy.unit || '')) + '</p>' + src(c.occupancy.source);
       h += '<p><strong>Labour cost reference:</strong> ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + '</p>' + src(c.wageMonthly.source);
@@ -545,7 +544,6 @@ details.fine summary { font-weight: 600; }
       minutes_per_carton_default: 'Receiving, storing and distributing one carton.',
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
-      cheap_water_threshold_usd: 'Below this price the result page leads with efficiency instead of cost.'
     };
     var h = '<h2>Calculation factors</h2>';
     Object.keys(F.factors).forEach(function (k) {
@@ -557,7 +555,7 @@ details.fine summary { font-weight: 600; }
     h = '<h2>Market reference values</h2><p class="small muted">Used when you answer "Not sure". Occupancy: the newest official national figure for the latest full year. Labour: the statutory minimum wage in force, so the staff-time value is conservative. Bottle price: the lowest published carton price of a national brand in 500 or 600 ml bottles. Exchange rate: one published US-dollar rate per currency on a reference date in late October 2026.</p>';
     F.marketOrder.filter(function (code) { return code !== 'OTHER'; }).forEach(function (code) {
       var c = F.countries[code];
-      h += '<div class="factor"><h3>' + esc(c.name) + ' (' + esc(c.currency) + ')</h3>';
+      h += '<div class="factor"><h3>' + esc(c.name.charAt(0).toUpperCase() + c.name.slice(1)) + ' (' + esc(c.currency) + ')</h3>';
       h += '<p><strong>Exchange rate:</strong> ' + val(1 / c.fx.value, c.currency + ' per USD') + '</p>' + src(c.fx.source);
       h += '<p><strong>Occupancy:</strong> ' + val(Math.round(c.occupancy.value * 1000) / 10, '%, ' + (c.occupancy.unit || '')) + '</p>' + src(c.occupancy.source);
       h += '<p><strong>Labour cost reference:</strong> ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + '</p>' + src(c.wageMonthly.source);
@@ -716,7 +714,6 @@ details.fine summary { font-weight: 600; }
       minutes_per_carton_default: 'Receiving, storing and distributing one carton.',
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
-      cheap_water_threshold_usd: 'Below this price the result page leads with efficiency instead of cost.'
     };
     var h = '<h2>Calculation factors</h2>';
     Object.keys(F.factors).forEach(function (k) {
@@ -728,7 +725,7 @@ details.fine summary { font-weight: 600; }
     h = '<h2>Market reference values</h2><p class="small muted">Used when you answer "Not sure". Occupancy: the newest official national figure for the latest full year. Labour: the statutory minimum wage in force, so the staff-time value is conservative. Bottle price: the lowest published carton price of a national brand in 500 or 600 ml bottles. Exchange rate: one published US-dollar rate per currency on a reference date in late October 2026.</p>';
     F.marketOrder.filter(function (code) { return code !== 'OTHER'; }).forEach(function (code) {
       var c = F.countries[code];
-      h += '<div class="factor"><h3>' + esc(c.name) + ' (' + esc(c.currency) + ')</h3>';
+      h += '<div class="factor"><h3>' + esc(c.name.charAt(0).toUpperCase() + c.name.slice(1)) + ' (' + esc(c.currency) + ')</h3>';
       h += '<p><strong>Exchange rate:</strong> ' + val(1 / c.fx.value, c.currency + ' per USD') + '</p>' + src(c.fx.source);
       h += '<p><strong>Occupancy:</strong> ' + val(Math.round(c.occupancy.value * 1000) / 10, '%, ' + (c.occupancy.unit || '')) + '</p>' + src(c.occupancy.source);
       h += '<p><strong>Labour cost reference:</strong> ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + '</p>' + src(c.wageMonthly.source);

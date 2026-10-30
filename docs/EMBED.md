@@ -1,7 +1,7 @@
 # Embedding the wizard in swissprowater.com
 
-The wizard is a static folder (`index.html`, `sources.html`, `styles.css`, `js/`, `assets/`). Copy it to the
-web server, e.g. `https://swissprowater.com/wizard/`, and embed it with an iframe in embed mode:
+The wizard is a static folder (`index.html`, `sources.html`, `styles.css`, `js/`, `assets/`). Copy only these to the
+web server (not `docs/`, `tools/`, `test/` or `artifact/`, which are internal), e.g. `https://swissprowater.com/wizard/`, and embed it with an iframe in embed mode:
 
 ```html
 <iframe id="swisspro-wizard" src="https://swissprowater.com/wizard/index.html?embed=1"

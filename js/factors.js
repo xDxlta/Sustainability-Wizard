@@ -88,8 +88,8 @@
 
     /* ------------------------------------------------------------------ labour */
     working_hours_per_fte_year: { value: 2080, unit: 'hours per full-time employee per year', kind: 'assumption', label: 'Hours per full-time equivalent', note: '40 hours x 52 weeks; used to convert monthly wages to hourly (2080 / 12 = 173.3 h per month) and hours to FTE. Statutory weeks in the region are 40 to 45 h.' },
-    minutes_per_room_per_day_default: { value: 1, unit: 'minutes of housekeeping time per occupied room per day', kind: 'assumption', label: 'Bottle handling time per occupied room', note: 'No published figure exists. Covers restocking bottles from the trolley, removing empties and reloading the trolley. Adjustable (0.5 to 3 min).' },
-    minutes_per_carton_default: { value: 2, unit: 'minutes of receiving, storing and distributing time per carton', kind: 'assumption', label: 'Handling time per carton', note: 'Receiving the delivery, moving cartons to the store and up to floor pantries, opening cartons, disposing of shrink-wrap. Adjustable.' },
+    minutes_per_room_per_day_default: { value: 1, unit: 'minute(s) of housekeeping time per occupied room per day', kind: 'assumption', label: 'Bottle handling time per occupied room', note: 'No published figure exists. Covers restocking bottles from the trolley, removing empties and reloading the trolley. Adjustable (0.5 to 3 min).' },
+    minutes_per_carton_default: { value: 2, unit: 'minute(s) of receiving, storing and distributing time per carton', kind: 'assumption', label: 'Handling time per carton', note: 'Receiving the delivery, moving cartons to the store and up to floor pantries, opening cartons, disposing of shrink-wrap. Adjustable.' },
     bottles_per_room_night_default: {
       value: 2, unit: 'complimentary bottles per occupied room per night', kind: 'assumption', label: 'Bottles per occupied room-night',
       note: 'Industry case studies describe "two bottles a night" (Aquablu, Sheraton Brussels Airport) and "two 750 ml bottles per room per day" (Topia Water model). Fairmont Singapore and Swissotel The Stamford report avoiding 1.5 million bottles a year across 2,030 rooms (about 2 per room per day). All three pages unverified: https://www.aquablu.com/stories/the-future-of-hospitality-embracing-sustainability-in-hotels , https://topiawater.com/case-study-streamline-200/ , https://www.swissotel-singapore-stamford.com/the-hotel/blog/sustainability-at-fairmont-singapore-swissotel-the-stamford/'
@@ -140,7 +140,7 @@
       ]
     },
     PH: {
-      code: 'PH', name: 'Philippines', currency: 'PHP', symbol: '₱', decimals: 2,
+      code: 'PH', name: 'the Philippines', currency: 'PHP', symbol: '₱', decimals: 2,
       fx: { value: 1 / 63.453, unit: 'USD per PHP', kind: 'sourced', status: UNVERIFIED, rule: rules.fx,
         source: { publisher: 'Bangko Sentral ng Pilipinas reference rate (via taxcalculator.com.ph)', url: 'https://taxcalculator.com.ph/exchange-rates', quote: 'US$1 = ₱63.4530 on the bulletin of 26 October 2026', year: '2026-10-26', accessed: ACCESSED } },
       occupancy: { value: 0.60, unit: 'average hotel occupancy 2025', kind: 'sourced', status: UNVERIFIED, rule: rules.occupancy,
