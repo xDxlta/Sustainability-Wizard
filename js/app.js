@@ -74,7 +74,8 @@
     step.fields.forEach(function (f) {
       if (f.showIf && !f.showIf(a)) return;
       var wrap = el('div', { class: 'field', 'data-field': f.id });
-      if (f.label) wrap.appendChild(el('div', { class: 'field-label', id: 'lbl-' + f.id, text: f.label }));
+      var labelText = f.id === 'priceCustom' ? 'Price per bottle (' + (F.countries[a.country] || F.countries.OTHER).currency + ')' : f.label;
+      if (f.label) wrap.appendChild(el('div', { class: 'field-label', id: 'lbl-' + f.id, text: labelText }));
       if (f.type === 'single' || f.type === 'multi') {
         var opts = fieldOptions(f);
         var listMode = opts.some(function (o) { return o.desc && o.desc.length > 40; });
@@ -236,7 +237,7 @@
     }
     var y = pb.cashPaybackYears, net = pb.cashSavingsPerYear;
     if (isFinite(y) && y <= 5) {
-      v.tone = 'good';
+      v.tone = y <= 4 ? 'good' : 'neutral';
       v.head = 'Pays for itself in ' + fmt.years(y) + ' and replaces ' + bottles + '.';
       v.sub = 'After that you keep about ' + moneyShort(ctx, net) + ' a year, service contract included.';
     } else if (isFinite(y)) {
@@ -253,6 +254,10 @@
     return v;
   }
 
+  function scrollToVerdict() { var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  function showLowerCost() { state.overrides.inRoomTap = true; save(); renderResults(); scrollToVerdict(); }
+  function backToChoice() { delete state.overrides.inRoomTap; save(); renderResults(); scrollToVerdict(); }
+
   function renderResults() {
     var ctx = compute();
     var a = state.answers, n = ctx.n, c = ctx.calc, rec = ctx.rec, prov = n.provenance, inp = n.inputs;
@@ -268,12 +273,13 @@
         inp.bottlesPerRoomNight ? el('span', { text: inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per night' + (bpnAssumed || sizeAssumed ? ', assumed' : '') }) : null,
         inp.pricePerBottle > 0 ? el('span', { text: fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (prov.pricePerBottle.kind !== 'user' ? ', reference price' : '') }) : null,
         el('span', { text: rec.segment.areas.join(', ') }),
-        rec.segment.temps ? el('span', { class: state.prevTemps ? 'chip-switched' : null, text: fmt.cap(rec.segment.temps) + ' water in the room' + (state.prevTemps ? ', switched from ' + R.LABELS.temps[state.prevTemps] : '') }) : null)));
+        rec.segment.temps ? el('span', { class: rec.segment.lowerCost ? 'chip-switched' : null, text: rec.segment.lowerCost ? 'Showing the filtered tap instead of ' + rec.segment.temps + ' water in the room' : fmt.cap(rec.segment.temps) + ' water in the room' }) : null)));
 
     var v = verdict(ctx);
     root.appendChild(el('section', { class: 'card verdict verdict-' + v.tone },
       el('p', { class: 'verdict-head', text: v.head }),
       v.sub ? el('p', { class: 'verdict-sub', text: v.sub }) : null,
+      rec.segment.lowerCost ? el('p', { class: 'verdict-alt' }, 'You are looking at the lower-cost option: a filtered tap in the room. Your original choice was ' + rec.segment.temps + ' water. ', el('button', { type: 'button', class: 'link-btn', onclick: backToChoice }, 'Back to ' + rec.segment.temps)) : null,
       v.alt ? el('p', { class: 'verdict-alt', text: v.alt }) : null));
 
     var tiles = el('div', { class: 'tiles' });
@@ -316,7 +322,7 @@
   }
 
   function renderPayback(ctx) {
-    var c = ctx.calc, inp = ctx.n.inputs, pr = ctx.pr, pb = c.payback, cur = PL.pricelist.currency.value;
+    var c = ctx.calc, inp = ctx.n.inputs, pr = ctx.pr, pb = c.payback, rec = ctx.rec, cur = PL.pricelist.currency.value;
     var card = el('section', { class: 'card' });
     card.appendChild(el('h3', { text: 'Investment and payback' }));
     card.appendChild(el('p', { class: 'lead-line', text: investmentSentence(ctx) }));
@@ -338,11 +344,9 @@
         var ap = pr.alt.payback;
         card.appendChild(el('div', { class: 'alt-box' },
           el('p', {}, el('strong', { text: 'Lower-cost option: filtered tap in the room' }), ' (' + modelName(pr.alt.product) + ', ' + listPrice(pr.alt.product) + ' per room). Investment ' + money(ctx, pr.alt.capexLocal) + ', cash payback ' + fmt.years(ap.cashPaybackYears) + ', five-year net saving ' + money(ctx, ap.fiveYearNetCash) + '. Same service contract.'),
-          el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: function () { state.prevTemps = state.answers.temps; state.answers.temps = 'ambient'; save(); renderResults(); var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 'Calculate with the filtered tap')));
+          el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: showLowerCost }, 'Calculate with the filtered tap')));
       }
-      if (state.prevTemps && state.prevTemps !== 'ambient' && state.answers.temps === 'ambient') {
-        card.appendChild(el('p', { class: 'small', style: 'margin-top:12px' }, el('button', { type: 'button', class: 'link-btn', onclick: function () { state.answers.temps = state.prevTemps; delete state.prevTemps; save(); renderResults(); var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 'Back to ' + (R.LABELS.temps[state.prevTemps] || state.prevTemps) + ' water in the room')));
-      }
+      if (rec.segment.lowerCost) card.appendChild(el('p', { class: 'small', style: 'margin-top:12px' }, el('button', { type: 'button', class: 'link-btn', onclick: backToChoice }, 'Back to ' + rec.segment.temps + ' water in the room')));
     } else if (pr.unpriced.length) {
       card.appendChild(el('p', { class: 'notice', text: 'The price list has no unit for ' + pr.unpriced.map(function (u) { return u.area; }).join(' and ') + '. Enter the investment from your proposal under Adjust to see the payback.' }));
     } else {
@@ -442,7 +446,7 @@
     field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day with filtered water', inp.newMinutesPerRoomPerDay, 0.5, null, 'Refilling carafes, for example');
     field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : 'Minimum wage');
     field(g3, 'stockWeeks', 'Weeks of stock on site', inp.stockWeeks, 1);
-    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; if (state.prevTemps) { state.answers.temps = state.prevTemps; delete state.prevTemps; } save(); renderResults(); } }, 'Reset to the defaults')));
+    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; save(); renderResults(); } }, 'Reset to the defaults')));
     return card;
   }
 
@@ -488,7 +492,7 @@
     L.push('');
     L.push(fmt.int(inp.rooms) + ' rooms in ' + ctx.n.country.name + ', ' + fmt.pct(inp.occupancy) + ' occupancy' + (ctx.n.provenance.occupancy.kind === 'user' ? '' : ' (national average)') + '.');
     L.push('Today: ' + rec.segment.current + (inp.bottlesPerRoomNight ? ', ' + inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per room and night' : '') + (inp.pricePerBottle > 0 ? ' at ' + fmt.money(sym, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (ctx.n.provenance.pricePerBottle.kind === 'user' ? '' : ' (reference price)') : '') + '.');
-    L.push('Wanted: ' + rec.segment.areas.join(', ') + (rec.segment.temps ? '; ' + rec.segment.temps + ' water in the room' : '') + '.');
+    L.push('Wanted: ' + rec.segment.areas.join(', ') + (rec.segment.temps ? '; ' + rec.segment.temps + ' water in the room' : '') + '.' + (rec.segment.lowerCost ? ' Figures below are for the lower-cost option with a filtered tap in the room.' : ''));
     var extra = []; if (p.source) extra.push('Water supply: ' + (R.LABELS.source[p.source] || p.source)); if (p.halal) extra.push('Halal certificate requested'); if (p.timing) extra.push('Timing: ' + R.LABELS.timing[p.timing]); if (p.approval) extra.push('Approval by: ' + R.LABELS.approval[p.approval]);
     if (extra.length) L.push(extra.join('. ') + '.');
     L.push('');
@@ -568,7 +572,7 @@
       sendBtn,
       el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, refreshText()); } }, 'Copy the summary'),
       ARTIFACT ? null : el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { window.print(); } }, 'Print or save as PDF'),
-      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; delete state.prevTemps; save(); render(); scrollTop(); } }, 'Change my answers'),
+      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; delete state.overrides.inRoomTap; save(); render(); scrollTop(); } }, 'Change my answers'),
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: restart }, 'Start over'));
     card.appendChild(actions);
     card.appendChild(status);

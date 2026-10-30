@@ -105,6 +105,17 @@ const scenarios = {
       for (const [k, v] of Object.entries(prop)) { const sel = await page.$(`select#pf-${k}`); if (sel) await page.selectOption(`#pf-${k}`, v); else if (await page.$(`#pf-${k}`)) await page.fill(`#pf-${k}`, v); }
       const details = await page.$$('details'); for (const d of details) { await d.evaluate(e => e.open = true); }
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
+      // lower-cost option: the recomputed investment must equal the figure promised in the box
+      if (await page.$('.alt-box .btn')) {
+        const promised = await page.$eval('.alt-box p', e => (e.textContent.match(/Investment (\S+), cash/) || [])[1]);
+        await page.click('.alt-box .btn'); await page.waitForTimeout(150);
+        const shown = await page.$eval('.lead-line', e => (e.textContent.match(/Investment ([^ ]+) /) || [])[1]);
+        if (promised !== shown) errors.push(`lower-cost option mismatch: promised ${promised}, shown ${shown}`);
+        if (!(await page.$('.chip-switched'))) errors.push('no switched chip after lower-cost option');
+        await page.click('.verdict .link-btn'); await page.waitForTimeout(150);
+        if (await page.$('.chip-switched')) errors.push('back link did not restore the choice');
+        await openAll();
+      }
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
       ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });
       const verdict = await page.$eval('.verdict-head', e => e.textContent).catch(() => '');

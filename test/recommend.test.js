@@ -34,7 +34,7 @@ test('products come only from the price list, only from the solution\'s area, ma
   assert.equal(sparkSols.length, 2); // chilled in the room plus a sparkling station
   assert.equal(sparkSols[0].exactMatch, true);
   assert.equal(sparkSols[0].products[0].label, 'CLIMA Versa+ (Hot, Cold)');
-  assert.match(sparkSols[0].notes.join(' '), /Sparkling water comes from a drinking station/);
+  assert.match(sparkSols[0].notes.join(' '), /Sparkling water for the rooms comes from the drinking station/);
   assert.equal(sparkSols[1].products[0].label, 'CLIMA Vida S (Hot, Cold, Sparkling)');
   assert.equal(R.unitPlan(Object.assign({}, base, { temps: 'sparkling' })).stations, 1);
   assert.equal(R.unitPlan(base, { stations: 4 }).stations, 4);
@@ -66,4 +66,16 @@ test('recommend() returns no lead score and no text-only flags', () => {
   const r = R.recommend(base, inp, F, PL);
   assert.equal(r.lead, undefined); assert.equal(r.filtration, undefined);
   assert.ok(Array.isArray(r.arguments) && r.solutions.length === 1);
+});
+
+test('lower-cost option keeps the sparkling station and the original wish', () => {
+  const a = { country: 'MY', rooms: 150, current: 'glass_bought', areas: ['rooms', 'fnb'], temps: 'sparkling' };
+  const r = R.recommend(a, inp, F, PL, { inRoomTap: true });
+  assert.equal(r.solutions[0].products[0].label, 'SMART Classic+');
+  assert.equal(r.solutions[0].lowerCost, true);
+  assert.equal(r.solutions[1].products[0].label, 'CLIMA Vida S (Hot, Cold, Sparkling)');
+  assert.match(r.solutions[1].covers.join(' '), /sparkling water for the guest rooms/);
+  assert.equal(r.segment.lowerCost, true);
+  assert.equal(r.segment.temps, 'chilled and sparkling');
+  assert.equal(r.alternative, null);
 });
