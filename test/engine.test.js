@@ -139,8 +139,8 @@ test('format: sign before symbol, short money, payback words', () => {
   assert.equal(fmt.moneyShort('Rp', 1234567890), 'Rp1.23B');
   assert.equal(fmt.moneyShort('₱', 3456789), '₱3.46M');
   assert.equal(fmt.moneyShort('RM', 155490.4), 'RM155,490');
-  assert.equal(fmt.years(Infinity), 'No payback');
-  assert.equal(fmt.years(37), 'More than 30 years');
+  assert.equal(fmt.years(Infinity), 'no payback');
+  assert.equal(fmt.cap(fmt.years(37)), 'More than 30 years');
 });
 
 test('labour: new handling time is netted off, never below zero', () => {

@@ -62,12 +62,6 @@ test('unit plan: one in-room unit per room, one station per other area', () => {
   assert.equal(R.unitPlan({ rooms: 250, areas: ['fnb'] }).inRoom, 0);
 });
 
-test('approval note is neutral and reflects the interview thresholds', () => {
-  assert.match(R.approvalNote(null), /USD 5,000/);
-  assert.match(R.approvalNote(60000), /above USD 50,000/);
-  assert.match(R.approvalNote(20000), /between USD 5,000 and 50,000/);
-});
-
 test('recommend() returns no lead score and no text-only flags', () => {
   const r = R.recommend(base, inp, F, PL);
   assert.equal(r.lead, undefined); assert.equal(r.filtration, undefined);

@@ -88,7 +88,7 @@
     return out;
   }
 
-  /* Argument order: ROI first (Marriott interview); efficiency first where bottled water is cheap. */
+  /* Argument order: ROI first; efficiency first where bottled water is cheap. */
   function argumentOrder(inp, F) {
     var threshold = F && F.factors.cheap_water_threshold_usd ? F.factors.cheap_water_threshold_usd.value : 0.25;
     var priceUsd = inp ? inp.pricePerBottle * inp.usdPerLocal : null;
@@ -103,23 +103,14 @@
     return { order: order.map(function (k) { return args[k]; }), cheapWater: cheapWater, priceUsd: priceUsd };
   }
 
-  /* Neutral note from the interview (not a question). */
-  function approvalNote(capexUsd) {
-    var s = 'Approval limits vary: some management agreements need owner approval above USD 5,000, others let the general manager decide up to USD 50,000 (Marriott VP Procurement APAC, interview, October 2026).';
-    if (capexUsd != null && capexUsd > 50000) s += ' This investment is above USD 50,000.';
-    else if (capexUsd != null && capexUsd > 5000) s += ' This investment is between USD 5,000 and 50,000.';
-    else if (capexUsd != null && capexUsd > 0) s += ' This investment is below USD 5,000.';
-    return s;
-  }
-
   function segment(a) {
     return { current: LABELS.current[a.current] || '-', areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; }), temps: LABELS.temps[a.temps] || null };
   }
 
   function recommend(a, inp, F, PL, overrides) {
     var args = argumentOrder(inp, F);
-    return { segment: segment(a), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL), alternative: alternative(a, PL), arguments: args.order, cheapWater: args.cheapWater, approvalNote: approvalNote, labels: LABELS };
+    return { segment: segment(a), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL), alternative: alternative(a, PL), arguments: args.order, cheapWater: args.cheapWater, labels: LABELS };
   }
 
-  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, approvalNote: approvalNote, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
+  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
 });

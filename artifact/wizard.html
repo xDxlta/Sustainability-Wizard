@@ -41,7 +41,7 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; font-family: var(--font-body); font-size: var(--fs-md); line-height: 1.55; color: var(--ink); background: var(--bg); }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: var(--font-body); font-size: var(--fs-md); line-height: 1.55; color: var(--ink); background: var(--bg); }
 h1, h2, h3, h4 { font-family: var(--font-display); color: var(--brand-700); margin: 0; line-height: 1.2; text-wrap: balance; letter-spacing: -0.01em; }
 h1 { font-size: clamp(1.9rem, 1.3rem + 2.4vw, var(--fs-3xl)); font-weight: 800; }
 h2 { font-size: clamp(1.5rem, 1.2rem + 1.2vw, var(--fs-2xl)); font-weight: 700; }
@@ -69,7 +69,8 @@ a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 
 .site-nav { display: flex; gap: var(--s-4); align-items: center; flex: none; white-space: nowrap; }
 .site-nav a, .link-btn { color: var(--ink-2); font-size: var(--fs-sm); font-weight: 500; background: none; border: 0; cursor: pointer; font-family: inherit; text-decoration: none; padding: 0; }
 .site-nav a:hover, .link-btn:hover { color: var(--brand); }
-.site-footer { margin-top: var(--s-8); padding-block: var(--s-6) var(--s-7); border-top: 1px solid var(--line); color: var(--ink-2); font-size: var(--fs-sm); background: var(--surface); }
+.results .link-btn { color: var(--brand); font-weight: 600; text-decoration: underline; }
+.site-footer { margin-top: auto; padding-top: var(--s-8); padding-block: var(--s-6) var(--s-7); border-top: 1px solid var(--line); color: var(--ink-2); font-size: var(--fs-sm); background: var(--surface); }
 .site-footer .wrap { display: grid; gap: var(--s-2); max-width: var(--narrow); }
 @media (max-width: 600px) { .brand-sub { display: none; } .header-inner { min-height: 56px; } .site-nav { gap: var(--s-3); } }
 
@@ -169,6 +170,7 @@ details.inline[open] > summary::before { content: "\2013 "; }
 .results-head { display: grid; gap: var(--s-2); }
 .results-head .eyebrow { margin-bottom: 0; }
 .summary-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-2); }
+.summary-chips span.chip-switched { border-color: var(--accent); color: var(--brand-700); background: var(--accent-100); }
 .summary-chips span { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: var(--fs-sm); color: var(--ink-2); }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--s-4); }
 .tile { display: grid; grid-template-rows: auto auto 1fr; align-content: start; gap: var(--s-1); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--s-5); box-shadow: var(--shadow); min-width: 0; }
@@ -244,6 +246,7 @@ details.fine summary { font-weight: 600; }
   .options { grid-template-columns: 1fr 1fr; }
   .options-list { grid-template-columns: 1fr; }
   .tiles { grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+  .tile:first-child { grid-column: 1 / -1; }
   .tile { padding: var(--s-4); }
   .tile .value { font-size: 1.35rem; }
   .tile .value-long { font-size: 1.15rem; }
@@ -483,25 +486,13 @@ details.fine summary { font-weight: 600; }
     }
   };
 
-  /* Interview statements used as qualitative inputs (not numbers). */
-  var interview = {
-    source: 'Interview with Marriott International\'s VP Procurement APAC, October 2026 (project source, unpublished)',
-    points: [
-      'Decision drivers in order: 1) ROI ("owners challenge the payback"), 2) efficiency and guest experience (water 24/7, no waiting for housekeeping, one SKU less, no storage, no heavy trolleys), 3) sustainability ("if you put it as the main criteria for change, it\'s very, very hard to convince").',
-      'Approval limits vary: some management agreements require owner approval above USD 5,000; others let the GM decide up to USD 50,000.',
-      'Missing in the market: choosing the right filter grade for local water quality and volume; choosing the device (look, colour, space, temperatures).',
-      'Luxury is cosmetic and guest-experience driven and may keep premium mineral water; select and premium tiers are straightforward.',
-      'A tap at the bathroom vanity next to the basin and water stations in corridors are both disliked by guests.'
-    ]
-  };
-
   function derivedBottleWeightG(sizeMl) {
     return factors.pet_bottle_weight_500ml_g.value * Math.pow(sizeMl / 500, factors.pet_bottle_weight_scaling.value);
   }
 
   return {
     ACCESSED: ACCESSED, UNVERIFIED: UNVERIFIED, verification: verification, rules: rules,
-    factors: factors, countries: countries, interview: interview,
+    factors: factors, countries: countries,
     marketOrder: ['MY', 'ID', 'PH', 'SG', 'OTHER'],
     derivedBottleWeightG: derivedBottleWeightG,
     hourlyWage: function (monthly) { return monthly / (factors.working_hours_per_fte_year.value / 12); }
@@ -1003,7 +994,7 @@ details.fine summary { font-weight: 600; }
     return out;
   }
 
-  /* Argument order: ROI first (Marriott interview); efficiency first where bottled water is cheap. */
+  /* Argument order: ROI first; efficiency first where bottled water is cheap. */
   function argumentOrder(inp, F) {
     var threshold = F && F.factors.cheap_water_threshold_usd ? F.factors.cheap_water_threshold_usd.value : 0.25;
     var priceUsd = inp ? inp.pricePerBottle * inp.usdPerLocal : null;
@@ -1018,25 +1009,16 @@ details.fine summary { font-weight: 600; }
     return { order: order.map(function (k) { return args[k]; }), cheapWater: cheapWater, priceUsd: priceUsd };
   }
 
-  /* Neutral note from the interview (not a question). */
-  function approvalNote(capexUsd) {
-    var s = 'Approval limits vary: some management agreements need owner approval above USD 5,000, others let the general manager decide up to USD 50,000 (Marriott VP Procurement APAC, interview, October 2026).';
-    if (capexUsd != null && capexUsd > 50000) s += ' This investment is above USD 50,000.';
-    else if (capexUsd != null && capexUsd > 5000) s += ' This investment is between USD 5,000 and 50,000.';
-    else if (capexUsd != null && capexUsd > 0) s += ' This investment is below USD 5,000.';
-    return s;
-  }
-
   function segment(a) {
     return { current: LABELS.current[a.current] || '-', areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; }), temps: LABELS.temps[a.temps] || null };
   }
 
   function recommend(a, inp, F, PL, overrides) {
     var args = argumentOrder(inp, F);
-    return { segment: segment(a), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL), alternative: alternative(a, PL), arguments: args.order, cheapWater: args.cheapWater, approvalNote: approvalNote, labels: LABELS };
+    return { segment: segment(a), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL), alternative: alternative(a, PL), arguments: args.order, cheapWater: args.cheapWater, labels: LABELS };
   }
 
-  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, approvalNote: approvalNote, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
+  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
 });
 
 /* Number formatting helpers (browser + Node). */
@@ -1064,14 +1046,15 @@ details.fine summary { font-weight: 600; }
   }
   function years(y) {
     if (y == null) return '-';
-    if (!isFinite(y)) return 'No payback';
-    if (y > 30) return 'More than 30 years';
+    if (!isFinite(y)) return 'no payback';
+    if (y > 30) return 'more than 30 years';
     if (y < 1) return Math.round(y * 12) + ' months';
     return dec(y, 1) + ' years';
   }
+  function cap(s) { s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); }
   function pct(p) { return dec(p * 100, p * 100 % 1 === 0 ? 0 : 1) + '%'; }
   function compact(n) { if (n == null || !isFinite(n)) return '-'; var a = Math.abs(n); if (a >= 1e6) return dec(n / 1e6, 2) + ' million'; return int(n); }
-  return { int: int, dec: dec, money: money, moneyShort: moneyShort, years: years, pct: pct, compact: compact };
+  return { int: int, dec: dec, money: money, moneyShort: moneyShort, years: years, cap: cap, pct: pct, compact: compact };
 });
 
 /* Swisspro Sustainability Wizard - UI (version 2). Vanilla JS, no build step. */
@@ -1343,7 +1326,8 @@ details.fine summary { font-weight: 600; }
         el('span', { text: rec.segment.current }),
         inp.bottlesPerRoomNight ? el('span', { text: inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per night' + (bpnAssumed || sizeAssumed ? ', assumed' : '') }) : null,
         inp.pricePerBottle > 0 ? el('span', { text: fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (prov.pricePerBottle.kind !== 'user' ? ', reference price' : '') }) : null,
-        el('span', { text: rec.segment.areas.join(', ') }))));
+        el('span', { text: rec.segment.areas.join(', ') }),
+        rec.segment.temps ? el('span', { class: state.prevTemps ? 'chip-switched' : null, text: fmt.cap(rec.segment.temps) + ' water in the room' + (state.prevTemps ? ', switched from ' + R.LABELS.temps[state.prevTemps] : '') }) : null)));
 
     var v = verdict(ctx);
     root.appendChild(el('section', { class: 'card verdict verdict-' + v.tone },
@@ -1373,14 +1357,21 @@ details.fine summary { font-weight: 600; }
     document.getElementById('restart-top').hidden = false;
   }
 
+  function serviceBasis(ctx) {
+    var pr = ctx.pr, cur = PL.pricelist.currency.value, parts = [];
+    if (pr.servicingSource === 'user') return 'your figure';
+    if (pr.inRoomUnits > 0) parts.push(fmt.int(pr.inRoomUnits) + ' in-room units x 85.00 ' + cur + (pr.reading === 'perChange' ? ' per filter change, changed every ' + pr.months + ' months' : (pr.reading === 'perYear' ? ' per unit and year' : ' per unit and 2-year contract')));
+    if (pr.stations > 0) parts.push(fmt.int(pr.stations) + (pr.stations === 1 ? ' station' : ' stations') + ' x 350.00 ' + cur + ' a year');
+    return parts.join(' plus ');
+  }
   function investmentSentence(ctx) {
     var pr = ctx.pr, c = ctx.calc;
-    if (pr.capexSource === 'user') return 'Investment ' + money(ctx, pr.capexLocal) + ' (your figure). Service contract ' + money(ctx, pr.servicingLocal) + ' a year (filters, labour and parts).';
+    if (pr.capexSource === 'user') return 'Investment ' + money(ctx, pr.capexLocal) + ' (your figure). Service contract ' + money(ctx, pr.servicingLocal) + ' a year for filters, labour and parts: ' + serviceBasis(ctx) + '.';
     if (pr.capexSource === 'pricelist') {
       var parts = pr.lines.map(function (l) { return fmt.int(l.units) + ' x ' + modelName(l.product) + (l.area === 'inRoom' ? ' for the rooms' : ' as drinking station' + (l.units === 1 ? '' : 's')); });
-      return 'Investment ' + money(ctx, pr.capexLocal) + ' at list price: ' + parts.join(' and ') + '. Service contract ' + money(ctx, pr.servicingLocal) + ' a year (filters, labour and parts).';
+      return 'Investment ' + money(ctx, pr.capexLocal) + ' at list price: ' + parts.join(' and ') + '. Service contract ' + money(ctx, pr.servicingLocal) + ' a year for filters, labour and parts: ' + serviceBasis(ctx) + '.';
     }
-    return 'Service contract ' + money(ctx, pr.servicingLocal) + ' a year (filters, labour and parts). The investment comes from your proposal.';
+    return 'Service contract ' + money(ctx, pr.servicingLocal) + ' a year for filters, labour and parts: ' + serviceBasis(ctx) + '. The investment comes from your proposal.';
   }
 
   function renderPayback(ctx) {
@@ -1395,18 +1386,21 @@ details.fine summary { font-weight: 600; }
       row('Service contract, per year', money(ctx, -pb.annualService));
       row('Net cash saving, per year', money(ctx, pb.cashSavingsPerYear), pb.cashSavingsPerYear < 0 ? 'neg' : null);
       row('Investment', money(ctx, pb.capex));
-      row('Cash payback', fmt.years(pb.cashPaybackYears), 'strong');
+      row('Cash payback', fmt.cap(fmt.years(pb.cashPaybackYears)), 'strong');
       row('Five-year net saving, cash', money(ctx, pb.fiveYearNetCash), pb.fiveYearNetCash < 0 ? 'neg' : null);
       if (c.labour.quantified) {
         row('Staff time freed, per year', money(ctx, c.labour.costLocal) + ' (not counted above)', 'soft');
-        row('Payback if staff time is counted', fmt.years(pb.fullPaybackYears), 'soft');
+        row('Payback if staff time is counted', fmt.cap(fmt.years(pb.fullPaybackYears)), 'soft');
       }
       card.appendChild(t);
       if (pr.alt && pr.alt.payback) {
         var ap = pr.alt.payback;
         card.appendChild(el('div', { class: 'alt-box' },
           el('p', {}, el('strong', { text: 'Lower-cost option: filtered tap in the room' }), ' (' + modelName(pr.alt.product) + ', ' + listPrice(pr.alt.product) + ' per room). Investment ' + money(ctx, pr.alt.capexLocal) + ', cash payback ' + fmt.years(ap.cashPaybackYears) + ', five-year net saving ' + money(ctx, ap.fiveYearNetCash) + '. Same service contract.'),
-          el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: function () { state.answers.temps = 'ambient'; save(); renderResults(); scrollTop(); } }, 'Calculate with the filtered tap')));
+          el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: function () { state.prevTemps = state.answers.temps; state.answers.temps = 'ambient'; save(); renderResults(); var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 'Calculate with the filtered tap')));
+      }
+      if (state.prevTemps && state.prevTemps !== 'ambient' && state.answers.temps === 'ambient') {
+        card.appendChild(el('p', { class: 'small', style: 'margin-top:12px' }, el('button', { type: 'button', class: 'link-btn', onclick: function () { state.answers.temps = state.prevTemps; delete state.prevTemps; save(); renderResults(); var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 'Back to ' + (R.LABELS.temps[state.prevTemps] || state.prevTemps) + ' water in the room')));
       }
     } else if (pr.unpriced.length) {
       card.appendChild(el('p', { class: 'notice', text: 'The price list has no unit for ' + pr.unpriced.map(function (u) { return u.area; }).join(' and ') + '. Enter the investment from your proposal under Adjust to see the payback.' }));
@@ -1490,8 +1484,8 @@ details.fine summary { font-weight: 600; }
     field(g1, 'otherBottlesPerDay', 'Bottles outside the rooms per day', inp.otherBottlesPerDay, 1);
     if (c.env.packagingKg != null) field(g1, 'bottleWeightG', 'Empty bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1);
     var g2 = group('Investment and service');
-    field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list'));
-    field(g2, 'annualService', 'Service contract per year (' + inp.currency + ')', Math.round(pr.servicingLocal), 1, null, pr.servicingSource === 'user' ? 'Your figure' : 'List price');
+    field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, (pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list')) + (pr.capexLocal != null ? ', ' + money(ctx, pr.capexLocal) : ''));
+    field(g2, 'annualService', 'Service contract per year (' + inp.currency + ')', Math.round(pr.servicingLocal), 1, null, (pr.servicingSource === 'user' ? 'Your figure' : 'List price') + ', ' + money(ctx, pr.servicingLocal));
     field(g2, 'stations', 'Drinking stations', pr.stations, 1, null, 'One per area chosen');
     field(g2, 'changeMonths', 'Months between filter changes', pr.months, 1, { max: 36, disabled: pr.reading === 'perChange' ? null : 'disabled' }, 'In-room units');
     var selWrap = el('div', {});
@@ -1507,7 +1501,7 @@ details.fine summary { font-weight: 600; }
     field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day with filtered water', inp.newMinutesPerRoomPerDay, 0.5, null, 'Refilling carafes, for example');
     field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : 'Minimum wage');
     field(g3, 'stockWeeks', 'Weeks of stock on site', inp.stockWeeks, 1);
-    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; save(); renderResults(); } }, 'Reset to the defaults')));
+    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; if (state.prevTemps) { state.answers.temps = state.prevTemps; delete state.prevTemps; } save(); renderResults(); } }, 'Reset to the defaults')));
     return card;
   }
 
@@ -1535,7 +1529,8 @@ details.fine summary { font-weight: 600; }
     }
     list.appendChild(item('Car comparison', F.factors.co2e_kg_per_car_km.value + ' kg CO2e per km', F.factors.co2e_kg_per_car_km.source));
     list.appendChild(item('Cartons and pallets', F.factors.bottles_per_carton.value + ' bottles per carton, ' + fmt.int(F.factors.bottles_per_pallet_500ml.value) + ' per pallet at 500 ml', F.factors.bottles_per_pallet_500ml.source));
-    list.appendChild(item('Products and prices', PL.pricelist.source.title + ', ' + PL.pricelist.source.dated + ', ' + PL.pricelist.currency.value + ' excl. GST; one in-room unit per room, one drinking station per area, service per the list'));
+    list.appendChild(item('Products and prices', 'Swisspro price list, Hospitality section, ' + PL.pricelist.source.dated + ', ' + PL.pricelist.currency.value + ' excl. GST; one in-room unit per room, one drinking station per area'));
+    list.appendChild(item('Service contract', serviceBasis(ctx) + (pr.servicingSource === 'user' ? '' : '; the filter interval is an assumption you can change')));
     if (!pr.rate.same) list.appendChild(item('Exchange rate', '1 ' + PL.pricelist.currency.value + ' = ' + fmt.money(inp.symbol, pr.rate.localPerList, inp.decimals === 0 ? 0 : 2) + ', ' + fxDate(ctx), cc.fx.source));
     card.appendChild(list);
     card.appendChild(el('p', { class: 'small muted' }, 'Every value, its source and the rule behind it: ', sourcesLink('sources and assumptions'), '.'));
@@ -1561,9 +1556,9 @@ details.fine summary { font-weight: 600; }
     if (c.env.packagingKg != null) L.push('- Plastic avoided: ' + fmt.int(c.env.packagingKg) + ' kg');
     if (c.env.quantified) L.push('- CO2e avoided: ' + fmt.dec(c.env.co2eKg / 1000, 1) + ' t');
     if (inp.pricePerBottle > 0) L.push('- Bottled water bought today: ' + m(c.spend.annualLocal));
-    L.push('- Service contract: ' + m(pr.servicingLocal) + (pr.servicingSource === 'user' ? ' (hotel figure)' : ' (list price)'));
+    L.push('- Service contract: ' + m(pr.servicingLocal) + ' a year (' + serviceBasis(ctx) + (pr.servicingSource === 'user' ? '' : ', list price') + ')');
     L.push('- Staff time freed: ' + fmt.int(c.labour.hours) + ' hours' + (c.labour.quantified ? ', about ' + m(c.labour.costLocal) + ', not counted in the payback' : ''));
-    if (pb.available) L.push('- Investment: ' + m(pb.capex) + (pr.capexSource === 'user' ? ' (hotel figure)' : ' (list price)') + '. Cash payback: ' + fmt.years(pb.cashPaybackYears) + '. Five-year net saving: ' + m(pb.fiveYearNetCash) + '.');
+    if (pb.available) L.push('- Investment: ' + m(pb.capex) + (pr.capexSource === 'user' ? ' (hotel figure)' : ' (list price)') + '. Cash payback: ' + fmt.cap(fmt.years(pb.cashPaybackYears)) + '. Five-year net saving: ' + m(pb.fiveYearNetCash) + '.');
     L.push('');
     L.push('Set-up');
     rec.solutions.forEach(function (s) {
@@ -1632,7 +1627,7 @@ details.fine summary { font-weight: 600; }
       sendBtn,
       el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, refreshText()); } }, 'Copy the summary'),
       ARTIFACT ? null : el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { window.print(); } }, 'Print or save as PDF'),
-      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); scrollTop(); } }, 'Change my answers'),
+      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; delete state.prevTemps; save(); render(); scrollTop(); } }, 'Change my answers'),
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: restart }, 'Start over'));
     card.appendChild(actions);
     card.appendChild(status);

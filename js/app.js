@@ -267,7 +267,8 @@
         el('span', { text: rec.segment.current }),
         inp.bottlesPerRoomNight ? el('span', { text: inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per night' + (bpnAssumed || sizeAssumed ? ', assumed' : '') }) : null,
         inp.pricePerBottle > 0 ? el('span', { text: fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (prov.pricePerBottle.kind !== 'user' ? ', reference price' : '') }) : null,
-        el('span', { text: rec.segment.areas.join(', ') }))));
+        el('span', { text: rec.segment.areas.join(', ') }),
+        rec.segment.temps ? el('span', { class: state.prevTemps ? 'chip-switched' : null, text: fmt.cap(rec.segment.temps) + ' water in the room' + (state.prevTemps ? ', switched from ' + R.LABELS.temps[state.prevTemps] : '') }) : null)));
 
     var v = verdict(ctx);
     root.appendChild(el('section', { class: 'card verdict verdict-' + v.tone },
@@ -297,14 +298,21 @@
     document.getElementById('restart-top').hidden = false;
   }
 
+  function serviceBasis(ctx) {
+    var pr = ctx.pr, cur = PL.pricelist.currency.value, parts = [];
+    if (pr.servicingSource === 'user') return 'your figure';
+    if (pr.inRoomUnits > 0) parts.push(fmt.int(pr.inRoomUnits) + ' in-room units x 85.00 ' + cur + (pr.reading === 'perChange' ? ' per filter change, changed every ' + pr.months + ' months' : (pr.reading === 'perYear' ? ' per unit and year' : ' per unit and 2-year contract')));
+    if (pr.stations > 0) parts.push(fmt.int(pr.stations) + (pr.stations === 1 ? ' station' : ' stations') + ' x 350.00 ' + cur + ' a year');
+    return parts.join(' plus ');
+  }
   function investmentSentence(ctx) {
     var pr = ctx.pr, c = ctx.calc;
-    if (pr.capexSource === 'user') return 'Investment ' + money(ctx, pr.capexLocal) + ' (your figure). Service contract ' + money(ctx, pr.servicingLocal) + ' a year (filters, labour and parts).';
+    if (pr.capexSource === 'user') return 'Investment ' + money(ctx, pr.capexLocal) + ' (your figure). Service contract ' + money(ctx, pr.servicingLocal) + ' a year for filters, labour and parts: ' + serviceBasis(ctx) + '.';
     if (pr.capexSource === 'pricelist') {
       var parts = pr.lines.map(function (l) { return fmt.int(l.units) + ' x ' + modelName(l.product) + (l.area === 'inRoom' ? ' for the rooms' : ' as drinking station' + (l.units === 1 ? '' : 's')); });
-      return 'Investment ' + money(ctx, pr.capexLocal) + ' at list price: ' + parts.join(' and ') + '. Service contract ' + money(ctx, pr.servicingLocal) + ' a year (filters, labour and parts).';
+      return 'Investment ' + money(ctx, pr.capexLocal) + ' at list price: ' + parts.join(' and ') + '. Service contract ' + money(ctx, pr.servicingLocal) + ' a year for filters, labour and parts: ' + serviceBasis(ctx) + '.';
     }
-    return 'Service contract ' + money(ctx, pr.servicingLocal) + ' a year (filters, labour and parts). The investment comes from your proposal.';
+    return 'Service contract ' + money(ctx, pr.servicingLocal) + ' a year for filters, labour and parts: ' + serviceBasis(ctx) + '. The investment comes from your proposal.';
   }
 
   function renderPayback(ctx) {
@@ -319,18 +327,21 @@
       row('Service contract, per year', money(ctx, -pb.annualService));
       row('Net cash saving, per year', money(ctx, pb.cashSavingsPerYear), pb.cashSavingsPerYear < 0 ? 'neg' : null);
       row('Investment', money(ctx, pb.capex));
-      row('Cash payback', fmt.years(pb.cashPaybackYears), 'strong');
+      row('Cash payback', fmt.cap(fmt.years(pb.cashPaybackYears)), 'strong');
       row('Five-year net saving, cash', money(ctx, pb.fiveYearNetCash), pb.fiveYearNetCash < 0 ? 'neg' : null);
       if (c.labour.quantified) {
         row('Staff time freed, per year', money(ctx, c.labour.costLocal) + ' (not counted above)', 'soft');
-        row('Payback if staff time is counted', fmt.years(pb.fullPaybackYears), 'soft');
+        row('Payback if staff time is counted', fmt.cap(fmt.years(pb.fullPaybackYears)), 'soft');
       }
       card.appendChild(t);
       if (pr.alt && pr.alt.payback) {
         var ap = pr.alt.payback;
         card.appendChild(el('div', { class: 'alt-box' },
           el('p', {}, el('strong', { text: 'Lower-cost option: filtered tap in the room' }), ' (' + modelName(pr.alt.product) + ', ' + listPrice(pr.alt.product) + ' per room). Investment ' + money(ctx, pr.alt.capexLocal) + ', cash payback ' + fmt.years(ap.cashPaybackYears) + ', five-year net saving ' + money(ctx, ap.fiveYearNetCash) + '. Same service contract.'),
-          el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: function () { state.answers.temps = 'ambient'; save(); renderResults(); scrollTop(); } }, 'Calculate with the filtered tap')));
+          el('button', { type: 'button', class: 'btn btn-secondary btn-sm', onclick: function () { state.prevTemps = state.answers.temps; state.answers.temps = 'ambient'; save(); renderResults(); var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 'Calculate with the filtered tap')));
+      }
+      if (state.prevTemps && state.prevTemps !== 'ambient' && state.answers.temps === 'ambient') {
+        card.appendChild(el('p', { class: 'small', style: 'margin-top:12px' }, el('button', { type: 'button', class: 'link-btn', onclick: function () { state.answers.temps = state.prevTemps; delete state.prevTemps; save(); renderResults(); var h = document.querySelector('.verdict'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 'Back to ' + (R.LABELS.temps[state.prevTemps] || state.prevTemps) + ' water in the room')));
       }
     } else if (pr.unpriced.length) {
       card.appendChild(el('p', { class: 'notice', text: 'The price list has no unit for ' + pr.unpriced.map(function (u) { return u.area; }).join(' and ') + '. Enter the investment from your proposal under Adjust to see the payback.' }));
@@ -414,8 +425,8 @@
     field(g1, 'otherBottlesPerDay', 'Bottles outside the rooms per day', inp.otherBottlesPerDay, 1);
     if (c.env.packagingKg != null) field(g1, 'bottleWeightG', 'Empty bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1);
     var g2 = group('Investment and service');
-    field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list'));
-    field(g2, 'annualService', 'Service contract per year (' + inp.currency + ')', Math.round(pr.servicingLocal), 1, null, pr.servicingSource === 'user' ? 'Your figure' : 'List price');
+    field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, (pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list')) + (pr.capexLocal != null ? ', ' + money(ctx, pr.capexLocal) : ''));
+    field(g2, 'annualService', 'Service contract per year (' + inp.currency + ')', Math.round(pr.servicingLocal), 1, null, (pr.servicingSource === 'user' ? 'Your figure' : 'List price') + ', ' + money(ctx, pr.servicingLocal));
     field(g2, 'stations', 'Drinking stations', pr.stations, 1, null, 'One per area chosen');
     field(g2, 'changeMonths', 'Months between filter changes', pr.months, 1, { max: 36, disabled: pr.reading === 'perChange' ? null : 'disabled' }, 'In-room units');
     var selWrap = el('div', {});
@@ -431,7 +442,7 @@
     field(g3, 'newMinutesPerRoomPerDay', 'Minutes per room and day with filtered water', inp.newMinutesPerRoomPerDay, 0.5, null, 'Refilling carafes, for example');
     field(g3, 'wageHourly', 'Hourly labour cost (' + inp.currency + ')', Math.round(inp.wageHourly * 100) / 100, 0.1, null, ctx.n.provenance.wageHourly.kind === 'user' ? 'Your figure' : 'Minimum wage');
     field(g3, 'stockWeeks', 'Weeks of stock on site', inp.stockWeeks, 1);
-    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; save(); renderResults(); } }, 'Reset to the defaults')));
+    card.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.overrides = {}; if (state.prevTemps) { state.answers.temps = state.prevTemps; delete state.prevTemps; } save(); renderResults(); } }, 'Reset to the defaults')));
     return card;
   }
 
@@ -459,7 +470,8 @@
     }
     list.appendChild(item('Car comparison', F.factors.co2e_kg_per_car_km.value + ' kg CO2e per km', F.factors.co2e_kg_per_car_km.source));
     list.appendChild(item('Cartons and pallets', F.factors.bottles_per_carton.value + ' bottles per carton, ' + fmt.int(F.factors.bottles_per_pallet_500ml.value) + ' per pallet at 500 ml', F.factors.bottles_per_pallet_500ml.source));
-    list.appendChild(item('Products and prices', PL.pricelist.source.title + ', ' + PL.pricelist.source.dated + ', ' + PL.pricelist.currency.value + ' excl. GST; one in-room unit per room, one drinking station per area, service per the list'));
+    list.appendChild(item('Products and prices', 'Swisspro price list, Hospitality section, ' + PL.pricelist.source.dated + ', ' + PL.pricelist.currency.value + ' excl. GST; one in-room unit per room, one drinking station per area'));
+    list.appendChild(item('Service contract', serviceBasis(ctx) + (pr.servicingSource === 'user' ? '' : '; the filter interval is an assumption you can change')));
     if (!pr.rate.same) list.appendChild(item('Exchange rate', '1 ' + PL.pricelist.currency.value + ' = ' + fmt.money(inp.symbol, pr.rate.localPerList, inp.decimals === 0 ? 0 : 2) + ', ' + fxDate(ctx), cc.fx.source));
     card.appendChild(list);
     card.appendChild(el('p', { class: 'small muted' }, 'Every value, its source and the rule behind it: ', sourcesLink('sources and assumptions'), '.'));
@@ -485,9 +497,9 @@
     if (c.env.packagingKg != null) L.push('- Plastic avoided: ' + fmt.int(c.env.packagingKg) + ' kg');
     if (c.env.quantified) L.push('- CO2e avoided: ' + fmt.dec(c.env.co2eKg / 1000, 1) + ' t');
     if (inp.pricePerBottle > 0) L.push('- Bottled water bought today: ' + m(c.spend.annualLocal));
-    L.push('- Service contract: ' + m(pr.servicingLocal) + (pr.servicingSource === 'user' ? ' (hotel figure)' : ' (list price)'));
+    L.push('- Service contract: ' + m(pr.servicingLocal) + ' a year (' + serviceBasis(ctx) + (pr.servicingSource === 'user' ? '' : ', list price') + ')');
     L.push('- Staff time freed: ' + fmt.int(c.labour.hours) + ' hours' + (c.labour.quantified ? ', about ' + m(c.labour.costLocal) + ', not counted in the payback' : ''));
-    if (pb.available) L.push('- Investment: ' + m(pb.capex) + (pr.capexSource === 'user' ? ' (hotel figure)' : ' (list price)') + '. Cash payback: ' + fmt.years(pb.cashPaybackYears) + '. Five-year net saving: ' + m(pb.fiveYearNetCash) + '.');
+    if (pb.available) L.push('- Investment: ' + m(pb.capex) + (pr.capexSource === 'user' ? ' (hotel figure)' : ' (list price)') + '. Cash payback: ' + fmt.cap(fmt.years(pb.cashPaybackYears)) + '. Five-year net saving: ' + m(pb.fiveYearNetCash) + '.');
     L.push('');
     L.push('Set-up');
     rec.solutions.forEach(function (s) {
@@ -556,7 +568,7 @@
       sendBtn,
       el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { copyText(this, refreshText()); } }, 'Copy the summary'),
       ARTIFACT ? null : el('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { window.print(); } }, 'Print or save as PDF'),
-      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); scrollTop(); } }, 'Change my answers'),
+      el('button', { type: 'button', class: 'btn btn-ghost', onclick: function () { state.view = 'wizard'; state.step = 0; delete state.prevTemps; save(); render(); scrollTop(); } }, 'Change my answers'),
       el('button', { type: 'button', class: 'btn btn-ghost', onclick: restart }, 'Start over'));
     card.appendChild(actions);
     card.appendChild(status);
