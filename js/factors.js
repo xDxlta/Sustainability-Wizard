@@ -30,7 +30,8 @@
   var rules = {
     occupancy: 'Newest official national occupancy figure for the latest full calendar year. If the official series covers only part of the year, the official year-to-date figure. If no official national series exists, the newest figure from a named consultancy.',
     wage: 'Statutory minimum wage in force in 2025 for the market. Indonesia uses the provincial minimum wage of Bali (largest leisure market); Jakarta and Surabaya alternatives are noted and adjustable.',
-    bottlePrice: 'Lowest published carton price of a national brand in 500 or 600 ml bottles on a retailer or wholesaler page; higher bands and the own price are selectable.',
+    bottlePrice: 'Published carton prices of national brands in 500 or 600 ml bottles on retailer or wholesaler pages. When the hotel answers "Not sure", the typical price is used: the median of the market\'s references. No source gives the full cost of a bottle in the room (delivery, storage, disposal), so only the purchase price is used; handling time is counted separately as staff time.',
+    service: 'In-Room servicing line of the price list (85.00, comprehensive, labour and parts) read as one filter change per room and year, as in the Westin Singapore case computed with Swisspro (2024). The per 2-year contract and per change every 9 months readings stay selectable.',
     fx: 'One published US-dollar rate per currency on a single reference date (26 to 28 October 2026), from the central bank where found, otherwise from a financial-data provider.',
     co2Pet: 'Newest UK Government greenhouse-gas conversion factor set (2025), "Material use: Plastics, PET (incl. forming), primary material production". The official file could not be opened, so the value quoted by a third party is used and marked unverified.',
     bottleWeight: 'Industry-association average for an empty 500 ml PET water bottle (IBWA citing Beverage Marketing Corporation, 2014 data); other sizes derived by the stated scaling rule.'
@@ -96,6 +97,16 @@
     },
 
     /* ------------------------------------------------------------------ presentation rules */
+    westin_case_2024: {
+      value: 2, unit: 'years to break even, Westin Singapore, 305 guest rooms', kind: 'sourced-secondary', label: 'Reference case: Westin Singapore (Swisspro, 2024)',
+      source: { publisher: 'Final Presentation 2024, Swisspro student team', title: 'p. 13 and p. 44, figures provided by Swisspro', quote: 'Upfront investment S$42,700 (305 x S$140 simple tap); yearly filter change S$19,825 (305 x S$65 per filter, not including service, one change per room per year); plastic bottles S$40,640 a year (243,840 bottles at S$0.17); break-even in about 2 years', year: '2024' },
+      note: 'Used as the source for one filter change per room and year. With the price list servicing line (85.00 with labour and parts) instead of 65.00 for the filter alone, the same case breaks even in about 2.9 years.'
+    },
+    service_changes_per_room_year: {
+      value: 1, unit: 'filter change per guest room and year', kind: 'sourced-secondary', label: 'Filter changes per room and year',
+      source: { publisher: 'Final Presentation 2024, Swisspro student team', title: 'Westin Singapore case, p. 13 and p. 44, figures provided by Swisspro', quote: 'Yearly filter change S$19,825 (305 x S$65 per filter)', year: '2024' },
+      note: 'Default for the In-Room service contract: one change per room and year at the comprehensive price of the price list. Change every 9 months and per 2-year contract are selectable under Adjust the assumptions.'
+    },
     cheap_water_threshold_usd: { value: 0.25, unit: 'US$ per bottle', kind: 'assumption', label: 'Threshold below which bottled water counts as cheap', note: 'Provisional rule for the argument order only: below this price per bottle the business case leads with efficiency and water safety instead of cash savings (the sales manager reported that the cost argument is weak in Malaysia and Indonesia).' }
   };
 

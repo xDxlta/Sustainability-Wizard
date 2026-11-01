@@ -67,7 +67,9 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
       payback: has(/Cash payback/),
       annualSaving: has(/Net cash saving, per year/),
       calculationPath: /Occupied room-nights/.test(printText) && /=/.test(printText),
-      whyNotFaster: /payback in 2 years/i.test(printText),
+      leadInPrint: !!printText.match(/Pays for itself|Saves about|per occupied room-night|Your guest rooms use/),
+      fiveYearInPrint: /Five years: bottled water against Swisspro/.test(printText),
+      staffPaybackLabelled: /Payback including staff time freed/.test(printText),
       plasticAfterMoney: posPlastic < 0 || (posMoney >= 0 && posMoney < posPlastic),
       printPagesMax2: pages > 0 && pages <= 2,
       printHasNoForm: !/Send the request to Swisspro/.test(printText)

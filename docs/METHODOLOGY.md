@@ -28,13 +28,22 @@ Let R = rooms, O = occupancy, B = bottles per occupied room-night, D = 365.
 7. Housekeeping time `= N x minutes per room / 60 + (Q / 24) x minutes per carton / 60` hours; value `= hours x hourly wage`, where hourly wage = monthly reference wage / (2080/12).
 8. Logistics: cartons `= Q / 24`; pallets `= Q / (1872 x 500/size)`; peak pallets `= pallets x stock weeks / 52`; store area `= peak pallets x 1.2 m2 x aisle multiplier`; deliveries `= 52 / stock weeks`; tonnes carried `= Q x (size/1000 + w/1000) / 1000`.
 
-9. Service contract per year `= in-room units x s + stations x 350.00`, where `s` is the reading of the 85.00 In-Room line: per change every m months `= 85 x 12 / m` (default, m = 9: 113.33), per year `= 85`, per 2-year contract `= 42.50`; converted from the list currency (SGD, assumption) with the register's exchange rates. Units `= rooms (in-room) + one station per other area` (assumption).
-10. Investment `= sum over areas of (lowest-priced matching list line x units)`; if an area has no matching line (in-room sparkling), the hotel enters the figure from its proposal.
-11. Payback: cash savings `= spend avoided - annual service`; full savings `= cash savings + labour value`; payback years `= investment / savings` (no payback when savings are not positive); five-year net `= 5 x savings - investment`.
+9. Service contract per year `= in-room units x s + stations x 350.00`, where `s` is the reading of the 85.00 In-Room line (comprehensive, labour and parts): one change per room and year `= 85` (default since 2.5, source: Westin Singapore case, Final Presentation 2024, p. 13 and p. 44, figures provided by Swisspro), per 2-year contract `= 42.50`, per change every m months `= 85 x 12 / m` (m = 9: 113.33, least favourable); converted from the list currency (SGD, assumption) with the register's exchange rates. Units `= rooms (in-room) + one station per other area` (assumption). The service contract is always part of the cash payback.
+10. Investment, base case `= rooms x SMART Classic+ (140.00, the lowest-priced In-Room line, a filtered tap) + stations x lowest-priced F&B line with chilled water`, whatever water type the hotel asked for in the room. Upgrade `= the In-Room line that gives the requested water (for example CLIMA Versa+ 980.00 for hot and chilled), plus a sparkling station where sparkling is asked`; shown as extra investment, extra service and its own payback below the base case.
+11. Payback: cash savings `= spend avoided - annual service`; savings including staff time freed `= cash savings + labour value`; payback years `= investment / savings` (no payback when savings are not positive); five-year net `= 5 x savings - investment`. Both paybacks are shown side by side; the one including staff time is always labelled so.
+12. Five-year view: cumulative cost after t years, bottled water `= t x spend`, Swisspro `= investment + t x service`; the lines cross at the cash payback.
+13. Per room and month (arithmetic, not an offer): bottled water today `= spend / rooms / 12`; Swisspro in years 1 to 3 `= (service + investment / 3) / rooms / 12`; from year 4 `= service / rooms / 12`.
+14. Lead statement, first that is true: cash payback within the five-year view; else payback including staff time freed within five years; else positive yearly saving (cash, then including staff time); else lower cost per occupied room-night including staff time (investment spread over 3 years); else the facts of today's bottled water (bottles, spend, staff hours). The lead never opens with a negative verdict; the full business case table below always shows the cash payback.
 
-## Conservative choices
-- Lightest documented bottle weight (US average); regional bottles are heavier.
-- Cheapest sourced carton price when the user does not know the price.
+### Reference check: Westin Singapore (2024)
+305 rooms, 243,840 bottles a year at S$0.17 (S$40,640), basic tap: investment `305 x 140 = S$42,700`. With the price-list service line (85.00 per room and year) payback `= 42,700 / (40,640 - 25,925) = 2.9 years`; with the case's filter-only figure (65.00) `= 42,700 / (40,640 - 19,825) = 2.05 years`, matching the case's "break-even in about 2 years". Both are unit tests (`test/business.test.js`).
+
+## Defaults and how favourable they are
+Every default sits within a range that can be defended from the price list, the register or the Westin case; the less favourable readings stay under "Adjust the assumptions".
+- Service: one change per room and year (Westin case); per change every 9 months is selectable and was the default before 2.5.
+- Room set-up: basic tap as the base case; the unit matching the requested water is an upgrade with its own payback.
+- Bottle price when "Not sure": the typical price, the median of the market's references (before 2.5: the lowest). No source gives the full in-room cost of a bottle (delivery, storage, disposal), so only the purchase price is used; handling time is counted as staff time.
+- Lightest documented bottle weight (US average); regional bottles are heavier, so plastic is conservative.
 - Statutory minimum or PWM floor wages, no employer on-costs.
 - Only guest-room bottles are counted unless the user adds a figure for other areas.
 - No credit for transport, chilling, disposal or the Fairmont-style marketing value.
@@ -46,9 +55,9 @@ Solutions are named per price-list area: In-Room (ambient tap; chilled or hot-an
 
 ## Validation
 - 2,030 rooms at 81.9% occupancy and 2 bottles per room-night gives about 1.2 million bottles a year; Fairmont Singapore and Swissotel The Stamford report avoiding 1.5 million (hotel website).
-- 32 unit tests (`npm test`) cover the formulas, defaults, overrides, register integrity and recommendation rules; `node tools/walkthrough.js` drives the UI end-to-end in headless Chromium for three scenarios (Kuala Lumpur luxury 150 rooms existing, Surabaya select-service 250 rooms new build, Manila premium 300 rooms existing) on desktop and mobile, and fails on console errors, forbidden texts (filter ratings, lead score) or a missing "unverified" label.
+- 41 unit tests (`npm test`) cover the Westin reproduction, the three scenarios' lead statements, the formulas, defaults, overrides, register integrity and recommendation rules; `node tools/walkthrough.js` drives the UI end-to-end in headless Chromium for three scenarios (Kuala Lumpur luxury 150 rooms existing, Surabaya select-service 250 rooms new build, Manila premium 300 rooms existing) on desktop and mobile, and fails on console errors, forbidden texts (filter ratings, lead score) or a missing "unverified" label.
 
 ## Known limitations
 - The price list lines were transcribed from the team's copy; the PDF itself is not in the repository yet.
 - No web source could be opened from the build environment; every such value is unverified (VERIFY.md).
-- The reading of the 85.00 service line is the biggest lever on the payback and is still to be confirmed by Swisspro; with the conservative default and reference bottle prices, cheap-water markets show no cash payback, which the result page says plainly.
+- The reading of the 85.00 service line is the biggest lever on the payback and is still to be confirmed by Swisspro. At the Indonesian reference price (Rp2,452 per bottle) the service contract (85.00 per room and year) is higher than the bottle spend, so Surabaya with default answers has no cash payback; the lead then states the hotel's bottles, spend and staff hours, and the business case table shows the payback.

@@ -56,11 +56,11 @@
       ],
       /* The 85.00 line does not state its interval. Three readings; the first is the default (most conservative). */
       readings: [
-        { id: 'perChange', label: 'Per filter change (change every 9 months)', note: 'The residential section of the price list names a SUPERSWISS replacement every 9 months (reported by the project team, 30 Oct 2026, line not transcribed). Consistent with the 70.00 delivery-only line: 85.00 with labour is a price per change.' },
-        { id: 'perYear', label: 'Per unit and year', note: 'Reading used in the team\'s Excel skeleton.' },
-        { id: 'perContract2y', label: 'Per unit and 2-year contract', note: 'Reads "2 or 3 Year Contract Price" as the price of the whole contract.' }
+        { id: 'perYear', label: 'One filter change per room and year', note: 'Default. One change per room and year, as in the Westin Singapore case computed with Swisspro (Final Presentation 2024, p. 13 and p. 44), at the comprehensive price with labour and parts.' },
+        { id: 'perContract2y', label: 'Per unit and 2-year contract', note: 'Reads "2 or 3 Year Contract Price" as the price of the whole contract.' },
+        { id: 'perChange', label: 'Per filter change (change every 9 months)', note: 'The residential section of the price list names a SUPERSWISS replacement every 9 months (reported by the project team, 30 Oct 2026, line not transcribed). Least favourable reading.' }
       ],
-      defaultReading: 'perChange',
+      defaultReading: 'perYear',
       changeIntervalMonths: { value: 9, kind: 'sourced', status: 'team-reported', note: 'Replacement interval named in the residential section of the price list, as reported by the project team on 30 Oct 2026; the line itself was not transcribed. Adjustable.' },
       fnbPerStationPerYear: { itemId: 'sv_fb_quarterly', note: 'The quarterly line states 4 replacements per year, so it is a yearly price per station.' }
     }

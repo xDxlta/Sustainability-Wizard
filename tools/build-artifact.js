@@ -4,7 +4,7 @@ const fs = require('fs'); const path = require('path');
 const root = path.resolve(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const css = read('styles.css');
-const scripts = ['js/factors.js', 'js/engine.js', 'js/pricelist.js', 'js/questions.js', 'js/model.js', 'js/recommend.js', 'js/format.js', 'js/app.js'].map(read).join('\n');
+const scripts = ['js/factors.js', 'js/engine.js', 'js/pricelist.js', 'js/questions.js', 'js/model.js', 'js/recommend.js', 'js/business.js', 'js/format.js', 'js/app.js'].map(read).join('\n');
 if (/<\/script/i.test(scripts) || /<\/style/i.test(css)) throw new Error('cannot inline: closing tag inside source');
 let body = read('index.html').match(/<body>([\s\S]*)<\/body>/)[1].replace(/\s*<script[^>]*><\/script>/g, '');
 const wizard = `<title>Swisspro Sustainability Wizard</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<style>\n${css}\n</style>\n${body.trim()}\n<script>window.SW_ARTIFACT = true;</script>\n<script>\n${scripts}\n</script>\n`;

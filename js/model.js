@@ -9,12 +9,20 @@
   function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
   function tagOf(x, label) { return { kind: x.kind, status: x.status || null, label: label, source: x.source, note: x.note, url: x.url }; }
 
+  /** Typical reference price of a market: the median of its references. */
+  function typicalPrice(c) {
+    var p = c.bottlePrices.map(function (b) { return b.price; }).sort(function (x, y) { return x - y; });
+    if (!p.length) return 0;
+    var m = Math.floor(p.length / 2);
+    return p.length % 2 ? p[m] : (p[m - 1] + p[m]) / 2;
+  }
+
   function bottlePriceOptions(F, countryCode) {
     var c = F.countries[countryCode] || F.countries.OTHER;
     var opts = c.bottlePrices.map(function (b) {
       return { id: b.id, label: b.label, desc: c.symbol + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle', value: b.price, kind: b.kind, status: b.status, url: b.url };
     });
-    if (opts.length) opts.unshift({ id: 'unknown', label: 'Not sure', desc: 'We use the lowest reference price' });
+    if (opts.length) opts.unshift({ id: 'unknown', label: 'Not sure', desc: 'We use the typical price, ' + c.symbol + typicalPrice(c).toFixed(c.decimals === 0 ? 0 : 2) });
     opts.push({ id: 'custom', label: 'Enter our price', desc: 'Premium or branded water, or your contract price' });
     return opts;
   }
@@ -46,8 +54,11 @@
     else if (a.priceBand === 'custom') { price = num(a.priceCustom, 0); prov.pricePerBottle = { kind: 'user', label: 'Your price' }; }
     else {
       var band = c.bottlePrices.filter(function (b) { return b.id === a.priceBand; })[0];
-      if (!band && c.bottlePrices.length) band = c.bottlePrices.slice().sort(function (x, y) { return x.price - y.price; })[0];
       if (band) { price = band.price; prov.pricePerBottle = { kind: band.kind, status: band.status, label: band.label, note: band.ref, url: band.url }; }
+      else if (c.bottlePrices.length) {
+        price = typicalPrice(c);
+        prov.pricePerBottle = { kind: 'derived', label: 'Typical price', note: 'median of ' + c.bottlePrices.length + ' references: ' + c.bottlePrices.map(function (b) { return b.ref; }).join('; '), typical: true };
+      }
       else { price = 0; prov.pricePerBottle = { kind: 'missing', label: 'No price available, cost not calculated' }; }
     }
 
@@ -77,5 +88,5 @@
     return { inputs: inputs, provenance: prov, country: c };
   }
 
-  return { normalise: normalise, bottlePriceOptions: bottlePriceOptions };
+  return { normalise: normalise, bottlePriceOptions: bottlePriceOptions, typicalPrice: typicalPrice };
 });

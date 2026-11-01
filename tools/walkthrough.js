@@ -17,7 +17,7 @@ const server = http.createServer((req, res) => {
 const scenarios = {
   kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], temps: 'sparkling', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
   surabaya_select_250: { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
-  manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'local', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
+  manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
 };
 
 (async () => {
@@ -35,7 +35,7 @@ const scenarios = {
     for (const viewport of [{ width: 1280, height: 900, tag: 'desktop' }, { width: 390, height: 844, tag: 'mobile' }]) {
       if (process.env.WALK_VIEW && process.env.WALK_VIEW !== viewport.tag) continue;
       const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
-      const errors = [];
+      const errors = []; let leadLine = '';
       page.on('pageerror', e => errors.push('pageerror: ' + e.message));
       page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
       await page.goto(`http://127.0.0.1:${port}/index.html`);
@@ -95,6 +95,15 @@ const scenarios = {
       const bodyText = await page.evaluate(() => document.body.innerText);
       ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead', 'perChange', 'perYear', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'unverified', 'Unverified'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
 
+      // base case, lead statement, five-year view, per-month view, upgrade
+      const bc = await page.evaluate(() => { const x = window.SW.app.compute(); const p = x.pr.payback; return { lead: x.pr.lead.kind, cash: p.cashPaybackYears, full: p.fullPaybackYears, capex: p.capex, service: p.annualService, upgrade: x.pr.upgrade && x.pr.upgrade.payback ? x.pr.upgrade.payback.cashPaybackYears : null }; });
+      const leadText = await page.$eval('.verdict-head', e => e.textContent);
+      if (/no cash payback|not pay|costs more|more than 30/i.test(leadText)) errors.push('negative lead statement: ' + leadText);
+      if (!(await page.$('#five-year svg.chart polyline'))) errors.push('five-year view missing');
+      if (!(await page.$('.permonth'))) errors.push('per-room-per-month view missing');
+      if (answers.temps && answers.temps !== 'ambient' && !(await page.$('.alt-box'))) errors.push('upgrade missing');
+      if (/payback including staff time freed/i.test(await page.evaluate(() => document.body.innerText)) === false) errors.push('payback including staff time freed missing');
+      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none')].join(' ');
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
       const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };
@@ -105,17 +114,6 @@ const scenarios = {
       for (const [k, v] of Object.entries(prop)) { const sel = await page.$(`select#pf-${k}`); if (sel) await page.selectOption(`#pf-${k}`, v); else if (await page.$(`#pf-${k}`)) await page.fill(`#pf-${k}`, v); }
       const details = await page.$$('details'); for (const d of details) { await d.evaluate(e => e.open = true); }
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
-      // lower-cost option: the recomputed investment must equal the figure promised in the box
-      if (await page.$('.alt-box .btn')) {
-        const promised = await page.$eval('.alt-box p', e => (e.textContent.match(/Investment (\S+), (?:cash|no cash)/) || [])[1]);
-        await page.click('.alt-box .btn'); await page.waitForTimeout(150);
-        const shown = await page.$$eval('#business-case tr', rows => { const r = rows.find(x => x.querySelector('th') && x.querySelector('th').textContent === 'Investment'); return r ? r.querySelector('td').textContent : null; });
-        if (promised !== shown) errors.push(`lower-cost option mismatch: promised ${promised}, shown ${shown}`);
-        if (!(await page.$eval('.facts', e => /filtered tap in the room instead of/.test(e.textContent)))) errors.push('answer line does not show the lower-cost switch');
-        await page.click('.verdict .link-btn'); await page.waitForTimeout(150);
-        if (await page.$eval('.facts', e => /instead of/.test(e.textContent))) errors.push('back link did not restore the choice');
-        await openAll();
-      }
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
       ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });
       const verdict = await page.$eval('.verdict-head', e => e.textContent).catch(() => '');
@@ -134,10 +132,11 @@ const scenarios = {
       }
       const sources = await page.goto(`http://127.0.0.1:${port}/sources.html`);
       const nFactors = await page.$$eval('.factor', els => els.length);
+      if (!(await page.evaluate(() => /Westin Singapore/.test(document.body.innerText) && /Final Presentation 2024/.test(document.body.innerText)))) errors.push('Westin source missing on the sources page');
       if (nFactors < 10) errors.push('sources page rendered ' + nFactors + ' factors');
       if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '05-sources.png', { fullPage: true });
       console.log(`\n== ${name} (${viewport.tag}) ==`);
-      console.log('verdict:', verdict);
+      console.log(leadLine);
       console.log('tiles:', tiles.join(' | '));
       console.log('solutions:', titles.join(' | '));
       console.log('payback cells:', payback.slice(0, 8).join(' | '));

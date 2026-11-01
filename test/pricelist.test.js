@@ -13,14 +13,16 @@ test('Hospitality lines transcribed verbatim: 4 In-Room and 8 F&B products with 
   PL.pricelist.items.forEach(it => assert.ok(['inRoom', 'fnb'].includes(it.area)));
 });
 
-test('servicing lines kept verbatim; three readings of the 85.00 line, per change (9 months) as default', () => {
+test('servicing lines kept verbatim; three readings of the 85.00 line, one change per room and year as default', () => {
   const sv = PL.pricelist.servicing;
   assert.equal(PL.byId(sv.inRoom, 'sv_ir_comprehensive').name, '2 or 3 Year Contract Price with labour and change of parts');
   assert.equal(PL.byId(sv.inRoom, 'sv_ir_comprehensive').price, 85);
   assert.equal(PL.byId(sv.inRoom, 'sv_ir_alacarte').price, 70);
   assert.equal(PL.byId(sv.fnb, 'sv_fb_quarterly').price, 350);
-  assert.equal(sv.defaultReading, 'perChange');
-  assert.ok(Math.abs(PL.inRoomServicePerYear() - 85 * 12 / 9) < 1e-9);
+  assert.equal(sv.defaultReading, 'perYear');
+  assert.equal(PL.inRoomServicePerYear(), 85);
+  assert.deepEqual(sv.readings.map(r => r.id), ['perYear', 'perContract2y', 'perChange']);
+  assert.ok(Math.abs(PL.inRoomServicePerYear('perChange') - 85 * 12 / 9) < 1e-9);
   assert.ok(Math.abs(PL.inRoomServicePerYear('perChange', 12) - 85) < 1e-9);
   assert.equal(PL.inRoomServicePerYear('perYear'), 85);
   assert.equal(PL.inRoomServicePerYear('perContract2y'), 42.5);

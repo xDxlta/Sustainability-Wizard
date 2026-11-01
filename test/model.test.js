@@ -18,10 +18,14 @@ test('market defaults are applied and carry kind + verification status', () => {
   assert.ok(Math.abs(n.inputs.wageHourly - 1700 / (2080 / 12)) < 1e-9);
 });
 
-test('"unknown" price falls back to the LOWEST reference price (conservative)', () => {
+test('"unknown" price uses the TYPICAL reference price: the median of the market references', () => {
   const n = M.normalise(F, answers, {});
-  const lowest = Math.min.apply(null, F.countries.MY.bottlePrices.map(b => b.price));
-  assert.equal(n.inputs.pricePerBottle, lowest);
+  const p = F.countries.MY.bottlePrices.map(b => b.price).sort((a, b) => a - b);
+  const median = p.length % 2 ? p[(p.length - 1) / 2] : (p[p.length / 2 - 1] + p[p.length / 2]) / 2;
+  assert.ok(Math.abs(n.inputs.pricePerBottle - median) < 1e-9);
+  assert.equal(n.provenance.pricePerBottle.typical, true);
+  assert.match(n.provenance.pricePerBottle.note, /median of 2 references/);
+  assert.equal(M.typicalPrice({ bottlePrices: [{ price: 1 }, { price: 5 }, { price: 2 }] }), 2);
 });
 
 test('user answers override defaults; custom price is used', () => {
@@ -67,7 +71,7 @@ test('bottle price options: "not sure" first, every reference band, then custom'
 });
 
 test('register integrity: kinds, statuses, URLs, rules, assumption notes', () => {
-  const kinds = ['sourced', 'derived', 'assumption', 'constant'];
+  const kinds = ['sourced', 'sourced-secondary', 'derived', 'assumption', 'constant'];
   Object.keys(F.factors).forEach(k => {
     const f = F.factors[k];
     assert.ok(kinds.includes(f.kind), k + ' kind');
@@ -77,6 +81,7 @@ test('register integrity: kinds, statuses, URLs, rules, assumption notes', () =>
       if (f.status === 'missing') assert.equal(f.value, null);
     }
     if (f.kind === 'assumption') assert.ok(f.note && f.note.length > 20, k + ' assumption needs a note');
+    if (f.kind === 'sourced-secondary') assert.ok(f.source && f.source.publisher && f.source.title && f.source.year, k + ' secondary source');
   });
   F.marketOrder.forEach(c => {
     const C = F.countries[c];
