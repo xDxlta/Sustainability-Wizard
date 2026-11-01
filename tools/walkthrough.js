@@ -109,7 +109,7 @@ const scenarios = {
       if (await page.$('.alt-box .btn')) {
         const promised = await page.$eval('.alt-box p', e => (e.textContent.match(/Investment (\S+), (?:cash|no cash)/) || [])[1]);
         await page.click('.alt-box .btn'); await page.waitForTimeout(150);
-        const shown = await page.$eval('.lead-line', e => (e.textContent.match(/Investment ([^ ]+) /) || [])[1]);
+        const shown = await page.$$eval('#business-case tr', rows => { const r = rows.find(x => x.querySelector('th') && x.querySelector('th').textContent === 'Investment'); return r ? r.querySelector('td').textContent : null; });
         if (promised !== shown) errors.push(`lower-cost option mismatch: promised ${promised}, shown ${shown}`);
         if (!(await page.$eval('.facts', e => /filtered tap in the room instead of/.test(e.textContent)))) errors.push('answer line does not show the lower-cost switch');
         await page.click('.verdict .link-btn'); await page.waitForTimeout(150);
@@ -123,6 +123,15 @@ const scenarios = {
       if (overflow) errors.push('horizontal overflow on the result page');
       const titles = await page.$$eval('.product h4', els => els.map(e => e.textContent.trim()));
       if (viewport.tag === 'desktop') { await shot(page, `04-results-${name}-quote.png`, { fullPage: true }); }
+      if (viewport.tag === 'desktop') {
+        const pdfPath = path.join(outDir, `owner-sheet-${name}.pdf`);
+        await page.emulateMedia({ media: 'print' });
+        await page.pdf({ path: pdfPath, format: 'A4', printBackground: true });
+        await page.emulateMedia({ media: 'screen' });
+        const pages = (fs.readFileSync(pdfPath).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+        if (pages > 2) errors.push(`owner sheet prints on ${pages} pages`);
+        console.log('owner sheet pages:', pages);
+      }
       const sources = await page.goto(`http://127.0.0.1:${port}/sources.html`);
       const nFactors = await page.$$eval('.factor', els => els.length);
       if (nFactors < 10) errors.push('sources page rendered ' + nFactors + ' factors');

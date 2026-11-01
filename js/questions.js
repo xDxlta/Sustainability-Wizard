@@ -58,7 +58,11 @@
   var proposalFields = [
     { id: 'name', type: 'text', label: 'Name', placeholder: 'Optional' },
     { id: 'hotel', type: 'text', label: 'Hotel', placeholder: 'Optional' },
+    { id: 'segment', type: 'select', label: 'Hotel segment', options: [
+      { id: '', label: 'Choose' }, { id: 'economy', label: 'Economy or midscale' }, { id: 'upscale', label: 'Upscale' }, { id: 'upper', label: 'Upper upscale' }, { id: 'luxury', label: 'Luxury' }
+    ] },
     { id: 'email', type: 'email', label: 'Work email', placeholder: 'Optional' },
+    { id: 'phone', type: 'tel', label: 'Phone', placeholder: 'Optional' },
     { id: 'source', type: 'select', label: 'Water supply', options: [
       { id: '', label: 'Not sure' }, { id: 'mains', label: 'Municipal mains' }, { id: 'tank', label: 'Mains via storage tank' }, { id: 'well', label: 'Own well or treatment plant' }
     ] },
