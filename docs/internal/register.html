@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Internal factor register - Swisspro Sustainability Wizard</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">Swisspro <span class="brand-sub">Sustainability Wizard</span></span></a>
+      <nav class="site-nav"><a href="../../index.html">Back to the wizard</a></nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Internal factor register (not deployed)</h1>
+      <p class="lead">Every number the wizard uses is listed here with its provenance. <span class="tag tag-sourced">Sourced</span> means a published value whose page was opened and whose quoted wording is on it; <span class="tag tag-unverified">Sourced, unverified</span> means the page could not be opened when this version was built, so the value and the quote come from a search-engine excerpt and must be checked (see VERIFY.md); <span class="tag tag-derived">Derived</span> values are arithmetic on other values; <span class="tag tag-assumption">Assumption</span> values have no published source and can be changed on the result page.</p>
+      <p class="notice" id="verification-note"></p>
+      <p class="small">Where sources disagree, one value per factor is chosen by a rule stated once: see "Choice rules" below.</p>
+    </section>
+    <section class="card" id="rules"></section>
+    <section class="card" id="factors"></section>
+    <section class="card" id="markets"></section>
+    <section class="card" id="swisspro"></section>
+  </main>
+  <footer class="site-footer"><div class="wrap"><p class="muted">Swisspro Pte Ltd, Singapore. Indicative tool; a site survey and water test confirm the specification and quote.</p></div></footer>
+  <script src="../../js/factors.js"></script>
+  <script src="../../js/pricelist.js"></script>
+  <script>
+  (function () {
+    var F = window.SW.factors, PL = window.SW.pricelist;
+    document.getElementById('verification-note').textContent = F.verification.note;
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function tag(kind, status) { var names = { sourced: 'Sourced', derived: 'Derived', assumption: 'Assumption', constant: 'Constant', missing: 'Missing' }; if (status === 'missing') return '<span class="tag tag-missing">Missing</span>'; if ((kind === 'sourced' || kind === 'derived') && status === F.UNVERIFIED) return '<span class="tag tag-unverified">' + esc(names[kind]) + ', unverified</span>'; if (kind === 'sourced' && status === 'team-opened') return '<span class="tag tag-sourced">Sourced, opened by the team</span>'; if (kind === 'sourced' && status === 'team-reported') return '<span class="tag tag-sourced">Sourced, reported by the team</span>'; return '<span class="tag tag-' + esc(kind) + '">' + esc(names[kind] || kind) + '</span>'; }
+    function src(s) { if (!s) return ''; var h = '<blockquote>' + (s.quote ? '&ldquo;' + esc(s.quote) + '&rdquo; ' : '') + '<br><span class="small">' + esc(s.publisher || '') + (s.title ? ' - ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? ' - <a href="' + esc(s.url) + '" rel="noopener">' + esc(s.url) + '</a>' : '') + (s.accessed ? ' - accessed ' + esc(s.accessed) : '') + '</span></blockquote>'; return h; }
+    function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? v.toPrecision(4) : (Math.round(v * 1000) / 1000)) + ' ' + esc(unit || ''); if (v && typeof v === 'object') return esc(JSON.stringify(v)) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
+    var h = '<h2>Choice rules</h2><p class="small muted">Applied once per factor wherever sources disagree.</p><ul class="small">';
+    Object.keys(F.rules).forEach(function (k) { h += '<li><strong>' + esc(k) + ':</strong> ' + esc(F.rules[k]) + '</li>'; });
+    h += '</ul>';
+    document.getElementById('rules').innerHTML = h;
+
+    h = '<h2>Calculation factors</h2>';
+    Object.keys(F.factors).forEach(function (k) {
+      var f = F.factors[k];
+      h += '<div class="factor" id="' + esc(k) + '"><h3>' + esc(f.label || k) + ' ' + tag(f.kind, f.status) + '</h3><div class="val">' + (f.value == null ? 'not available' : val(f.value, f.unit)) + '</div>' + src(f.source) + (f.rule ? '<p class="small"><strong>Choice rule:</strong> ' + esc(f.rule) + '</p>' : '') + (f.note ? '<p class="small muted">' + esc(f.note) + '</p>' : '') + '</div>';
+    });
+    document.getElementById('factors').innerHTML = h;
+
+    h = '<h2>Market reference values</h2>';
+    F.marketOrder.forEach(function (code) {
+      var c = F.countries[code];
+      h += '<div class="factor"><h3>' + esc(c.name) + ' (' + esc(c.currency) + ')</h3>';
+      h += '<p><strong>Exchange rate</strong> ' + tag(c.fx.kind, c.fx.status) + ' ' + val(c.fx.value, c.fx.unit) + src(c.fx.source) + (c.fx.note ? '<span class="small muted">' + esc(c.fx.note) + '</span>' : '') + '</p>';
+      h += '<p><strong>Occupancy</strong> ' + tag(c.occupancy.kind, c.occupancy.status) + ' ' + val(c.occupancy.value * 100, '%, ' + (c.occupancy.unit || '')) + src(c.occupancy.source) + (c.occupancy.note ? '<span class="small muted">' + esc(c.occupancy.note) + '</span>' : '') + '</p>';
+      h += '<p><strong>Wage reference</strong> ' + tag(c.wageMonthly.kind, c.wageMonthly.status) + ' ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + src(c.wageMonthly.source) + (c.wageMonthly.note ? '<span class="small muted">' + esc(c.wageMonthly.note) + '</span>' : '') + '</p>';
+      if (c.bottlePrices.length) { h += '<p><strong>Bottle price references</strong></p><ul class="small">'; c.bottlePrices.forEach(function (b) { h += '<li>' + tag(b.kind, b.status) + ' ' + esc(b.label) + ': ' + esc(c.symbol) + b.price.toFixed(c.decimals === 0 ? 0 : 3) + ' per bottle, ' + esc(b.ref) + ', <a href="' + esc(b.url) + '" rel="noopener">source</a></li>'; }); h += '</ul>'; }
+      if (c.context.length) { h += '<p><strong>Local context used on the result page</strong></p><ul class="small">'; c.context.forEach(function (x) { h += '<li>' + tag('sourced', x.status) + ' ' + esc(x.text) + ' <a href="' + esc(x.url) + '" rel="noopener">source</a></li>'; }); h += '</ul>'; }
+      h += '</div>';
+    });
+    document.getElementById('markets').innerHTML = h;
+
+    // Interview notes: see docs/internal/interview-notes.md
+
+    var pl = PL.pricelist;
+    h = '<h2>Swisspro products and prices</h2><p class="small">The only source for products, product names and prices is the Hospitality section of the Swisspro price list (' + esc(pl.source.file) + ', dated ' + esc(pl.source.dated) + ', prices excl. GST). Status: <strong>' + esc(pl.source.status) + '</strong>. ' + esc(pl.source.note) + '</p>';
+    h += '<p class="small">' + tag('assumption') + ' Currency: ' + esc(pl.currency.value) + '. ' + esc(pl.currency.note) + '</p>';
+    h += '<table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Product (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th><th style="text-align:left">Reading used for matching</th></tr>';
+    pl.items.forEach(function (it) { h += '<tr><th>' + esc(PL.AREAS[it.area]) + '</th><td style="text-align:left">' + esc(it.label) + '</td><td style="text-align:left">' + esc(it.name) + (it.comment ? ' (' + esc(it.comment) + ')' : '') + '</td><td>' + it.price.toLocaleString('en-US', { minimumFractionDigits: 2 }) + '</td><td style="text-align:left;font-weight:400" class="small muted">' + (it.temps.length ? esc(it.temps.join(', ')) : 'none printed') + (it.reading ? '; ' + esc(it.reading) : '') + '</td></tr>'; });
+    h += '</table>';
+    h += '<h3>Servicing lines</h3><table class="kv"><tr><th style="text-align:left">Section</th><th style="text-align:left">Line (as printed)</th><th style="text-align:left">Description (as printed)</th><th>Price</th></tr>';
+    pl.servicing.inRoom.forEach(function (x) { h += '<tr><th>In-Room</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + (x.comment ? ' (' + esc(x.comment) + ')' : '') + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    pl.servicing.fnb.forEach(function (x) { h += '<tr><th>F&B / Drinking Station</th><td style="text-align:left">' + esc(x.label) + '</td><td style="text-align:left">' + esc(x.name) + '</td><td>' + x.price.toFixed(2) + '</td></tr>'; });
+    h += '</table>';
+    h += '<p class="small">' + tag('assumption') + ' The 85.00 In-Room line does not state its interval. Three readings are offered on the result page; the default is the most conservative:</p><ul class="small">';
+    pl.servicing.readings.forEach(function (r) { h += '<li>' + (r.id === pl.servicing.defaultReading ? '<strong>Default: </strong>' : '') + esc(r.label) + ' = ' + PL.inRoomServicePerYear(r.id).toFixed(2) + ' per unit and year. ' + esc(r.note) + '</li>'; });
+    h += '</ul><p class="small">' + tag('sourced', 'team-reported') + ' Change interval ' + pl.servicing.changeIntervalMonths.value + ' months: ' + esc(pl.servicing.changeIntervalMonths.note) + '</p>';
+    h += '<p class="small">' + tag('sourced') + ' Drinking stations: ' + esc(PL.byId(pl.servicing.fnb, pl.servicing.fnbPerStationPerYear.itemId).label) + ' at 350.00 per station and year. ' + esc(pl.servicing.fnbPerStationPerYear.note) + '</p>';
+    document.getElementById('swisspro').innerHTML = h;
+  })();
+  </script>
+</body>
+</html>

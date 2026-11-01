@@ -15,9 +15,9 @@ const server = http.createServer((req, res) => {
 });
 
 const scenarios = {
-  sg_premium: { country: 'SG', tier: 'premium', ownership: 'managed', build: 'existing', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '500', priceBand: 'local', areas: ['rooms', 'fnb', 'meetings'], fnbOutlets: '2', meetingRooms: '5', otherBottlesPerDay: '100', placement: 'minibar', temps: 'hotcold', finish: 'chrome', space: 'enough', source: 'tank', issues: ['none'], halal: 'no', drivers: ['cost', 'efficiency', 'certification'], approval: 'gm', timeline: '3to12', name: 'Demo User', role: 'Director of Rooms', hotel: 'Demo Hotel Singapore', email: 'demo@example.com' },
-  my_luxury: { country: 'MY', tier: 'luxury', ownership: 'owned', build: 'renovation', rooms: '450', occupancy: '0.7', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.5', areas: ['rooms', 'fnb', 'boh', 'public'], fnbOutlets: '3', otherBottlesPerDay: '250', placement: 'vanity', temps: 'sparkling', finish: 'black', space: 'tight', source: 'well', issues: ['sediment', 'microbial'], halal: 'notsure', drivers: ['audit', 'efficiency'], keepPremium: 'yes', approval: 'owner', timeline: 'lt3' },
-  id_select: { country: 'ID', tier: 'select', ownership: 'franchised', build: 'existing', rooms: '120', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: '1', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms'], placement: 'notsure', temps: 'ambient', finish: 'nopref', space: 'enough', source: 'notsure', issues: ['notsure'], halal: 'no', drivers: ['storage'], approval: 'notsure', timeline: 'exploring' }
+  kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], temps: 'sparkling', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
+  surabaya_select_250: { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
+  manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
 };
 
 (async () => {
@@ -27,23 +27,26 @@ const scenarios = {
   // Key screenshots go to docs/screenshots (committed); everything else to tools/out (git-ignored).
   const keepDir = path.join(root, 'docs', 'screenshots'); fs.mkdirSync(keepDir, { recursive: true });
   const outDir = path.join(root, 'tools', 'out'); fs.mkdirSync(outDir, { recursive: true });
-  const KEEP = ['01-intro.png', '02-step-02.png', '02-step-07.png', '03-results-sg_premium-desktop.png', '03-results-sg_premium-mobile.png', '05-sources.png'];
+  const KEEP = ['01-intro.png', '02-step-01.png', '02-step-02.png', '02-step-03.png', '03-results-kl_luxury_150-desktop.png', '03-results-kl_luxury_150-mobile.png', '03-results-surabaya_select_250-desktop.png', '03-results-manila_premium_300-desktop.png', '04-results-manila_premium_300-quote.png', '05-sources.png'];
   const shot = (page, name, opts) => page.screenshot(Object.assign({ path: path.join(KEEP.includes(name) ? keepDir : outDir, name) }, opts || {}));
   let failures = 0;
   for (const [name, answers] of Object.entries(scenarios)) {
+    if (process.env.WALK_ONLY && process.env.WALK_ONLY !== name) continue;
     for (const viewport of [{ width: 1280, height: 900, tag: 'desktop' }, { width: 390, height: 844, tag: 'mobile' }]) {
+      if (process.env.WALK_VIEW && process.env.WALK_VIEW !== viewport.tag) continue;
       const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
-      const errors = [];
+      const errors = []; let leadLine = '';
       page.on('pageerror', e => errors.push('pageerror: ' + e.message));
       page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
       await page.goto(`http://127.0.0.1:${port}/index.html`);
       await page.evaluate(() => localStorage.clear());
       await page.reload();
-      if (viewport.tag === 'desktop' && name === 'sg_premium') await shot(page, '01-intro.png', { fullPage: true });
-      await page.click('text=Start - about 3 minutes');
+      if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '01-intro.png', { fullPage: true });
+      await page.click('.hero .btn-primary');
       // drive the wizard by clicking the option buttons / filling inputs for each visible step
       for (let guard = 0; guard < 20; guard++) {
         const title = await page.textContent('#step-title');
+        if (process.env.WALK_DEBUG) console.log(`[${name}/${viewport.tag}] step ${guard + 1}: ${title}`);
         // fields can appear after an answer (showIf), so re-query until nothing new is answered
         const done = new Set();
         for (let pass = 0; pass < 4; pass++) {
@@ -52,7 +55,7 @@ const scenarios = {
         for (const f of fields) {
           done.add(f);
           const val = answers[f];
-          if (val == null) continue;
+          if (val == null || f.startsWith('_')) continue;
           const input = await page.$(`#in-${f}`);
           if (input) { await input.fill(String(val)); continue; }
           const ids = Array.isArray(val) ? val : [val];
@@ -65,35 +68,77 @@ const scenarios = {
           if (f === 'priceBand' && val === 'custom') { await page.waitForSelector('#in-priceCustom'); await page.fill('#in-priceCustom', String(answers.priceCustom)); done.add('priceCustom'); }
         }
         }
-        if (viewport.tag === 'desktop' && name === 'sg_premium') await shot(page, `02-step-${String(guard + 1).padStart(2, '0')}.png`, { fullPage: true });
-        const nextBtn = await page.$('.nav-row .btn-primary');
-        if (!nextBtn) break;
-        const label = (await nextBtn.textContent()).trim();
-        // single-option steps auto-advance; wait briefly then click Next only if still on the same step
+        if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, `02-step-${String(guard + 1).padStart(2, '0')}.png`, { fullPage: true });
+        if (!(await page.$('.nav-row .btn-primary'))) break;
+        const label = (await page.textContent('.nav-row .btn-primary')).trim();
+        // single-option steps auto-advance; wait briefly, then click Next (fresh locator) only if still on the same step
         await page.waitForTimeout(250);
         const stillHere = await page.$('#step-title');
-        if (stillHere && (await stillHere.textContent()) === title) await nextBtn.click();
+        if (stillHere && (await stillHere.textContent()) === title) {
+          // Leave the last input before pressing Next. After a fullPage screenshot Chromium shifts the scroll
+          // position on the next focus change, which makes the pointer miss the button; real users are not affected.
+          await page.evaluate(() => document.activeElement && document.activeElement.blur());
+          await page.click('.nav-row .btn-primary');
+        }
         await page.waitForTimeout(150);
+        if (process.env.WALK_DEBUG) console.log('   after next:', await page.textContent('#step-title').catch(() => 'results'), '| errors:', JSON.stringify(await page.$$eval('.error:not([hidden])', els => els.map(e => e.closest('.field').getAttribute('data-field') + ': ' + e.textContent))), '| answers:', await page.evaluate(() => JSON.stringify(window.SW.app.state().answers)));
         if (label === 'See my results') break;
         if (await page.$('.results')) break;
       }
-      await page.waitForSelector('.results', { timeout: 5000 }).catch(() => errors.push('results did not render'));
+      await page.waitForSelector('.results', { timeout: 5000 }).catch(async () => { errors.push('results did not render; still on: ' + (await page.textContent('#step-title').catch(() => '?')) + ' | errors shown: ' + (await page.$$eval('.error:not([hidden])', els => els.map(e => e.textContent).join('; ')))); });
       const err = await page.$$eval('.error:not([hidden])', els => els.map(e => e.textContent));
       if (err.length) errors.push('validation errors shown: ' + err.join(' | '));
       const tiles = await page.$$eval('.tile .value', els => els.map(e => e.textContent.trim()));
+      if (viewport.tag === 'mobile') await shot(page, `03-results-${name}-mobile-fold.png`);
       await shot(page, `03-results-${name}-${viewport.tag}.png`, { fullPage: true });
-      // exercise the adjust panel and the pricing modes
-      if (await page.$('#ov-occupancy')) { await page.fill('#ov-occupancy', '75'); await page.press('#ov-occupancy', 'Tab'); await page.waitForTimeout(100); }
-      const quoteBtn = await page.$('text=I have a Swisspro quote'); if (quoteBtn) { await quoteBtn.click(); await page.fill('#ov-capex', '100000'); await page.press('#ov-capex', 'Tab'); await page.fill('#ov-service', '8000'); await page.press('#ov-service', 'Tab'); await page.waitForTimeout(100); }
+      // texts that must not appear (unverified product claims, sales questions, lead score)
+      const bodyText = await page.evaluate(() => document.body.innerText);
+      ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead', 'perChange', 'perYear', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'unverified', 'Unverified'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
+
+      // base case, lead statement, five-year view, per-month view, upgrade
+      const bc = await page.evaluate(() => { const x = window.SW.app.compute(); const p = x.pr.payback; return { lead: x.pr.lead.kind, cash: p.cashPaybackYears, full: p.fullPaybackYears, capex: p.capex, service: p.annualService, upgrade: x.pr.upgrade && x.pr.upgrade.payback ? x.pr.upgrade.payback.cashPaybackYears : null }; });
+      const leadText = await page.$eval('.verdict-head', e => e.textContent);
+      if (/no cash payback|not pay|costs more|more than 30/i.test(leadText)) errors.push('negative lead statement: ' + leadText);
+      if (!(await page.$('#five-year svg.chart polyline'))) errors.push('five-year view missing');
+      if (!(await page.$('.permonth'))) errors.push('per-room-per-month view missing');
+      if (answers.temps && answers.temps !== 'ambient' && !(await page.$('.alt-box'))) errors.push('upgrade missing');
+      if (/payback including staff time freed/i.test(await page.evaluate(() => document.body.innerText)) === false) errors.push('payback including staff time freed missing');
+      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none')].join(' ');
+      // exercise the adjust panel, the proposal form and the investment input
+      if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
+      const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };
+      await openAll();
+      if (await page.$('#ov-occupancy')) { await page.fill('#ov-occupancy', '75'); await page.press('#ov-occupancy', 'Tab'); await page.waitForTimeout(100); await openAll(); }
+      if (answers._capex != null) { await page.fill('#ov-capex', String(answers._capex)); await page.press('#ov-capex', 'Tab'); await page.waitForTimeout(100); await openAll(); }
+      const prop = answers._proposal || {};
+      for (const [k, v] of Object.entries(prop)) { const sel = await page.$(`select#pf-${k}`); if (sel) await page.selectOption(`#pf-${k}`, v); else if (await page.$(`#pf-${k}`)) await page.fill(`#pf-${k}`, v); }
+      const details = await page.$$('details'); for (const d of details) { await d.evaluate(e => e.open = true); }
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
+      ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });
+      const verdict = await page.$eval('.verdict-head', e => e.textContent).catch(() => '');
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+      if (overflow) errors.push('horizontal overflow on the result page');
+      const titles = await page.$$eval('.product h4', els => els.map(e => e.textContent.trim()));
       if (viewport.tag === 'desktop') { await shot(page, `04-results-${name}-quote.png`, { fullPage: true }); }
+      if (viewport.tag === 'desktop') {
+        const pdfPath = path.join(outDir, `owner-sheet-${name}.pdf`);
+        await page.emulateMedia({ media: 'print' });
+        await page.pdf({ path: pdfPath, format: 'A4', printBackground: true });
+        await page.emulateMedia({ media: 'screen' });
+        const pages = (fs.readFileSync(pdfPath).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+        if (pages > 2) errors.push(`owner sheet prints on ${pages} pages`);
+        console.log('owner sheet pages:', pages);
+      }
       const sources = await page.goto(`http://127.0.0.1:${port}/sources.html`);
       const nFactors = await page.$$eval('.factor', els => els.length);
+      if (!(await page.evaluate(() => /Westin Singapore/.test(document.body.innerText) && /Final Presentation 2024/.test(document.body.innerText)))) errors.push('Westin source missing on the sources page');
       if (nFactors < 10) errors.push('sources page rendered ' + nFactors + ' factors');
-      if (viewport.tag === 'desktop' && name === 'sg_premium') await shot(page, '05-sources.png', { fullPage: true });
+      if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '05-sources.png', { fullPage: true });
       console.log(`\n== ${name} (${viewport.tag}) ==`);
+      console.log(leadLine);
       console.log('tiles:', tiles.join(' | '));
+      console.log('solutions:', titles.join(' | '));
       console.log('payback cells:', payback.slice(0, 8).join(' | '));
       console.log('summary lines:', summary.split('\n').length, '| sources factors:', nFactors);
       if (errors.length) { failures++; console.log('ERRORS:\n  ' + errors.join('\n  ')); } else console.log('no errors');

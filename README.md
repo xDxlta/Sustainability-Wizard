@@ -1,12 +1,13 @@
 # Swisspro Sustainability Wizard
 
-A multiple-choice web tool for hotels in Singapore, Malaysia, Indonesia and the Philippines that shows what
-replacing bottled water with Swisspro filtered drinking water means for them: bottles and plastic avoided,
-money and housekeeping time saved, storage and deliveries freed, the payback, the filter specification for
-their water, and the Swisspro unit that fits each area. It also sorts the lead for Swisspro's sales team
-(segment, areas, products, readiness, which argument to lead with).
+A multiple-choice web tool for hotels in Malaysia, Indonesia and the Philippines (Singapore selectable)
+that shows what replacing bottled water with Swisspro filtered drinking water means for them: bottles and
+plastic avoided, money and housekeeping time saved, the payback (cash only and with the value of staff
+time), and the Swisspro set-up that fits their rooms and outlets. Version 2 is a decision-support tool for
+the hotel, not a sales questionnaire: six short steps, every question changes the result.
 
 Built for Swisspro Pte Ltd by the student project team. Static HTML/CSS/JS, no build step, no backend.
+See CHANGELOG.md for what changed against version 1 and VERIFY.md for the status of every source.
 
 ![Intro](docs/screenshots/01-intro.png)
 
@@ -17,55 +18,61 @@ Built for Swisspro Pte Ltd by the student project team. Static HTML/CSS/JS, no b
   http://localhost:8080/ . Opening `index.html` directly from disk also works (classic scripts, no modules).
 
 ## What the user sees
-1. Ten short steps, every answer multiple choice (room count is the only number; occupancy, bottles per
-   night and prices have "not sure" options backed by sourced reference values).
-2. A results page with six headline tiles, each with the provenance of its inputs (sourced / derived /
-   assumption / your input), a payback section (own quote, or a clearly labelled ballpark from Swisspro's
-   published retail prices until the hotel price list is loaded), the recommended set-up per area with
-   filter specification, the local rules and standards that support the change, the argument order for the
-   internal business case, an "adjust the assumptions" panel, the list of sources, and actions: email the
-   summary to Swisspro, copy it, print to PDF.
-3. A sources page (`sources.html`) that renders the whole factor registry with quotes, links and dates.
+1. Three steps, nine answers: market, rooms, occupancy; what guests find in the room today, bottles per
+   night, bottle size, price; areas and water in the room. Every numeric question has "not sure" backed by
+   a market reference value; only the room count is typed.
+2. A result page with five tiles, each labelled with the provenance of its inputs (sourced, unverified /
+   derived / assumption / your input), the payback with investment and service contract from the price
+   list (service reading and currency as visible assumptions), the matching price-list units per area, and,
+   collapsed, logistics and argument order, the adjustable assumptions, the sources, and an optional
+   "request a proposal" form (water supply, Halal, timing and approval are optional fields there).
+3. A sources page (`sources.html`) with the choice rules and the whole register, quotes, links and status.
 
-![Results](docs/screenshots/03-results-sg_premium-desktop.png)
+![Results](docs/screenshots/03-results-kl_luxury_150-desktop.png)
 
 ## Design decisions
-- **ROI first, sustainability last** in the presentation order, following Marriott's APAC procurement lead;
-  the order changes for luxury hotels (guest experience first) and for Malaysia/Indonesia where bottled
-  water is cheap (efficiency and water safety first).
-- **No invented numbers.** `js/factors.js` is the single registry; every value carries a `kind`
-  (`sourced`, `sourced-secondary`, `derived`, `assumption`, `constant`) with quote, URL and access date, or
-  an explanatory note for assumptions. The UI shows the label next to every figure. The unit tests fail if a
-  factor lacks provenance.
-- **Conservative defaults**: lightest documented bottle weight, cheapest sourced bottle price, statutory
+- **Only result-changing questions.** Nine answers change a number or a product; everything that only
+  changed text (tier, building, placement, water source, issues, Halal) and everything that served lead
+  sorting (ownership, approval, timing, drivers, lead score) is gone from the flow.
+- **ROI first, sustainability last** in the collapsed argument order (Marriott interview); efficiency and
+  water safety first where bottled water is cheap (below US$0.25 per bottle, a labelled provisional rule).
+- **No invented numbers.** `js/factors.js` is the single register; every value carries a `kind` and, for
+  sourced values, a verification `status`. Because the build environment could not open any page, all
+  sourced values are "unverified" and listed in VERIFY.md with URL and quoted wording. One choice rule per
+  disputed factor is stated once.
+- **Products only from the price list.** `js/pricelist.js` holds the Hospitality section verbatim (In-Room
+  vs F&B / Drinking Station, PDF dated 16 Sep 2026, prices excl. GST). Lines are matched on the printed
+  water types; the cheapest match sets the investment. The 85.00 servicing line has three readings with the
+  most conservative (per change every 9 months) as default; currency SGD is a labelled assumption.
+- **No unverified product claims**: filtration is described generically and confirmed in the proposal.
+- **Conservative defaults**: lightest documented bottle weight, cheapest reference bottle price, statutory
   floor wages, cradle-to-gate emissions only.
-- **Lead sorting without friction**: contact details are optional; the summary text carries segment,
-  recommended products and a readiness score for Swisspro.
-- **Configurator feel** for the device choice (placement, temperatures, finish, space), as requested in the
-  interview ("like IKEA, you specify and choose online").
 
 ## Project structure
 ```
 index.html            wizard page
 sources.html          factor registry rendered as a page
 styles.css            styles (brand tokens at the top)
-js/factors.js         ALL numbers with provenance; market reference values; trigger facts
+js/factors.js         ALL numbers with provenance and verification status; choice rules; market values
 js/engine.js          pure calculation functions (unit-tested)
 js/model.js           answers -> engine inputs, applying labelled defaults
-js/recommend.js       lead score, argument order, product fit, filter specification, unit plan
-js/products.js        Swisspro product families as described on swissprowater.com
-js/pricing.js         pricing config: hotel price list (to fill) and retail reference (labelled)
-js/questions.js       the ten steps
-js/app.js             UI rendering, local storage, summary/email
+js/recommend.js       solution per price-list area, filtration notes, argument order, approval note
+js/pricelist.js       Hospitality price list (to transcribe), servicing line, interval and currency assumptions
+js/questions.js       the three steps and the optional proposal fields
+js/app.js             UI rendering, local storage, proposal summary
 test/*.test.js        node --test unit tests (32)
-tools/walkthrough.js  headless Chromium end-to-end run with screenshots
+tools/walkthrough.js  headless Chromium end-to-end run with screenshots (three market scenarios)
+tools/build-artifact.js single-file build for hosted previews
+VERIFY.md             every factor with value, URL, quote and whether the page was opened
+CHANGELOG.md          changes against version 1
 docs/                 methodology, research notes, demo script, pricing how-to, open items, screenshots
 ```
 
 ## Maintaining the numbers
 - Change a factor: edit its `value` in `js/factors.js` and update `source`/`note`. Never hard-code numbers
   in `js/app.js`.
-- Load the price list: see `docs/PRICING-HOWTO.md`.
+- Load the price list: see `docs/PRICING-HOWTO.md` (the only source for products and prices).
+- Verify a source: open the URL, confirm the quote, set `status: 'opened'` (VERIFY.md).
 - Add a market: add a country entry (currency, exchange rate, occupancy, wage, bottle prices, context).
 - Add or reword a question: `js/questions.js`; the option `id`s are what `js/model.js` and
   `js/recommend.js` read.
@@ -75,10 +82,11 @@ docs/                 methodology, research notes, demo script, pricing how-to, 
 npm test
 ```
 runs the unit tests. `node tools/walkthrough.js` (Playwright + Chromium) drives the whole wizard for
-three scenarios on desktop and mobile, fails on console errors and refreshes `docs/screenshots/`.
+three market scenarios on desktop and mobile, fails on console errors or forbidden texts and refreshes
+`docs/screenshots/` (`WALK_ONLY=<scenario> WALK_VIEW=desktop WALK_DEBUG=1` narrow and trace a run).
 GitHub Actions runs the unit tests on every push.
 
 ## Status
-See `docs/OPEN-ITEMS.md`. The main gaps are the hotel price list (not available during the build), direct
-verification of the cited pages (they were read through search excerpts because the build environment had
-no outbound web access), Swisspro's certificates and brand assets.
+See `docs/OPEN-ITEMS.md`. The main gaps are the verification of every web source (no page could be opened
+from the build environment), the PDF of the price list in the repository, and Swisspro's confirmation of
+the service-line reading and the lead email address.
