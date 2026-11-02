@@ -57,6 +57,7 @@ const scenarios = {
           const val = answers[f];
           if (val == null || f.startsWith('_')) continue;
           const input = await page.$(`#in-${f}`);
+          if (input && val === 'default') { await page.click(`[data-field="${f}"] [data-opt="default"]`); await page.waitForTimeout(60); continue; }
           if (input) { await input.fill(String(val)); continue; }
           const ids = Array.isArray(val) ? val : [val];
           for (const id of ids) {

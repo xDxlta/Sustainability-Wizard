@@ -118,6 +118,9 @@ button.rail-link:hover { text-decoration: underline; }
 .options-row:not(.lead-wide) .opt, .options-row.lead-wide .opt:not(:first-child) { padding-right: var(--s-3); align-items: center; text-align: center; }
 .options-row:not(.lead-wide) .opt::after, .options-row.lead-wide .opt:not(:first-child)::after { display: none; }
 .field-control { min-width: 0; }
+.field-control.with-notsure { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.field-control.with-notsure .input { flex: 0 1 160px; }
+.opt-inline { min-height: 44px; padding-top: 4px; padding-bottom: 4px; }
 .options-row .opt .opt-label { white-space: nowrap; padding-right: 0; }
 .options-wide { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .opt { position: relative; hyphens: none; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 48px; text-align: left; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: var(--s-2) var(--s-6) var(--s-2) var(--s-3); cursor: pointer; font: inherit; color: var(--ink); transition: border-color .12s, background .12s; }

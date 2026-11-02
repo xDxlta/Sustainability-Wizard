@@ -48,7 +48,7 @@
         el('h1', { text: 'What does filtered water instead of bottled water mean for your hotel?' }),
         el('p', { class: 'lead', text: 'Answer nine questions about your rooms and the water you buy today. You see the bottles, plastic and CO2e avoided, what you spend now, the payback and the Swisspro set-up that fits.' }),
         el('div', { class: 'actions' },
-          el('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; state.step = 0; save(); render(); } }, resume ? 'Start again' : 'Start'),
+          el('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; state.step = 0; state.answers = {}; state.overrides = {}; save(); render(); } }, resume ? 'Start again' : 'Start'),
           resume ? el('button', { class: 'btn btn-secondary btn-lg', type: 'button', onclick: function () { state.view = 'wizard'; save(); render(); } }, 'Continue where I left off') : null)),
       el('dl', { class: 'hero-facts' },
         el('div', {}, el('dt', { text: 'Time' }), el('dd', { text: 'About one minute' })),
@@ -119,8 +119,16 @@
         wrap.appendChild(group);
       } else if (f.type === 'number' || f.type === 'text' || f.type === 'email') {
         var ctl = el('div', { class: 'field-control' }); wrap.appendChild(ctl);
-        ctl.appendChild(el('input', { class: 'input', type: f.type, id: 'in-' + f.id, placeholder: f.placeholder || '', value: a[f.id] != null ? a[f.id] : '', min: f.min, max: f.max, step: f.step, inputmode: f.type === 'number' ? 'decimal' : null, 'aria-labelledby': 'lbl-' + f.id,
-          oninput: function (e) { a[f.id] = e.target.value; save(); } }));
+        ctl.appendChild(el('input', { class: 'input', type: f.type, id: 'in-' + f.id, placeholder: f.placeholder || '', value: a[f.id] != null && a[f.id] !== 'default' ? (f.id === 'occupancy' && Number(a[f.id]) > 0 && Number(a[f.id]) <= 1 ? Math.round(Number(a[f.id]) * 1000) / 10 : a[f.id]) : '', min: f.min, max: f.max, step: f.step, inputmode: f.type === 'number' ? 'decimal' : null, 'aria-labelledby': 'lbl-' + f.id,
+          oninput: function (e) { var was = a[f.id]; a[f.id] = e.target.value; save(); if (was === 'default' && e.target.value !== '') { var b = e.target.parentNode.querySelector('[data-opt="default"]'); if (b) { b.classList.remove('selected'); b.setAttribute('aria-checked', 'false'); } } } }));
+        if (f.notSure) {
+          var ref = (F.countries[a.country] || F.countries.OTHER).occupancy.value;
+          var ns = el('button', { type: 'button', class: 'opt opt-inline' + (a[f.id] === 'default' ? ' selected' : ''), role: 'checkbox', 'aria-checked': a[f.id] === 'default' ? 'true' : 'false', 'data-opt': 'default',
+            onclick: function () { a[f.id] = a[f.id] === 'default' ? '' : 'default'; save(); renderStep(); } },
+            el('span', { class: 'opt-label', text: 'Not sure' }), el('span', { class: 'opt-desc', text: 'National average, ' + fmt.pct(ref) }));
+          ctl.classList.add('with-notsure');
+          ctl.appendChild(ns);
+        }
         if (f.chips) {
           var chips = el('div', { class: 'chips' });
           f.chips.forEach(function (c) { chips.appendChild(el('button', { type: 'button', class: 'chip' + (String(a[f.id]) === String(c) ? ' selected' : ''), onclick: function () { a[f.id] = String(c); save(); renderStep(); } }, String(c))); });
@@ -145,7 +153,7 @@
     step.fields.forEach(function (f) {
       if (f.showIf && !f.showIf(a)) return;
       var v = a[f.id]; if (v == null || v === '' || f.id === 'priceCustom') return;
-      if (f.type === 'number') { parts.push(v + ' ' + (f.id === 'rooms' ? 'rooms' : '')); return; }
+      if (f.type === 'number') { parts.push(f.id === 'rooms' ? v + ' rooms' : (f.id === 'occupancy' ? (v === 'default' ? 'occupancy not sure' : (Number(v) <= 1 ? Math.round(Number(v) * 100) : v) + '% occupancy') : v)); return; }
       var opts = fieldOptions(f);
       var ids = Array.isArray(v) ? v : [v];
       var labels = ids.map(function (id) { var o = opts.filter(function (x) { return x.id === id; })[0]; return o ? o.label : id; });
@@ -165,7 +173,8 @@
       if (f.type === 'multi' && f.required && !(a[f.id] && a[f.id].length)) msg = 'Please select at least one option.';
       if (f.type === 'number') {
         var v = Number(a[f.id]);
-        if (f.required && (a[f.id] == null || a[f.id] === '' || !isFinite(v))) msg = 'Please enter a number.';
+        if (f.notSure && a[f.id] === 'default') msg = '';
+        else if (f.required && (a[f.id] == null || a[f.id] === '' || !isFinite(v))) msg = f.notSure ? 'Please enter a number or choose Not sure.' : 'Please enter a number.';
         else if (a[f.id] !== '' && a[f.id] != null && isFinite(v) && ((f.min != null && v < f.min) || (f.max != null && v > f.max))) msg = 'Please enter a value between ' + f.min + ' and ' + f.max + '.';
       }
       var e = document.getElementById('err-' + f.id);

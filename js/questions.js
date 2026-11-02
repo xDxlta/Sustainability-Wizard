@@ -14,11 +14,8 @@
         { id: 'country', type: 'single', label: 'Market', required: true, options: [
           { id: 'MY', label: 'Malaysia' }, { id: 'ID', label: 'Indonesia' }, { id: 'PH', label: 'Philippines' }, { id: 'SG', label: 'Singapore' }
         ] },
-        { id: 'rooms', type: 'number', label: 'Guest rooms', required: true, min: 1, max: 5000, chips: [80, 150, 250, 400, 600], placeholder: 'e.g. 250' },
-        { id: 'occupancy', type: 'single', label: 'Average occupancy', required: true, options: [
-          { id: 'default', label: 'Not sure', desc: 'National average' },
-          { id: '0.5', label: '50%' }, { id: '0.6', label: '60%' }, { id: '0.7', label: '70%' }, { id: '0.8', label: '80%' }, { id: '0.9', label: '90%' }
-        ] }
+        { id: 'rooms', type: 'number', label: 'Guest rooms', required: true, min: 1, max: 5000 },
+        { id: 'occupancy', type: 'number', label: 'Average occupancy (%)', required: true, min: 1, max: 100, step: 0.1, notSure: true }
       ]
     },
     {

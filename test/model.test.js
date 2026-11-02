@@ -91,3 +91,10 @@ test('register integrity: kinds, statuses, URLs, rules, assumption notes', () =>
   assert.deepEqual(F.marketOrder.slice(0, 3), ['MY', 'ID', 'PH']);
   assert.ok(F.rules.occupancy && F.rules.wage && F.rules.fx && F.rules.co2Pet);
 });
+
+test('occupancy is typed in percent; "default" uses the national figure; older fractions still read', () => {
+  const base = { country: 'MY', rooms: '100', current: 'pet_free', bottlesPerRoomNight: '2', bottleSizeMl: '500', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient' };
+  assert.equal(M.normalise(F, Object.assign({}, base, { occupancy: '72.5' }), {}).inputs.occupancy, 0.725);
+  assert.equal(M.normalise(F, Object.assign({}, base, { occupancy: '0.7' }), {}).inputs.occupancy, 0.7);
+  assert.equal(M.normalise(F, Object.assign({}, base, { occupancy: 'default' }), {}).inputs.occupancy, F.countries.MY.occupancy.value);
+});

@@ -36,7 +36,7 @@
 
     var occupancy;
     if (overrides.occupancy != null) { occupancy = num(overrides.occupancy, c.occupancy.value); prov.occupancy = { kind: 'user', label: 'Adjusted by you' }; }
-    else if (a.occupancy && a.occupancy !== 'default') { occupancy = num(a.occupancy, c.occupancy.value); prov.occupancy = { kind: 'user', label: 'Your answer' }; }
+    else if (a.occupancy != null && a.occupancy !== '' && a.occupancy !== 'default' && isFinite(Number(a.occupancy))) { occupancy = Number(a.occupancy) > 1 ? Number(a.occupancy) / 100 : Number(a.occupancy); prov.occupancy = { kind: 'user', label: 'Your answer' }; } // percent (since 2.6) or fraction (older saved answers)
     else { occupancy = c.occupancy.value; prov.occupancy = tagOf(c.occupancy, c.name + ' reference'); }
 
     var bpn;

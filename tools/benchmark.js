@@ -36,6 +36,7 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
   await click('.hero .btn-primary');
   await click('[data-field="country"] [data-opt="MY"]');
   await page.fill('#in-rooms', '150'); typed++;
+  await click('[data-field="occupancy"] [data-opt="default"]');
   await next();
   step1Blocked = await page.$('[data-field="occupancy"] .error:not([hidden])');
   await click('[data-field="current"] [data-opt="pet_free"]');
