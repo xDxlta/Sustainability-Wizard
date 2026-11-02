@@ -17,7 +17,7 @@ function run(answers, overrides) {
   return { n, calc, bc };
 }
 const NEGATIVE = /no cash payback|does not pay|not pay off|costs more|more than 30/i;
-const POSITIVE_KINDS = ['payback', 'payback-staff', 'saving', 'saving-staff', 'per-night', 'facts'];
+const POSITIVE_KINDS = ['payback', 'payback-staff', 'saving', 'saving-staff', 'per-night', 'benefits'];
 
 test('1. Westin Singapore reproduction: 305 rooms, 243,840 bottles at S$0.17, basic tap', () => {
   const answers = { country: 'SG', rooms: '305', occupancy: '1', current: 'pet_free', bottlesPerRoomNight: '2', bottleSizeMl: '500', priceBand: 'custom', priceCustom: '0.17', areas: ['rooms'], temps: 'ambient' };
@@ -124,4 +124,65 @@ test('5. provenance: every factor has provenance and the Westin case is in the r
   assert.ok(src.includes('Object.keys(F.factors)'), 'sources page lists every factor');
   assert.ok(src.includes("'sourced-secondary'"), 'sources page labels secondary sources');
   assert.match(F.rules.service, /Westin/);
+});
+
+const MANILA = { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', temps: 'hotcold' };
+
+test('stations: the room payback with F&B, meetings and staff areas equals the rooms-only payback; stations are a separate block', () => {
+  const all = run(Object.assign({}, MANILA, { areas: ['rooms', 'fnb', 'meetings', 'boh'] })).bc;
+  const roomsOnly = run(Object.assign({}, MANILA, { areas: ['rooms'] })).bc;
+  assert.equal(all.payback.cashPaybackYears, roomsOnly.payback.cashPaybackYears);
+  assert.equal(all.payback.fullPaybackYears, roomsOnly.payback.fullPaybackYears);
+  assert.equal(all.capexLocal, roomsOnly.capexLocal);
+  assert.equal(all.servicingLocal, roomsOnly.servicingLocal);
+  assert.deepEqual(all.lead, roomsOnly.lead);
+  assert.equal(roomsOnly.stationBlock, null);
+  const st = all.stationBlock;
+  assert.equal(st.count, 3);
+  assert.ok(st.capex > 0 && st.service > 0);
+  assert.ok(Math.abs(st.service - 3 * 350 * all.rate.localPerList) < 1e-6);
+  assert.equal(st.counted, false); // no bottles given: cost shown on its own, no combined payback
+  assert.equal(st.combined, null);
+  assert.deepEqual(st.unknownAreas, ['fnb', 'meetings', 'boh']);
+});
+
+test('stations: bottles a day for an area give a station saving and a combined payback; the room payback does not move', () => {
+  const plain = run(Object.assign({}, MANILA, { areas: ['rooms', 'fnb', 'boh'] })).bc;
+  const r = run(Object.assign({}, MANILA, { areas: ['rooms', 'fnb', 'boh'], bottlesFnb: '50', bottlesBoh: 'default' }));
+  const st = r.bc.stationBlock;
+  assert.equal(r.bc.payback.cashPaybackYears, plain.payback.cashPaybackYears);
+  assert.equal(st.counted, true);
+  assert.deepEqual(st.unknownAreas, ['boh']);
+  assert.ok(Math.abs(st.spend - 50 * 365 * r.n.inputs.pricePerBottle) < 1e-6);
+  const expected = (r.bc.capexLocal + st.capex) / (r.calc.spend.annualLocal - r.bc.servicingLocal - st.service);
+  assert.ok(Math.abs(st.combined.cashPaybackYears - expected) < 1e-9);
+  assert.ok(r.calc.bottles.total > r.bc.calcRooms.bottles.total); // bottles avoided include the stations
+});
+
+test('Surabaya: when cash does not pay back, the lead holds only true positive statements; the table keeps the real figures', () => {
+  const answers = { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold' };
+  const { bc } = run(answers);
+  assert.equal(bc.cashPaysBack, false);
+  assert.equal(bc.lead.kind, 'benefits');
+  assert.ok(bc.lead.hours > 0 && bc.lead.bottles > 0 && bc.lead.staffValue > 0);
+  assert.equal(bc.lead.safeWater.share, F.countries.ID.safeWater.value);
+  assert.ok(bc.lead.safeWater.share < F.factors.safe_water_world_2022.value);
+  // business case table: guest rooms, figures unchanged and correct
+  const rate = bc.rate.localPerList;
+  assert.ok(Math.abs(bc.capexLocal - 250 * 140 * rate) < 1e-3);
+  assert.ok(Math.abs(bc.servicingLocal - 250 * 85 * rate) < 1e-3);
+  assert.ok(bc.payback.cashSavingsPerYear < 0 && !isFinite(bc.payback.cashPaybackYears));
+  // Malaysia is above the world share, so no safe-water statement there
+  const my = run(Object.assign({}, answers, { country: 'MY', bottleSizeMl: 'default' })).bc;
+  assert.equal(my.safeWater, null);
+});
+
+test('provenance of the new safe-water factors', () => {
+  const w = F.factors.safe_water_world_2022;
+  assert.equal(w.kind, 'sourced'); assert.match(w.source.url, /^https:\/\//);
+  ['MY', 'ID', 'PH'].forEach(c => {
+    const s = F.countries[c].safeWater;
+    assert.equal(s.kind, 'sourced'); assert.equal(s.status, F.UNVERIFIED);
+    assert.match(s.source.url, /^https:\/\//); assert.ok(s.source.quote && s.year && s.value > 0 && s.value <= 1);
+  });
 });

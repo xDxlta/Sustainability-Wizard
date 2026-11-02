@@ -97,6 +97,11 @@
     },
 
     /* ------------------------------------------------------------------ presentation rules */
+    safe_water_world_2022: {
+      value: 0.73, unit: 'share of the world population using safely managed drinking water, 2022', kind: 'sourced', status: UNVERIFIED, label: 'Safely managed drinking water, world',
+      source: { publisher: 'UNICEF DATA, WHO/UNICEF Joint Monitoring Programme (JMP)', title: 'Access to drinking water', url: 'https://data.unicef.org/topic/water-and-sanitation/drinking-water/', quote: '73 per cent of the global population used safely managed drinking water services in 2022', year: '2022', accessed: '2026-11-02' },
+      note: 'Used only to decide whether a market figure is shown: a market below the world share is shown on the result page when the cash case does not pay back.'
+    },
     westin_case_2024: {
       value: 2, unit: 'years to break even, Westin Singapore, 305 guest rooms', kind: 'sourced-secondary', label: 'Reference case: Westin Singapore (Swisspro, 2024)',
       source: { publisher: 'Final Presentation 2024, Swisspro student team', title: 'p. 13 and p. 44, figures provided by Swisspro', quote: 'Upfront investment S$42,700 (305 x S$140 simple tap); yearly filter change S$19,825 (305 x S$65 per filter, not including service, one change per room per year); plastic bottles S$40,640 a year (243,840 bottles at S$0.17); break-even in about 2 years', year: '2024' },
@@ -126,6 +131,7 @@
         { id: 'local', label: 'Local brand, bought by the carton', price: 14.60 / 24, kind: 'sourced', status: UNVERIFIED, ref: 'Desa mineral water 24 x 500 ml, RM14.60 (Ace Water price list)', url: 'https://acewater.my/price-list-2/' },
         { id: 'mid', label: 'National brand, bought by the carton', price: 15.95 / 24, kind: 'sourced', status: UNVERIFIED, ref: 'Cactus mineral water 24 x 500 ml, RM15.95 (Food Service Malaysia)', url: 'https://www.foodservicemalaysia.com/ourproducts/cid/277768/cat/beverage-water/' }
       ],
+      safeWater: { value: 0.95, year: '2024', kind: 'sourced', status: UNVERIFIED, label: 'Safely managed drinking water', source: { publisher: 'UN-Water SDG 6 Data Portal (WHO/UNICEF JMP, indicator 6.1.1)', title: 'Malaysia', url: 'https://sdg6data.org/en/country-or-area/Malaysia', quote: 'share of the population using safely managed drinking water: 95% (2024)', year: '2024', accessed: '2026-11-02' } },
       context: [
         { text: 'Malaysia Roadmap Towards Zero Single-Use Plastics 2018-2030 sets the vision of "zero single-use plastics for a cleaner and healthier environment in Malaysia by 2030".', url: 'https://www.pmo.gov.my/wp-content/uploads/2019/07/Malaysia-Roadmap-Towards-Zero-Single-Use-Plastics-2018-2030-m-min.pdf', status: UNVERIFIED }
       ]
@@ -145,6 +151,7 @@
         { id: 'local', label: 'National brand (Aqua 600 ml), bought by the carton', price: 66718 / 24, kind: 'sourced', status: UNVERIFIED, ref: 'Aqua 600 ml x 24, average marketplace price Rp66,718 per carton (Blibli)', url: 'https://www.blibli.com/jual/akua-600-ml-per-dus' },
         { id: 'budget', label: 'Cheapest marketplace carton', price: 51000 / 24, kind: 'sourced', status: UNVERIFIED, ref: 'Aqua 600 ml x 24, lowest listed Rp51,000 per carton (Blibli)', url: 'https://www.blibli.com/jual/akua-600-ml-per-dus' }
       ],
+      safeWater: { value: 0.303, year: '2022', kind: 'sourced', status: UNVERIFIED, label: 'Safely managed drinking water', source: { publisher: 'World Bank World Development Indicators (WHO/UNICEF JMP), as republished by CEIC', title: 'People using safely managed drinking water services (% of population), Indonesia', url: 'https://ceicdata.com/en/indonesia/social-access-to-services', quote: 'People Using Safely Managed Drinking Water Services: % of Population ... reached an all-time high of 30.266 % in 2022', year: '2022', accessed: '2026-11-02' }, note: 'Official series: https://data.worldbank.org/indicator/SH.H2O.SMDW.ZS?locations=ID (not opened).' },
       context: [
         { text: 'Bali Circular Letter 9 of 2025 (Governor Koster, April 2025) bans producing, distributing and selling single-use plastic bottled water under one litre.', url: 'https://www.socialexpat.net/bali-governor-bans-single-use-plastic-bottled-water-under-one-litre/', status: UNVERIFIED },
         { text: 'A 2024 peer-reviewed study of PDAM piped water in three Indonesian cities found "sporadic microbial contamination ... due to the depletion of residual chlorine".', url: 'https://ideas.repec.org/a/gam/jsusta/v16y2024i16p7082-d1458770.html', status: UNVERIFIED }
@@ -164,6 +171,7 @@
         { id: 'local', label: 'National brand (Absolute), bought by the case', price: 334.57 / 24, kind: 'sourced', status: UNVERIFIED, ref: 'Absolute distilled water 500 ml x 24, ₱334.57 per case (MerryMart Wholesale)', url: 'https://www.merrymartwholesale.com/products/absolute-distilled-water-500ml-1-case-includes-24-pcs-500ml' },
         { id: 'mid', label: 'National brand (Wilkins), bought by the case', price: 366.17 / 24, kind: 'sourced', status: UNVERIFIED, ref: 'Wilkins distilled water 500 ml x 24, ₱366.17 per case (MerryMart Wholesale)', url: 'https://www.merrymartwholesale.com/products/wilkins-distilled-500ml-1-case-includes-24pcs-500ml' }
       ],
+      safeWater: { value: 0.48, year: '2022', kind: 'sourced', status: UNVERIFIED, label: 'Safely managed drinking water', source: { publisher: 'World Bank (citing WHO/UNICEF JMP)', title: 'Philippines water supply and sanitation project document', url: 'https://documents1.worldbank.org/curated/en/099060525091012191/pdf/P510359-d6d250a7-d2a8-46a2-a626-c0f00e8436f8.pdf', quote: 'as of 2022, 48 percent of the population has access to safely managed water', year: '2022', accessed: '2026-11-02' } },
       context: [
         { text: 'Republic Act 11898 (Extended Producer Responsibility Act of 2022) obliges large enterprises to recover plastic packaging: 50% of the 2025 footprint, rising to 80% from 2028.', url: 'https://lawphil.net/statutes/repacts/ra2022/ra_11898_2022.html', status: UNVERIFIED },
         { text: 'Boracay (Malay, Aklan) Municipal Ordinance No. 386 s. 2018 "prohibits the use of single-use or disposable plastic items by hotels, resorts, restaurants and establishments in the accommodation business".', url: 'https://denr.gov.ph/news-events/denr-backs-ordinance-banning-single-use-plastics-in-boracay/', status: UNVERIFIED }

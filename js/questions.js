@@ -44,6 +44,9 @@
         { id: 'areas', type: 'multi', label: 'Where filtered water should go (choose all that apply)', required: true, options: [
           { id: 'rooms', label: 'Guest rooms' }, { id: 'fnb', label: 'Restaurants and bars' }, { id: 'meetings', label: 'Meetings and events' }, { id: 'boh', label: 'Staff areas' }
         ] },
+        { id: 'bottlesFnb', type: 'number', label: 'Bottles a day in restaurants and bars', min: 0, max: 100000, notSure: true, notSureDesc: 'Station cost shown on its own', showIf: function (a) { return (a.areas || []).indexOf('fnb') >= 0; } },
+        { id: 'bottlesMeetings', type: 'number', label: 'Bottles a day in meetings and events', min: 0, max: 100000, notSure: true, notSureDesc: 'Station cost shown on its own', showIf: function (a) { return (a.areas || []).indexOf('meetings') >= 0; } },
+        { id: 'bottlesBoh', type: 'number', label: 'Bottles a day in staff areas', min: 0, max: 100000, notSure: true, notSureDesc: 'Station cost shown on its own', showIf: function (a) { return (a.areas || []).indexOf('boh') >= 0; } },
         { id: 'temps', type: 'single', label: 'Water in the room', required: true, showIf: function (a) { return (a.areas || []).indexOf('rooms') >= 0; }, options: [
           { id: 'ambient', label: 'Ambient', desc: 'Filtered tap' }, { id: 'cold', label: 'Chilled' }, { id: 'hotcold', label: 'Hot and chilled' }, { id: 'sparkling', label: 'Chilled and sparkling' }
         ] }

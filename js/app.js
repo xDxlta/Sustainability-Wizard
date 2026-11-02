@@ -125,7 +125,7 @@
           var ref = (F.countries[a.country] || F.countries.OTHER).occupancy.value;
           var ns = el('button', { type: 'button', class: 'opt opt-inline' + (a[f.id] === 'default' ? ' selected' : ''), role: 'checkbox', 'aria-checked': a[f.id] === 'default' ? 'true' : 'false', 'data-opt': 'default',
             onclick: function () { a[f.id] = a[f.id] === 'default' ? '' : 'default'; save(); renderStep(); } },
-            el('span', { class: 'opt-label', text: 'Not sure' }), el('span', { class: 'opt-desc', text: 'National average, ' + fmt.pct(ref) }));
+            el('span', { class: 'opt-label', text: 'Not sure' }), el('span', { class: 'opt-desc', text: f.notSureDesc || ('National average, ' + fmt.pct(ref)) }));
           ctl.classList.add('with-notsure');
           ctl.appendChild(ns);
         }
@@ -153,7 +153,7 @@
     step.fields.forEach(function (f) {
       if (f.showIf && !f.showIf(a)) return;
       var v = a[f.id]; if (v == null || v === '' || f.id === 'priceCustom') return;
-      if (f.type === 'number') { parts.push(f.id === 'rooms' ? v + ' rooms' : (f.id === 'occupancy' ? (v === 'default' ? 'occupancy not sure' : (Number(v) <= 1 ? Math.round(Number(v) * 100) : v) + '% occupancy') : v)); return; }
+      if (f.type === 'number') { if (!f.required && (v === 'default' || v === '')) return; parts.push(f.id === 'rooms' ? v + ' rooms' : (f.id === 'occupancy' ? (v === 'default' ? 'occupancy not sure' : (Number(v) <= 1 ? Math.round(Number(v) * 100) : v) + '% occupancy') : (v === 'default' ? null : v + ' bottles a day'))); return; }
       var opts = fieldOptions(f);
       var ids = Array.isArray(v) ? v : [v];
       var labels = ids.map(function (id) { var o = opts.filter(function (x) { return x.id === id; })[0]; return o ? o.label : id; });
@@ -207,14 +207,15 @@
 
   /* ------------------------------------------------------------------ results */
   function compute() {
-    delete state.overrides.inRoomTap; // retired toggle from version 2.2; the base case is now the basic tap
+    delete state.overrides.inRoomTap; // retired lower-cost toggle; the base case is now the basic tap
     var n = M.normalise(F, state.answers, state.overrides);
     var calc = E.calculate(F, n.inputs);
     var rec = R.recommend(state.answers, n.inputs, F, PL, state.overrides);
     var bc = B.build({ F: F, PL: PL, R: R, E: E }, state.answers, state.overrides, n.inputs, calc);
-    calc.payback = bc.payback;
-    calc.inputs = Object.assign({}, n.inputs, { capex: bc.capexLocal, annualService: bc.servicingLocal });
-    return { n: n, calc: calc, rec: rec, pr: bc };
+    var rooms = bc.calcRooms; // the business case is for guest rooms; stations are a separate block
+    rooms.payback = bc.payback;
+    rooms.inputs = Object.assign({}, n.inputs, { capex: bc.capexLocal, annualService: bc.servicingLocal });
+    return { n: n, calc: rooms, calcAll: bc.calcAll, rec: rec, pr: bc };
   }
 
   function money(ctx, v) { return fmt.money(ctx.n.inputs.symbol, v, ctx.n.inputs.decimals); }
@@ -238,7 +239,9 @@
       case 'per-night': return { tone: 'neutral', head: 'Costs ' + fmt.money(inp.symbol, L.swisspro, inp.decimals === 0 ? 0 : 2) + ' per occupied room-night, against ' + fmt.money(inp.symbol, L.bottled, inp.decimals === 0 ? 0 : 2) + ' for bottled water and the staff time it takes.', sub: 'Service contract included, investment spread over ' + B.SPREAD_YEARS + ' years.' };
       default:
         if (!L.bottles) return { tone: 'neutral', head: 'Filtered water for ' + ctx.rec.segment.areas.join(', ').toLowerCase() + '.', sub: '' };
-        return { tone: 'neutral', head: 'Your guest rooms use ' + fmt.int(L.bottles) + (inp.bottleMaterial === 'pet' ? ' plastic' : ' glass') + ' bottles a year' + (L.spend > 0 ? ': ' + moneyShort(ctx, L.spend) + ' of bottled water' : '') + ' and ' + fmt.int(L.hours) + ' staff hours.', sub: '' };
+        var head = (c.labour.quantified && L.hours > 0 ? 'Frees ' + fmt.int(L.hours) + ' staff hours a year and removes ' : 'Removes ') + fmt.int(L.bottles) + (inp.bottleMaterial === 'pet' ? ' plastic' : ' glass') + ' bottles a year from your guest rooms.';
+        var sw = L.safeWater ? 'In ' + L.safeWater.country + ', ' + fmt.pct(Math.round(L.safeWater.share * 100) / 100) + ' of people use safely managed drinking water (world: ' + fmt.pct(L.safeWater.world) + '; WHO/UNICEF JMP, ' + L.safeWater.year + ').' : '';
+        return { tone: 'neutral', head: head, sub: sw };
     }
   }
 
@@ -266,22 +269,37 @@
       el('p', { class: 'verdict-head', text: v.head }),
       v.sub ? el('p', { class: 'verdict-sub', text: v.sub }) : null));
 
-    var tiles = el('div', { class: 'tiles' }), pb0 = c.payback, pr0 = ctx.pr;
+    var tiles = el('div', { class: 'tiles' }), pb0 = c.payback, pr0 = ctx.pr, all = ctx.calcAll;
     function tile(label, value, sub, cls) {
       return el('div', { class: 'tile' + (cls ? ' ' + cls : '') }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length >= 9 ? ' value-long' : ''), text: value }), el('div', { class: 'sub', text: sub || '' }));
     }
-    tiles.appendChild(tile('Cash payback', pb0.available ? fmt.cap(fmt.years(pb0.cashPaybackYears)) : '-', pb0.available ? 'service contract included' : 'Investment not in the price list'));
-    tiles.appendChild(tile('Payback including staff time freed', pb0.available && c.labour.quantified ? fmt.cap(fmt.years(pb0.fullPaybackYears)) : '-', c.labour.quantified ? fmt.int(c.labour.hours) + ' staff hours a year' : ''));
-    tiles.appendChild(tile('Net saving a year', pb0.available ? moneyShort(ctx, pb0.cashSavingsPerYear) : '-', 'cash, after the service contract', pb0.available && pb0.cashSavingsPerYear < 0 ? 'neg' : null));
-    tiles.appendChild(tile('Investment', pb0.available ? moneyShort(ctx, pb0.capex) : '-', pr0.capexSource === 'user' ? 'your figure' : 'list price'));
+    var envLine = [];
+    if (pr0.cashPaysBack) {
+      tiles.appendChild(tile('Cash payback', fmt.cap(fmt.years(pb0.cashPaybackYears)), 'guest rooms, service contract included'));
+      tiles.appendChild(tile('Payback including staff time freed', c.labour.quantified ? fmt.cap(fmt.years(pb0.fullPaybackYears)) : '-', c.labour.quantified ? fmt.int(c.labour.hours) + ' staff hours a year' : ''));
+      tiles.appendChild(tile('Net saving a year', moneyShort(ctx, pb0.cashSavingsPerYear), 'cash, after the service contract'));
+      tiles.appendChild(tile('Investment', moneyShort(ctx, pb0.capex), pr0.capexSource === 'user' ? 'your figure' : 'list price, guest rooms'));
+      envLine.push(fmt.int(all.bottles.total) + ' bottles');
+      if (all.env.packagingKg != null) envLine.push(fmt.int(all.env.packagingKg) + ' kg of plastic');
+      if (all.env.quantified) envLine.push(fmt.dec(all.env.co2eKg / 1000, 1) + ' t CO2e');
+    } else {
+      // The cash case does not pay back: the tiles show only what holds. The business case table below has every figure.
+      var bt = [];
+      if (pb0.available && isFinite(pb0.fullPaybackYears) && pb0.fullPaybackYears > 0) bt.push(tile('Payback including staff time freed', fmt.cap(fmt.years(pb0.fullPaybackYears)), 'service contract included'));
+      if (c.labour.quantified && c.labour.hours > 0) bt.push(tile('Staff time freed', fmt.int(c.labour.hours) + ' h', 'worth ' + moneyShort(ctx, c.labour.costLocal) + ' a year'));
+      if (all.bottles.total > 0) bt.push(tile('Bottles avoided', fmt.int(all.bottles.total), 'a year'));
+      if (all.env.packagingKg != null && all.env.packagingKg > 0) bt.push(tile('Plastic avoided', fmt.int(all.env.packagingKg) + ' kg', 'a year'));
+      else if (all.env.quantified && all.env.co2eKg > 0) bt.push(tile('CO2e avoided', fmt.dec(all.env.co2eKg / 1000, 1) + ' t', 'a year'));
+      if (pr0.safeWater) bt.push(tile('Safely managed drinking water', fmt.pct(Math.round(pr0.safeWater.share * 100) / 100), 'of people in ' + pr0.safeWater.country + ', world ' + fmt.pct(pr0.safeWater.world)));
+      bt.slice(0, 4).forEach(function (t) { tiles.appendChild(t); });
+      if (all.env.quantified && all.env.packagingKg != null) envLine.push(fmt.dec(all.env.co2eKg / 1000, 1) + ' t CO2e');
+    }
     root.appendChild(tiles);
-    var env = [fmt.int(c.bottles.total) + ' bottles'];
-    if (c.env.packagingKg != null) env.push(fmt.int(c.env.packagingKg) + ' kg of plastic');
-    if (c.env.quantified) env.push(fmt.dec(c.env.co2eKg / 1000, 1) + ' t CO2e');
-    root.appendChild(el('p', { class: 'also' }, el('strong', { text: 'Also avoided each year: ' }), env.join(', ') + '.'));
+    if (envLine.length) root.appendChild(el('p', { class: 'also' }, el('strong', { text: 'Also avoided each year: ' }), envLine.join(', ') + '.'));
 
     var main = el('div', { class: 'results-main' }), aside = el('aside', { class: 'results-aside' });
     main.appendChild(renderPayback(ctx));
+    main.appendChild(renderStations(ctx));
     main.appendChild(renderFiveYear(ctx));
     main.appendChild(renderCalculation(ctx));
     main.appendChild(renderSolution(ctx));
@@ -324,8 +342,35 @@
     } else {
       card.appendChild(el('p', { class: 'muted small', text: 'Enter the investment under Adjust to see the payback.' }));
     }
+    if (pb.available && !pr.cashPaysBack) card.appendChild(el('p', { class: 'plan-line', text: 'Your proposal can include a service plan for your market.' }));
     var scope = pr.rate.same ? 'List prices in ' + cur + '. ' : 'List prices in ' + cur + ', converted at 1 ' + cur + ' = ' + fmt.money(inp.symbol, pr.rate.localPerList, inp.decimals === 0 ? 0 : 2) + ' (' + fxDate(ctx) + '). ';
     card.appendChild(el('p', { class: 'small muted scope', text: scope + 'Prices exclude GST, installation, freight, duties and local taxes. Your proposal sets the final prices and quantities.' }));
+    return card;
+  }
+
+  /** Drinking stations: their own investment and service, outside the room payback. */
+  function renderStations(ctx) {
+    var st = ctx.pr.stationBlock, c = ctx.calc;
+    if (!st) return el('span', {});
+    var card = el('section', { class: 'card' + (st.counted ? '' : ' no-print'), id: 'stations' });
+    var areaNames = st.areas.map(function (k) { return R.LABELS.areas[k]; }).join(', ');
+    card.appendChild(el('h3', { text: 'Drinking stations' }));
+    card.appendChild(el('p', { class: 'muted', text: fmt.int(st.count) + (st.count === 1 ? ' station' : ' stations') + ' for ' + areaNames + '. Not part of the guest-room payback above.' }));
+    var t = el('table', { class: 'kv' });
+    function row(k, v, cls) { t.appendChild(el('tr', { class: cls || null }, el('th', { text: k }), el('td', { text: v }))); }
+    if (st.capex != null) row('Investment' + (st.lines[0] ? ' (' + st.lines.map(function (l) { return fmt.int(l.units) + ' x ' + modelName(l.product); }).join(', ') + ')' : ''), money(ctx, st.capex));
+    row('Service contract, per year', money(ctx, st.service));
+    if (st.counted) {
+      row('Bottled water bought there today, per year', money(ctx, st.spend));
+      row('Stations alone, cash payback', fmt.cap(fmt.years(st.payback.cashPaybackYears)));
+      if (st.combined) {
+        row('Guest rooms and stations, cash payback', fmt.cap(fmt.years(st.combined.cashPaybackYears)), 'strong');
+        if (c.labour.quantified) row('Guest rooms and stations, including staff time freed', fmt.cap(fmt.years(st.combined.fullPaybackYears)), 'strong');
+      }
+    }
+    card.appendChild(t);
+    if (!st.counted) card.appendChild(el('p', { class: 'small muted', text: 'Enter bottles a day for these areas to see their saving.' }));
+    else if (st.unknownAreas.length) card.appendChild(el('p', { class: 'small muted', text: 'Saving counted for the areas with a bottle figure only.' }));
     return card;
   }
 
@@ -353,7 +398,7 @@
     return el('div', { class: 'alt-box' },
       el('p', {}, el('strong', { text: 'Upgrade for ' + wish + ' water: ' + modelName(unit) }),
         ' (' + listPrice(unit) + ' per room' + (up.temps === 'sparkling' ? ', sparkling from a drinking station' : '') + '). Extra investment ' + money(ctx, up.extraCapex) + (Math.abs(up.extraService) > 0.5 ? ', extra service ' + money(ctx, up.extraService) + ' a year' : '') +
-        '. Cash payback ' + fmt.years(p.cashPaybackYears) + (c.labour.quantified ? ', including staff time freed ' + fmt.years(p.fullPaybackYears) : '') + '.'));
+        '.' + (isFinite(p.cashPaybackYears) ? ' Cash payback ' + fmt.years(p.cashPaybackYears) + (c.labour.quantified && isFinite(p.fullPaybackYears) ? ', including staff time freed ' + fmt.years(p.fullPaybackYears) : '') + '.' : (c.labour.quantified && isFinite(p.fullPaybackYears) ? ' Payback including staff time freed ' + fmt.years(p.fullPaybackYears) + '.' : ''))));
   }
 
   /** Cumulative cost over five years: bottled water against Swisspro (investment plus service). */
@@ -467,6 +512,9 @@
       if (units <= 0) return;
       if (s.exactMatch && s.products.length) card.appendChild(unitBox(s.area === 'inRoom' ? 'Base case: filtered tap in every guest room' : s.title, units, s.area === 'inRoom' ? '' : s.covers.join(', '), s.products[0]));
     });
+    if (pr.stationBlock) pr.stationBlock.solutions.forEach(function (s) {
+      if (s.area === 'fnb' && s.exactMatch && s.products.length && pr.stationBlock.count > 0) card.appendChild(unitBox(s.title, pr.stationBlock.count, s.covers.join(', '), s.products[0]));
+    });
     if (up && up.inRoom && up.inRoom.exactMatch) {
       var notes = up.inRoom.notes.filter(function (n) { return !/lower-cost/.test(n); }).join(' ');
       card.appendChild(unitBox('Upgrade: ' + R.LABELS.temps[up.temps] + ' water in the room', up.plan.inRoom, '', up.inRoom.products[0], notes));
@@ -518,7 +566,7 @@
     var g2 = group('Investment and service');
     field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, (pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list')) + (pr.capexLocal != null ? ', ' + money(ctx, pr.capexLocal) : ''));
     field(g2, 'annualService', 'Service contract per year (' + inp.currency + ')', Math.round(pr.servicingLocal), 1, null, (pr.servicingSource === 'user' ? 'Your figure' : 'List price') + ', ' + money(ctx, pr.servicingLocal));
-    field(g2, 'stations', 'Drinking stations', pr.stations, 1, null, o.stations != null ? 'Your figure' : 'One per area chosen');
+    field(g2, 'stations', 'Drinking stations', pr.stationBlock ? pr.stationBlock.count : pr.stations, 1, null, o.stations != null ? 'Your figure' : 'One per area chosen');
     field(g2, 'changeMonths', 'Months between filter changes', pr.months, 1, { max: 36, disabled: pr.reading === 'perChange' ? null : 'disabled' }, 'In-room units');
     var selWrap = el('div', {});
     selWrap.appendChild(el('label', { for: 'ov-reading', text: 'In-room service price (' + PL.pricelist.currency.value + ')' }));
@@ -596,6 +644,7 @@
     L.push('');
     L.push('Set-up (base case)');
     pr.lines.forEach(function (l) { L.push('- ' + fmt.int(l.units) + ' x ' + modelName(l.product) + ' at ' + listPrice(l.product) + ' per unit' + (l.area === 'inRoom' ? ' (guest rooms)' : ' (drinking stations)')); });
+    if (pr.stationBlock) { var sb = pr.stationBlock; L.push('- Drinking stations (separate from the room payback): ' + fmt.int(sb.count) + ' x ' + (sb.lines[0] ? modelName(sb.lines[0].product) : 'station') + ', investment ' + (sb.capex != null ? m(sb.capex) : 'in the proposal') + ', service ' + m(sb.service) + ' a year' + (sb.counted && sb.combined ? '; rooms and stations together: cash payback ' + fmt.years(sb.combined.cashPaybackYears) : '; bottles in these areas not given') + '.'); }
     if (pr.upgrade && pr.upgrade.payback && pr.upgrade.inRoom && pr.upgrade.inRoom.exactMatch) L.push('- Upgrade for ' + R.LABELS.temps[pr.upgrade.temps] + ' water: ' + modelName(pr.upgrade.inRoom.products[0]) + ', extra investment ' + m(pr.upgrade.extraCapex) + ', cash payback ' + fmt.years(pr.upgrade.payback.cashPaybackYears) + '.');
     L.push('');
     L.push((pr.rate.same ? 'List prices in ' + PL.pricelist.currency.value : 'List prices in ' + PL.pricelist.currency.value + ', converted at 1 ' + PL.pricelist.currency.value + ' = ' + fmt.money(sym, pr.rate.localPerList, inp.decimals === 0 ? 0 : 2)) + ', excl. GST, installation, freight, duties and taxes. Indicative only.');

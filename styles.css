@@ -192,6 +192,7 @@ button.rail-link:hover { text-decoration: underline; }
 .kv.calc td:last-child { white-space: nowrap; }
 .print-only { display: none; }
 .sub-block { margin-top: var(--s-5); }
+.plan-line { margin-top: var(--s-4); font-weight: 500; }
 .sub-block h4 { font-size: var(--fs-md); margin-bottom: var(--s-2); }
 .sub-block > p { margin-top: var(--s-2); }
 .legend { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: var(--fs-sm); color: var(--ink-2); margin-bottom: var(--s-3); }
@@ -329,8 +330,10 @@ table.products td:nth-child(3) { width: 30%; }
   .card { padding: 10pt 12pt; border-color: #ccc; }
   .kv tr, .tiles, .verdict, .alt-box, .product { break-inside: avoid; }
   .card-head, h3, h4 { break-after: avoid; }
-  .verdict-alt { display: none; }
-  svg.chart { max-height: 55mm; }
+  .verdict-alt, .alt-box { display: none; }
+  svg.chart { max-height: 44mm; }
+  .results-main { gap: 8pt; }
+  .kv th, .kv td { padding: 3pt 0; }
   #five-year .legend { margin-bottom: 4pt; }
   .verdict { padding: 8pt 12pt; background: #f3f6f8; }
   .tile { padding: 8pt 10pt; }

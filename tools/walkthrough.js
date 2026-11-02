@@ -15,7 +15,7 @@ const server = http.createServer((req, res) => {
 });
 
 const scenarios = {
-  kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], temps: 'sparkling', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
+  kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], bottlesFnb: '40', bottlesMeetings: 'default', temps: 'sparkling', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
   surabaya_select_250: { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
   manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
 };
@@ -100,11 +100,15 @@ const scenarios = {
       const bc = await page.evaluate(() => { const x = window.SW.app.compute(); const p = x.pr.payback; return { lead: x.pr.lead.kind, cash: p.cashPaybackYears, full: p.fullPaybackYears, capex: p.capex, service: p.annualService, upgrade: x.pr.upgrade && x.pr.upgrade.payback ? x.pr.upgrade.payback.cashPaybackYears : null }; });
       const leadText = await page.$eval('.verdict-head', e => e.textContent);
       if (/no cash payback|not pay|costs more|more than 30/i.test(leadText)) errors.push('negative lead statement: ' + leadText);
+      const tilesText = await page.$eval('.tiles', e => e.innerText);
+      if (/no payback/i.test(tilesText + leadText) || /(^|\s)-\D{0,3}\d/.test(tilesText + ' ' + leadText)) errors.push('negative figure in lead or tiles: ' + tilesText.replace(/\n/g, ' | '));
+      const st = await page.evaluate(() => { const b = window.SW.app.compute().pr.stationBlock; return b ? { count: b.count, capex: b.capex, service: b.service, counted: b.counted, combined: b.combined ? b.combined.cashPaybackYears : null } : null; });
+      if (st && !(await page.$('#stations'))) errors.push('station block missing');
       if (!(await page.$('#five-year svg.chart polyline'))) errors.push('five-year view missing');
       if (!(await page.$('.permonth'))) errors.push('per-room-per-month view missing');
       if (answers.temps && answers.temps !== 'ambient' && !(await page.$('.alt-box'))) errors.push('upgrade missing');
       if (/payback including staff time freed/i.test(await page.evaluate(() => document.body.innerText)) === false) errors.push('payback including staff time freed missing');
-      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none')].join(' ');
+      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none'), '| tiles:', tilesText.replace(/\n+/g, ' / '), '| stations:', st ? JSON.stringify(st) : 'none'].join(' ');
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
       const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };

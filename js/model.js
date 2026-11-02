@@ -36,7 +36,7 @@
 
     var occupancy;
     if (overrides.occupancy != null) { occupancy = num(overrides.occupancy, c.occupancy.value); prov.occupancy = { kind: 'user', label: 'Adjusted by you' }; }
-    else if (a.occupancy != null && a.occupancy !== '' && a.occupancy !== 'default' && isFinite(Number(a.occupancy))) { occupancy = Number(a.occupancy) > 1 ? Number(a.occupancy) / 100 : Number(a.occupancy); prov.occupancy = { kind: 'user', label: 'Your answer' }; } // percent (since 2.6) or fraction (older saved answers)
+    else if (a.occupancy != null && a.occupancy !== '' && a.occupancy !== 'default' && isFinite(Number(a.occupancy))) { occupancy = Number(a.occupancy) > 1 ? Number(a.occupancy) / 100 : Number(a.occupancy); prov.occupancy = { kind: 'user', label: 'Your answer' }; } // percent (since 2.2) or fraction (older saved answers)
     else { occupancy = c.occupancy.value; prov.occupancy = tagOf(c.occupancy, c.name + ' reference'); }
 
     var bpn;
@@ -74,13 +74,21 @@
     var minutesPerCarton = assumed('minutes_per_carton_default', 'minutesPerCarton');
     var stockWeeks = assumed('stock_weeks_default', 'stockWeeks');
 
+    // Bottles a day outside the guest rooms, one optional number per chosen area ("Not sure" or empty = not counted).
+    var other = { total: 0, byArea: {}, unknown: [] };
+    [['fnb', 'bottlesFnb'], ['meetings', 'bottlesMeetings'], ['boh', 'bottlesBoh']].forEach(function (x) {
+      if ((a.areas || []).indexOf(x[0]) < 0) return;
+      var v = a[x[1]];
+      if (v != null && v !== '' && v !== 'default' && isFinite(Number(v)) && Number(v) >= 0) { other.byArea[x[0]] = Number(v); other.total += Number(v); }
+      else other.unknown.push(x[0]);
+    });
     var material = (a.current === 'glass_bought' || a.current === 'glass_own') ? 'glass' : 'pet';
     var inputs = {
       country: c.code, currency: c.currency, symbol: c.symbol, decimals: c.decimals, usdPerLocal: c.fx.value,
       rooms: num(a.rooms, 0), occupancy: occupancy, bottlesPerRoomNight: bpn, bottleSizeMl: size,
       bottleMaterial: material, glassReusable: a.current === 'glass_own',
       bottleWeightOverrideG: overrides.bottleWeightG != null ? num(overrides.bottleWeightG, null) : null,
-      pricePerBottle: price, otherBottlesPerDay: 0,
+      pricePerBottle: price, otherBottlesPerDay: other.total, otherBottlesByArea: other.byArea, otherBottlesUnknown: other.unknown,
       minutesPerRoomPerDay: minutesPerRoom, minutesPerCarton: minutesPerCarton, newMinutesPerRoomPerDay: overrides.newMinutesPerRoomPerDay != null ? num(overrides.newMinutesPerRoomPerDay, 0) : 0, wageHourly: wage, stockWeeks: stockWeeks,
       capex: overrides.capex != null ? num(overrides.capex, null) : null,
       annualService: overrides.annualService != null ? num(overrides.annualService, 0) : null

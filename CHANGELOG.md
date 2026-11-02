@@ -1,5 +1,59 @@
 # Changelog
 
+## Version 2.2 (branch claude/wizard-v2), 2 November 2026
+
+Note: the entries for the work between 2.1 and this release were written to the wrong heading by the
+build script and never reached this file. They are recorded here.
+
+### Business case gaps (this release)
+- Guest rooms only in the headline payback and the lead statement (base case: basic tap per room).
+- Drinking stations (restaurants and bars, meetings and events, staff areas) are a separate block with
+  their own investment and service. New optional answers: bottles a day per area, with "Not sure". With
+  a figure the block shows the station saving, the station payback and a combined payback for rooms and
+  stations; without one it shows the station cost on its own. Stations never enter the room payback.
+- When the cash case does not pay back, the lead and the top tiles show only what holds: staff hours
+  freed and their value, bottles and plastic avoided, and the market's share of safely managed drinking
+  water when below the world share (WHO/UNICEF JMP). No "No payback" or negative figure there; the
+  business case table keeps every figure. New line under the business case: "Your proposal can include
+  a service plan for your market."
+- Register: `safe_water_world_2022` and `safeWater` for Malaysia, Indonesia and the Philippines.
+- Owner sheet: the upgrade box and a station block without bottle figures are left out of the print so
+  the sheet stays on two A4 pages.
+
+### Business case defaults (commits 482dec1 and c32c190)
+- Servicing default: one filter change per room and year at the In-Room comprehensive price (85.00,
+  labour and parts), source the Westin Singapore case (Final Presentation 2024, Swisspro student team,
+  p. 13 and p. 44, figures provided by Swisspro). Was: per change every 9 months (113.33 a year). Per
+  2-year contract and per change every 9 months stay under Adjust.
+- Base case and upgrades: the basic in-room tap (SMART Classic+, 140.00) is the base case whatever water
+  type is chosen; the matching unit (for example CLIMA Versa+ 980.00) is an upgrade with its extra
+  investment, extra service and own payback. The "lower-cost option" toggle is gone.
+- Bottle price "Not sure": the typical price, the median of the market's references (was the lowest).
+- Lead statement: the first true statement of payback within five years, payback including staff time
+  freed, yearly saving, cost per occupied room-night or the benefits that hold; never a negative verdict.
+  Payback including staff time freed is shown next to the cash payback.
+- Five-year view: cumulative cost of bottled water against Swisspro (investment plus service), break-even
+  marked, figures behind a toggle.
+- Per room and month: bottled water today against Swisspro in years 1 to 3 (service plus investment over
+  36 months) and from year 4 (service only), labelled as arithmetic, not an offer.
+- Exact hotel figures: no preset chips for guest rooms; occupancy typed in percent with "Not sure"
+  (national average); "Start again" clears the answers.
+- Register: `westin_case_2024` and `service_changes_per_room_year` (kind `sourced-secondary`); the
+  business case moved to `js/business.js` with acceptance tests in `test/business.test.js`.
+
+### Earlier changes since 2.1 (not recorded at the time)
+- Result page rework after three simulated hotel-manager reviews: verdict line, plain investment and
+  service sentence, scope line (list currency, exchange rate, exclusions), sparkling served by a station,
+  one recommended model per area, money formatting, public sources page without build notes, interview
+  material moved to `docs/internal`.
+- Desktop layout: step rail, label and options side by side, two-column result with the proposal form
+  beside it, flat stat strip; no eyebrow labels, side stripes, shadows or drawn logo; design skill in
+  `.claude/skills/swisspro-design` and brand extractor `tools/extract-brand.js`.
+- Acceptance criteria and `tools/benchmark.js`: owner sheet with calculation path and CSV download,
+  "Not sure" preselected where a reference exists, hotel segment and phone in the request form.
+- Removed the "bottles outside the rooms" adjust field (it defaulted to 0 and changed nothing); replaced
+  in this release by the optional bottles a day per area.
+
 ## Version 2.1 (branch claude/wizard-v2), 30 October 2026
 
 - Flow cut to three steps and nine answers: market, rooms, occupancy; what guests find in the room today
