@@ -1,66 +1,48 @@
-# Demo script for the final presentation (26 November)
+# Demo script (version 2)
 
-Target length: 6-8 minutes of live demo inside the presentation. Run the wizard from GitHub Pages or
-from a local static server (`python3 -m http.server 8080` in the project folder, then open
-http://localhost:8080/). Clear the browser's site data beforehand so the intro page appears.
+Run the wizard from GitHub Pages or locally (`python -m http.server 8080`, then http://localhost:8080/).
+Clear the browser's site data first so the intro page appears. About six minutes.
 
-## 1. Frame the problem (30 s)
-- Owner's brief: "a basic sustainability wizard addressing drinking water related questions" that helps
-  decision-making and awareness.
-- Sales manager: multiple choice, sort the leads (customer type, products, where the solution goes).
-- Marriott VP Procurement APAC: ROI first, efficiency second, sustainability last; what the market lacks
-  is help choosing the filter grade and the device.
-- Today the sales manager calculates savings ad hoc; the website has no calculator.
+## 1. Frame (30 s)
+- Owner: "a basic sustainability wizard addressing drinking water related questions", for decision-making
+  and awareness. Sales manager: multiple choice, no typing. Marriott procurement: ROI first, efficiency
+  second, sustainability last; the market lacks help choosing the device and the filtration.
+- Version 2 is a tool for the hotel: three steps, nine answers, every answer changes a number or a product.
 
-## 2. Scenario A: Singapore premium hotel (3 min)
-Answers: Singapore; Premium / upscale; brand-managed; existing building; 300 rooms; occupancy "not sure";
-complimentary plastic bottles; "not sure - assume 2"; 500 ml; local brand by the carton; areas rooms +
-restaurants + meetings; 2 outlets; 3-5 meeting rooms; about 100 bottles elsewhere; minibar counter;
-hot + chilled; chrome; enough space; storage tank; no issues; no Halal; drivers cost + efficiency +
-certification; GM approves; 3-12 months; leave contact fields empty.
+## 2. Scenario: select-service new build in Surabaya (2.5 min)
+Indonesia; 250 rooms; occupancy "not sure"; plastic bottles, free; bottles "not sure"; 600 ml; price
+"not sure"; areas rooms + staff areas; chilled. (Nine clicks, under a minute.)
+- Tiles: about 107,000 bottles, 1.2 t plastic, 4.6 t CO2e, about Rp227 million spend, about 890 hours.
+  Point at the labels: "Sourced, unverified" (BPS occupancy, Aqua carton price), "Assumption" (2 bottles,
+  1 minute per room). Explain the unverified label and VERIFY.md.
+- Payback: the investment is pre-filled from the price list (250 x CLIMA Versa+ 980.00 plus one CLIMA Versa
+  890.00, about Rp3.5 billion) and the service contract from the 85.00 line read as one change every
+  9 months (about Rp407 million a year). Result: no cash payback, because at Rp2,125 a bottle the service
+  contract costs more than the water it replaces. Switch the reading to "per unit and 2-year contract" and
+  show that even then the payback is decades. This is the honest finding for cheap-water markets: the case
+  rests on staff time, storage, deliveries, guest experience and the real contract terms.
+- Units: CLIMA Versa+ (Hot, Cold) in the room, CLIMA Versa (Hot, Cold) as the station for staff areas, both
+  named from the price list with their prices.
+- Under "More": the argument order starts with efficiency and water safety because bottled water is cheap.
 
-Talking points on the results page:
-- Headline tiles: about 216,000 bottles, 2.1 t plastic, 8 t CO2e, about S$78,000 bottled-water spend,
-  about 1,800 housekeeping hours (0.9 FTE), 115 pallets a year. Point at the provenance tags under each
-  tile: sourced (STB occupancy, IBWA bottle weight, Pere Ocean carton price) vs assumption (2 bottles,
-  1 minute per room).
-- Payback: choose "I have a Swisspro quote" and type an investment and service fee to show the cash
-  payback and the payback including time; mention the USD 5,000 / 50,000 approval note from the interview.
-  Point at the greyed-out "Ballpark from Swisspro retail list prices" option and its note: Swisspro has
-  not published prices for hot & cold stations, so no ballpark is shown; the option becomes active for
-  ambient taps (SMART/SAN) and FONTANA, whose online-store prices are published. This is the honest
-  placeholder until the price list is loaded (docs/PRICING-HOWTO.md).
-- Recommended set-up: minibar hot & cold station for rooms (Fairmont and Pan Pacific Orchard references),
-  back-of-house refilling + self-serve stations for F&B and events, filter specification with the storage
-  tank reason and the CDC pore-size statement, placement feedback from the interview.
-- "Why now": STB roadmap target and Green Globe.
-- "How to present the case internally": ROI > sustainability (because certification was selected) >
-  efficiency; readiness High.
-- Adjust the assumptions: move occupancy or price and watch the tiles update (the "advanced users" need
-  from the interview).
+## 3. Switch market (1 min)
+"Change my answers": Malaysia, glass bottles bought in at RM2.50, chilled and sparkling. CO2e now uses the
+glass factor; no In-Room line prints sparkling, so the page lists the In-Room section and points to the
+CLIMA Vida S station; type an investment from a proposal (e.g. RM450,000) and the cash payback is about
+three years: with premium water the case is a cash case.
 
-## 3. Scenario B: why the arguments change by market (1.5 min)
-Click "Change my answers", switch the country to Malaysia (or Indonesia), keep everything else.
-- Spend drops (cheap bottled water), the argument order now starts with efficiency and water safety, the
-  Halal flag appears in the filter specification, the local context shows the 2030 zero single-use
-  plastics roadmap (or Bali's 2025 ban on bottled water under one litre for Indonesia).
-
-## 4. Lead sorting for Swisspro (1 min)
-Open "Show the summary text" at the bottom: segment, areas, recommended products, readiness score with
-reasons, and the argument order. Click "Request a site survey and quote" to show the pre-filled email
-to Swisspro. Explain: no backend, no personal data stored outside the browser, a form endpoint can be
-added in one line of `js/pricing.js`.
+## 4. Proposal request (1 min)
+Fill the optional form (water supply, Halal, timing and approval live here, not in the flow), open the
+summary text, copy it. No backend, nothing sent automatically.
 
 ## 5. Transparency (30 s)
-Open "Sources & assumptions": every factor with its quote, link, date and label; the build note that
-links must be re-opened before go-live.
+Open "Sources and assumptions": choice rules, every factor with quote, link, date and status.
 
 ## Anticipated questions
-- "Where do the 2 bottles per night come from?" An assumption, labelled, supported by three case studies
-  (Sheraton Brussels Airport, Topia model, Fairmont/Swissotel 1.5 million bottles over 2,030 rooms).
-- "Is the CO2 figure complete?" No: bottle production only, excluding transport, chilling, disposal and
-  the filter unit's electricity. Stated on the tile.
-- "What about hotels with their own bottling plant?" The wizard switches the case to labour, storage and
-  availability and does not claim plastic savings.
-- "Can it go on the website as is?" Yes, as static files; the open items are the price list, link
-  verification, the lead email address and branding assets.
+- "Why these products?" Only lines of the Hospitality price list, in the section the list assigns them to,
+  matched on the printed water types; the cheapest match sets the investment, the proposal sets the model.
+- "Why no payback in Surabaya?" Reference bottle price Rp2,125 and a service contract priced in SGD; the
+  reading of the 85.00 line (per change, per year, per contract) is the biggest lever and is shown as such.
+- "Why unverified?" No page could be opened from the build environment; the values are excerpt-based and
+  listed in VERIFY.md for checking.
+- "Is the CO2 figure complete?" Bottle production only; stated on the tile.

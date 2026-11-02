@@ -41,13 +41,23 @@ test('environmental impact: plastic kg and CO2e scale with bottles and the PET f
   assert.equal(env.litres, b.total * 0.5);
 });
 
-test('glass bottles are not quantified for plastic or CO2e (no sourced factor)', () => {
+test('glass bottles: CO2e = litres x glass factor (Garfi 2016, per litre); plastic stays unquantified', () => {
   const inp = Object.assign({}, base, { bottleMaterial: 'glass' });
-  const env = E.environmentalImpact(F, inp, E.annualBottles(inp));
-  assert.equal(env.quantified, false);
+  const b = E.annualBottles(inp);
+  const env = E.environmentalImpact(F, inp, b);
+  assert.equal(env.quantified, true);
   assert.equal(env.packagingKg, null);
+  assert.ok(Math.abs(env.co2eKg - b.total * 0.5 * F.factors.glass_co2e.value) < 1e-9);
+  assert.equal(F.factors.glass_co2e.value, 0.061);
+});
+
+test('glass bottles: CO2e not quantified, with the reason, when the glass factor is missing', () => {
+  const F2 = { factors: Object.assign({}, F.factors, { glass_co2e: { value: null, kind: 'sourced', status: 'missing', note: 'why missing' } }) };
+  const inp = Object.assign({}, base, { bottleMaterial: 'glass' });
+  const env = E.environmentalImpact(F2, inp, E.annualBottles(inp));
+  assert.equal(env.quantified, false);
   assert.equal(env.co2eKg, null);
-  assert.ok(env.litres > 0);
+  assert.equal(env.reason, 'why missing');
 });
 
 test('bottle weight override is honoured', () => {
@@ -121,4 +131,22 @@ test('calculate() runs end to end and reproduces the Fairmont-scale order of mag
 
 test('missing factor throws instead of silently returning 0', () => {
   assert.throws(() => E.environmentalImpact({ factors: {} }, base, E.annualBottles(base)), /Missing factor/);
+});
+
+test('format: sign before symbol, short money, payback words', () => {
+  const fmt = require('../js/format.js');
+  assert.equal(fmt.money('Rp', -123456), '-Rp123,456');
+  assert.equal(fmt.moneyShort('Rp', 1234567890), 'Rp1.23B');
+  assert.equal(fmt.moneyShort('₱', 3456789), '₱3.46M');
+  assert.equal(fmt.moneyShort('RM', 155490.4), 'RM155,490');
+  assert.equal(fmt.years(Infinity), 'no payback');
+  assert.equal(fmt.cap(fmt.years(37)), 'More than 30 years');
+});
+
+test('labour: new handling time is netted off, never below zero', () => {
+  const inp = { rooms: 100, occupancy: 0.5, bottlesPerRoomNight: 2, bottleSizeMl: 500, minutesPerRoomPerDay: 1, minutesPerCarton: 0, newMinutesPerRoomPerDay: 0.5, wageHourly: 10 };
+  const b = E.annualBottles(inp);
+  const l = E.labour(F, inp, b);
+  assert.ok(Math.abs(l.hours - b.occupiedRoomNights * 0.5 / 60) < 1e-9);
+  assert.equal(E.labour(F, Object.assign({}, inp, { newMinutesPerRoomPerDay: 5 }), b).hours, 0);
 });
