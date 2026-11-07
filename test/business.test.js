@@ -143,38 +143,60 @@ test('stations: the room payback with F&B, meetings and staff areas equals the r
   assert.ok(Math.abs(st.service - 3 * 350 * all.rate.localPerList) < 1e-6);
   assert.equal(st.counted, false); // no bottles given: cost shown on its own, no combined payback
   assert.equal(st.combined, null);
-  assert.deepEqual(st.unknownAreas, ['fnb', 'meetings', 'boh']);
 });
 
-test('stations: bottles a day for an area give a station saving and a combined payback; the room payback does not move', () => {
-  const plain = run(Object.assign({}, MANILA, { areas: ['rooms', 'fnb', 'boh'] })).bc;
-  const r = run(Object.assign({}, MANILA, { areas: ['rooms', 'fnb', 'boh'], bottlesFnb: '50', bottlesBoh: 'default' }));
+test('stations: bottles used outside guest rooms give a station saving and a combined payback; the room payback does not move', () => {
+  const a = Object.assign({}, MANILA, { areas: ['rooms', 'fnb', 'boh'] });
+  const plain = run(a).bc;
+  const r = run(a, { otherBottlesPerDay: 50 });
   const st = r.bc.stationBlock;
   assert.equal(r.bc.payback.cashPaybackYears, plain.payback.cashPaybackYears);
   assert.equal(st.counted, true);
-  assert.deepEqual(st.unknownAreas, ['boh']);
   assert.ok(Math.abs(st.spend - 50 * 365 * r.n.inputs.pricePerBottle) < 1e-6);
   const expected = (r.bc.capexLocal + st.capex) / (r.calc.spend.annualLocal - r.bc.servicingLocal - st.service);
   assert.ok(Math.abs(st.combined.cashPaybackYears - expected) < 1e-9);
-  assert.ok(r.calc.bottles.total > r.bc.calcRooms.bottles.total); // bottles avoided include the stations
+  // outside bottles count in bottles, plastic, CO2e and handling time
+  assert.ok(r.calc.bottles.total > r.bc.calcRooms.bottles.total);
+  assert.ok(r.calc.env.packagingKg > r.bc.calcRooms.env.packagingKg);
+  assert.ok(r.calc.env.co2eKg > r.bc.calcRooms.env.co2eKg);
+  assert.ok(r.calc.labour.hours > r.bc.calcRooms.labour.hours);
 });
 
-test('Surabaya: when cash does not pay back, the lead holds only true positive statements; the table keeps the real figures', () => {
-  const answers = { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold' };
-  const { bc } = run(answers);
+const SURABAYA = { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold' };
+
+test('Surabaya with the new defaults (3 bottles, typical price): positive lead, figures in the table unchanged and correct', () => {
+  const { bc, n } = run(SURABAYA);
+  assert.equal(n.inputs.bottlesPerRoomNight, 3);
+  assert.ok(POSITIVE_KINDS.includes(bc.lead.kind));
+  const rate = bc.rate.localPerList;
+  assert.ok(Math.abs(bc.capexLocal - 250 * 140 * rate) < 1e-3);
+  assert.ok(Math.abs(bc.servicingLocal - 250 * 85 * rate) < 1e-3);
+  assert.equal(bc.cashShort, bc.payback.cashPaybackYears <= 5);
+});
+
+test('when cash does not pay back, the lead holds only true positive statements', () => {
+  // two bottles a night at the typical price: bottle spend below the service contract
+  const { bc } = run(Object.assign({}, SURABAYA, { bottlesPerRoomNight: '2' }));
   assert.equal(bc.cashPaysBack, false);
   assert.equal(bc.lead.kind, 'benefits');
   assert.ok(bc.lead.hours > 0 && bc.lead.bottles > 0 && bc.lead.staffValue > 0);
   assert.equal(bc.lead.safeWater.share, F.countries.ID.safeWater.value);
   assert.ok(bc.lead.safeWater.share < F.factors.safe_water_world_2022.value);
-  // business case table: guest rooms, figures unchanged and correct
-  const rate = bc.rate.localPerList;
-  assert.ok(Math.abs(bc.capexLocal - 250 * 140 * rate) < 1e-3);
-  assert.ok(Math.abs(bc.servicingLocal - 250 * 85 * rate) < 1e-3);
-  assert.ok(bc.payback.cashSavingsPerYear < 0 && !isFinite(bc.payback.cashPaybackYears));
-  // Malaysia is above the world share, so no safe-water statement there
-  const my = run(Object.assign({}, answers, { country: 'MY', bottleSizeMl: 'default' })).bc;
+  const my = run(Object.assign({}, SURABAYA, { country: 'MY', bottleSizeMl: 'default' })).bc;
   assert.equal(my.safeWater, null);
+});
+
+test('extra cost per bottle is added to the price in the savings; occupancy "Not sure" can use the closest match', () => {
+  const base = run(SURABAYA);
+  const extra = run(SURABAYA, { extraCostPerBottle: 500 });
+  assert.equal(extra.n.inputs.pricePerBottle, base.n.inputs.pricePerBottle + 500);
+  assert.equal(extra.n.inputs.extraCostPerBottle, 500);
+  assert.ok(extra.bc.payback.cashSavingsPerYear > base.bc.payback.cashSavingsPerYear);
+  const bali = run(Object.assign({}, SURABAYA, { occupancyRef: 'bali' }));
+  assert.equal(bali.n.inputs.occupancy, 0.607);
+  assert.equal(bali.n.provenance.occupancy.closest, true);
+  const typed = run(Object.assign({}, SURABAYA, { occupancy: '70', occupancyRef: 'bali' }));
+  assert.equal(typed.n.inputs.occupancy, 0.7); // a typed figure wins over the closest match
 });
 
 test('provenance of the new safe-water factors', () => {
@@ -185,4 +207,23 @@ test('provenance of the new safe-water factors', () => {
     assert.equal(s.kind, 'sourced'); assert.equal(s.status, F.UNVERIFIED);
     assert.match(s.source.url, /^https:\/\//); assert.ok(s.source.quote && s.year && s.value > 0 && s.value <= 1);
   });
+});
+
+test('benchmark per country: defaults, 3 bottles with the closest-match occupancy, foodservice or premium reference', () => {
+  const CLOSEST = { MY: 'kl5', ID: 'bali', PH: 'mnllux', SG: null };
+  const out = [];
+  for (const code of ['MY', 'ID', 'PH', 'SG']) {
+    const C = F.countries[code];
+    const base = { country: code, rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient' };
+    const d = run(base).bc.payback;
+    const c = run(Object.assign({}, base, { occupancyRef: CLOSEST[code] || undefined })).bc.payback;
+    const alt = C.bottlePrices.find(b => b.tier === 'foodservice') || C.bottlePrices.find(b => b.tier === 'premium');
+    const p = alt ? run(Object.assign({}, base, { priceBand: alt.id })).bc.payback : null;
+    // a closer occupancy at or above the national figure never lengthens the payback; a higher-priced reference shortens it
+    if (CLOSEST[code]) assert.ok(c.cashPaybackYears <= d.cashPaybackYears, code + ' closest match');
+    if (p) assert.ok(p.cashPaybackYears < d.cashPaybackYears, code + ' foodservice or premium');
+    const y = v => (v == null ? '-' : isFinite(v) ? v.toFixed(2) : 'none');
+    out.push(code + ': defaults ' + y(d.cashPaybackYears) + ' / ' + y(d.fullPaybackYears) + ' | closest ' + y(c.cashPaybackYears) + ' / ' + y(c.fullPaybackYears) + ' | ' + (alt ? alt.tier : 'no reference') + ' ' + (p ? y(p.cashPaybackYears) + ' / ' + y(p.fullPaybackYears) : '-'));
+  }
+  console.log('    payback in years, cash / including staff time freed\n    ' + out.join('\n    '));
 });

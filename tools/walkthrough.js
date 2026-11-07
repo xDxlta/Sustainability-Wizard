@@ -15,8 +15,9 @@ const server = http.createServer((req, res) => {
 });
 
 const scenarios = {
-  kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], bottlesFnb: '40', bottlesMeetings: 'default', temps: 'sparkling', _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
+  kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], temps: 'sparkling', _otherBottles: 40, _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
   surabaya_select_250: { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
+  kl_5star_200: { country: 'MY', rooms: '200', occupancy: 'default', occupancyRef: 'kl5', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient', _proposal: { hotel: 'Demo Five-Star Hotel Kuala Lumpur' } },
   manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
 };
 
@@ -57,7 +58,7 @@ const scenarios = {
           const val = answers[f];
           if (val == null || f.startsWith('_')) continue;
           const input = await page.$(`#in-${f}`);
-          if (input && val === 'default') { await page.click(`[data-field="${f}"] [data-opt="default"]`); await page.waitForTimeout(60); continue; }
+          if (input && val === 'default') { await page.click(`[data-field="${f}"] [data-opt="default"]`); await page.waitForTimeout(60); if (f === 'occupancy' && answers.occupancyRef) { await page.selectOption('#in-occupancyRef', answers.occupancyRef); await page.waitForTimeout(60); } continue; }
           if (input) { await input.fill(String(val)); continue; }
           const ids = Array.isArray(val) ? val : [val];
           for (const id of ids) {
@@ -94,7 +95,7 @@ const scenarios = {
       await shot(page, `03-results-${name}-${viewport.tag}.png`, { fullPage: true });
       // texts that must not appear (unverified product claims, sales questions, lead score)
       const bodyText = await page.evaluate(() => document.body.innerText);
-      ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead', 'perChange', 'perYear', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'unverified', 'Unverified'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
+      ['0.2 micron', 'Lead score', 'Lead-Score', 'readiness', 'Nurture', 'Hot lead', 'Warm lead', 'perChange', 'perYear', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'unverified', 'Unverified', 'Hard Rock', 'Hyatt', 'Shangri', 'Caravelle', 'Eaton', 'Spritzer', 'Acqua Panna', 'Le Minerale', 'Equil', 'Evian', 'CBRE', 'Knight Frank', 'JLL', 'GoodStats'].forEach(bad => { if (bodyText.indexOf(bad) >= 0) errors.push('forbidden text on result page: ' + bad); });
 
       // base case, lead statement, five-year view, per-month view, upgrade
       const bc = await page.evaluate(() => { const x = window.SW.app.compute(); const p = x.pr.payback; return { lead: x.pr.lead.kind, cash: p.cashPaybackYears, full: p.fullPaybackYears, capex: p.capex, service: p.annualService, upgrade: x.pr.upgrade && x.pr.upgrade.payback ? x.pr.upgrade.payback.cashPaybackYears : null }; });
@@ -114,6 +115,7 @@ const scenarios = {
       const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };
       await openAll();
       if (await page.$('#ov-occupancy')) { await page.fill('#ov-occupancy', '75'); await page.press('#ov-occupancy', 'Tab'); await page.waitForTimeout(100); await openAll(); }
+      if (answers._otherBottles != null) { await page.fill('#ov-otherBottlesPerDay', String(answers._otherBottles)); await page.press('#ov-otherBottlesPerDay', 'Tab'); await page.waitForTimeout(100); await openAll(); if (!(await page.$eval('#stations', e => /Guest rooms and stations/.test(e.textContent)).catch(() => false))) errors.push('combined payback missing after entering bottles outside guest rooms'); }
       if (answers._capex != null) { await page.fill('#ov-capex', String(answers._capex)); await page.press('#ov-capex', 'Tab'); await page.waitForTimeout(100); await openAll(); }
       const prop = answers._proposal || {};
       for (const [k, v] of Object.entries(prop)) { const sel = await page.$(`select#pf-${k}`); if (sel) await page.selectOption(`#pf-${k}`, v); else if (await page.$(`#pf-${k}`)) await page.fill(`#pf-${k}`, v); }

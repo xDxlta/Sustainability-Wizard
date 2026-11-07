@@ -15,6 +15,27 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(root) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
 });
+/* Economics per country: payback at default inputs, at 3 bottles with the closest-match occupancy,
+ * and at the foodservice or premium reference. 250 guest rooms, free plastic bottles, basic tap. */
+function economics() {
+  const F = require('../js/factors.js'), E = require('../js/engine.js'), PL = require('../js/pricelist.js'), M = require('../js/model.js'), R = require('../js/recommend.js'), B = require('../js/business.js'), fmt = require('../js/format.js');
+  const CLOSEST = { MY: 'kl5', ID: 'bali', PH: 'mnllux', SG: null };
+  const rows = [];
+  for (const code of ['MY', 'ID', 'PH', 'SG']) {
+    const C = F.countries[code];
+    const base = { country: code, rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient' };
+    const alt = C.bottlePrices.find(b => b.tier === 'foodservice') || C.bottlePrices.find(b => b.tier === 'premium');
+    const cases = [['defaults', base], ['3 bottles, closest-match occupancy', Object.assign({}, base, { bottlesPerRoomNight: '3', occupancyRef: CLOSEST[code] || undefined })]];
+    if (alt) cases.push([alt.tier + ' reference (' + alt.label + ')', Object.assign({}, base, { priceBand: alt.id })]);
+    for (const [name, a] of cases) {
+      const n = M.normalise(F, a, {}); const calc = E.calculate(F, n.inputs); const bc = B.build({ F, PL, R, E }, a, {}, n.inputs, calc);
+      rows.push({ code, name, occupancy: fmt.pct(Math.round(n.inputs.occupancy * 1000) / 1000), price: fmt.money(n.inputs.symbol, n.inputs.pricePerBottle, n.inputs.decimals === 0 ? 0 : 2), cash: fmt.years(bc.payback.cashPaybackYears), full: fmt.years(bc.payback.fullPaybackYears), cashYears: bc.payback.cashPaybackYears });
+    }
+    if (!alt) rows.push({ code, name: 'foodservice or premium reference', occupancy: '-', price: 'none in the register', cash: '-', full: '-' });
+  }
+  return rows;
+}
+
 const SECONDS_PER_ACTION = 6;   // reading a question and clicking (estimate used only for the 2-minute check)
 const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
 
@@ -96,5 +117,7 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
   if (errors.length) results.push({ id: 0, name: 'Notes', pass: false, detail: errors.join(' | ') });
   await browser.close(); server.close();
   results.sort((a, b) => a.id - b.id).forEach(r => console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.id}. ${r.name}\n      ${r.detail}`));
+  console.log('\nPayback per country (250 rooms, free plastic bottles, basic tap, service one change per room and year)');
+  economics().forEach(r => console.log(`  ${r.code}  ${r.name.padEnd(58)} occupancy ${String(r.occupancy).padEnd(6)} price ${String(r.price).padEnd(14)} cash ${String(r.cash).padEnd(20)} incl. staff time ${r.full}`));
   process.exit(results.every(r => r.pass) ? 0 : 1);
 })();

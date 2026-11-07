@@ -128,6 +128,13 @@
             el('span', { class: 'opt-label', text: 'Not sure' }), el('span', { class: 'opt-desc', text: f.notSureDesc || ('National average, ' + fmt.pct(ref)) }));
           ctl.classList.add('with-notsure');
           ctl.appendChild(ns);
+          var refs = (F.countries[a.country] || F.countries.OTHER).occupancyRefs || [];
+          if (f.id === 'occupancy' && a[f.id] === 'default' && refs.length) {
+            var sel = el('select', { class: 'input', id: 'in-occupancyRef', 'aria-label': 'Closest match', onchange: function (e) { a.occupancyRef = e.target.value; save(); } });
+            sel.appendChild(el('option', { value: '', text: 'National average, ' + fmt.pct(ref) }));
+            refs.forEach(function (r) { var opt = el('option', { value: r.id, text: r.label + ', ' + fmt.pct(Math.round(r.value * 1000) / 1000) + ' (' + r.period + ')' }); if (a.occupancyRef === r.id) opt.selected = true; sel.appendChild(opt); });
+            ctl.appendChild(el('label', { class: 'closest' }, el('span', { class: 'small muted', text: 'Closest match' }), sel));
+          }
         }
         if (f.chips) {
           var chips = el('div', { class: 'chips' });
@@ -153,7 +160,7 @@
     step.fields.forEach(function (f) {
       if (f.showIf && !f.showIf(a)) return;
       var v = a[f.id]; if (v == null || v === '' || f.id === 'priceCustom') return;
-      if (f.type === 'number') { if (!f.required && (v === 'default' || v === '')) return; parts.push(f.id === 'rooms' ? v + ' rooms' : (f.id === 'occupancy' ? (v === 'default' ? 'occupancy not sure' : (Number(v) <= 1 ? Math.round(Number(v) * 100) : v) + '% occupancy') : (v === 'default' ? null : v + ' bottles a day'))); return; }
+      if (f.type === 'number') { if (!f.required && (v === 'default' || v === '')) return; parts.push(f.id === 'rooms' ? v + ' rooms' : (f.id === 'occupancy' ? (v === 'default' ? (function () { var r = ((F.countries[a.country] || {}).occupancyRefs || []).filter(function (x) { return x.id === a.occupancyRef; })[0]; return r ? 'occupancy: ' + r.label : 'occupancy not sure'; })() : (Number(v) <= 1 ? Math.round(Number(v) * 100) : v) + '% occupancy') : (v === 'default' ? null : v + ' bottles a day'))); return; }
       var opts = fieldOptions(f);
       var ids = Array.isArray(v) ? v : [v];
       var labels = ids.map(function (id) { var o = opts.filter(function (x) { return x.id === id; })[0]; return o ? o.label : id; });
@@ -239,7 +246,7 @@
       case 'per-night': return { tone: 'neutral', head: 'Costs ' + fmt.money(inp.symbol, L.swisspro, inp.decimals === 0 ? 0 : 2) + ' per occupied room-night, against ' + fmt.money(inp.symbol, L.bottled, inp.decimals === 0 ? 0 : 2) + ' for bottled water and the staff time it takes.', sub: 'Service contract included, investment spread over ' + B.SPREAD_YEARS + ' years.' };
       default:
         if (!L.bottles) return { tone: 'neutral', head: 'Filtered water for ' + ctx.rec.segment.areas.join(', ').toLowerCase() + '.', sub: '' };
-        var head = (c.labour.quantified && L.hours > 0 ? 'Frees ' + fmt.int(L.hours) + ' staff hours a year and removes ' : 'Removes ') + fmt.int(L.bottles) + (inp.bottleMaterial === 'pet' ? ' plastic' : ' glass') + ' bottles a year from your guest rooms.';
+        var head = (c.labour.quantified && L.hours > 0 ? 'Frees ' + fmt.int(L.hours) + ' staff hours a year and removes ' : 'Removes ') + fmt.int(L.bottles) + (inp.bottleMaterial === 'pet' ? ' plastic' : ' glass') + ' bottles a year' + (L.outside > 0 ? ' in your hotel.' : ' from your guest rooms.');
         var sw = L.safeWater ? 'In ' + L.safeWater.country + ', ' + fmt.pct(Math.round(L.safeWater.share * 100) / 100) + ' of people use safely managed drinking water (world: ' + fmt.pct(L.safeWater.world) + '; WHO/UNICEF JMP, ' + L.safeWater.year + ').' : '';
         return { tone: 'neutral', head: head, sub: sw };
     }
@@ -274,7 +281,7 @@
       return el('div', { class: 'tile' + (cls ? ' ' + cls : '') }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length >= 9 ? ' value-long' : ''), text: value }), el('div', { class: 'sub', text: sub || '' }));
     }
     var envLine = [];
-    if (pr0.cashPaysBack) {
+    if (pr0.cashShort) {
       tiles.appendChild(tile('Cash payback', fmt.cap(fmt.years(pb0.cashPaybackYears)), 'guest rooms, service contract included'));
       tiles.appendChild(tile('Payback including staff time freed', c.labour.quantified ? fmt.cap(fmt.years(pb0.fullPaybackYears)) : '-', c.labour.quantified ? fmt.int(c.labour.hours) + ' staff hours a year' : ''));
       tiles.appendChild(tile('Net saving a year', moneyShort(ctx, pb0.cashSavingsPerYear), 'cash, after the service contract'));
@@ -285,8 +292,9 @@
     } else {
       // The cash case does not pay back: the tiles show only what holds. The business case table below has every figure.
       var bt = [];
-      if (pb0.available && isFinite(pb0.fullPaybackYears) && pb0.fullPaybackYears > 0) bt.push(tile('Payback including staff time freed', fmt.cap(fmt.years(pb0.fullPaybackYears)), 'service contract included'));
-      if (c.labour.quantified && c.labour.hours > 0) bt.push(tile('Staff time freed', fmt.int(c.labour.hours) + ' h', 'worth ' + moneyShort(ctx, c.labour.costLocal) + ' a year'));
+      if (pb0.available && isFinite(pb0.fullPaybackYears) && pb0.fullPaybackYears <= B.VIEW_YEARS) bt.push(tile('Payback including staff time freed', fmt.cap(fmt.years(pb0.fullPaybackYears)), 'service contract included'));
+      if (pb0.available && pb0.cashSavingsPerYear > 0) bt.push(tile('Net saving a year', moneyShort(ctx, pb0.cashSavingsPerYear), 'cash, after the service contract'));
+      if (all.labour.quantified && all.labour.hours > 0) bt.push(tile('Staff time freed', fmt.int(all.labour.hours) + ' h', 'worth ' + moneyShort(ctx, all.labour.costLocal) + ' a year'));
       if (all.bottles.total > 0) bt.push(tile('Bottles avoided', fmt.int(all.bottles.total), 'a year'));
       if (all.env.packagingKg != null && all.env.packagingKg > 0) bt.push(tile('Plastic avoided', fmt.int(all.env.packagingKg) + ' kg', 'a year'));
       else if (all.env.quantified && all.env.co2eKg > 0) bt.push(tile('CO2e avoided', fmt.dec(all.env.co2eKg / 1000, 1) + ' t', 'a year'));
@@ -327,7 +335,7 @@
     if (pb.available) {
       var t = el('table', { class: 'kv' });
       function row(k, v, cls) { t.appendChild(el('tr', { class: cls || null }, el('th', { text: k }), el('td', { text: v }))); }
-      row('Bottled water bought today, per year', money(ctx, c.spend.annualLocal));
+      row(inp.extraCostPerBottle > 0 ? 'Bottled water today incl. delivery, storage and disposal, per year' : 'Bottled water bought today, per year', money(ctx, c.spend.annualLocal));
       row('Service contract, per year', money(ctx, -pb.annualService));
       row('Net cash saving, per year', money(ctx, pb.cashSavingsPerYear), pb.cashSavingsPerYear < 0 ? 'neg' : null);
       row('Investment', money(ctx, pb.capex));
@@ -342,7 +350,7 @@
     } else {
       card.appendChild(el('p', { class: 'muted small', text: 'Enter the investment under Adjust to see the payback.' }));
     }
-    if (pb.available && !pr.cashPaysBack) card.appendChild(el('p', { class: 'plan-line', text: 'Your proposal can include a service plan for your market.' }));
+    if (pb.available && !pr.cashShort) card.appendChild(el('p', { class: 'plan-line', text: 'Your proposal can include a service plan for your market.' }));
     var scope = pr.rate.same ? 'List prices in ' + cur + '. ' : 'List prices in ' + cur + ', converted at 1 ' + cur + ' = ' + fmt.money(inp.symbol, pr.rate.localPerList, inp.decimals === 0 ? 0 : 2) + ' (' + fxDate(ctx) + '). ';
     card.appendChild(el('p', { class: 'small muted scope', text: scope + 'Prices exclude GST, installation, freight, duties and local taxes. Your proposal sets the final prices and quantities.' }));
     return card;
@@ -369,8 +377,7 @@
       }
     }
     card.appendChild(t);
-    if (!st.counted) card.appendChild(el('p', { class: 'small muted', text: 'Enter bottles a day for these areas to see their saving.' }));
-    else if (st.unknownAreas.length) card.appendChild(el('p', { class: 'small muted', text: 'Saving counted for the areas with a bottle figure only.' }));
+    if (!st.counted) card.appendChild(el('p', { class: 'small muted', text: 'Enter the bottles used outside guest rooms under Adjust the assumptions to see their saving.' }));
     return card;
   }
 
@@ -449,7 +456,8 @@
     var rows = [];
     rows.push(['Occupied room-nights a year', fmt.int(inp.rooms) + ' rooms x ' + fmt.pct(inp.occupancy) + ' x 365', fmt.int(c.bottles.occupiedRoomNights)]);
     rows.push(['Bottles a year', fmt.int(c.bottles.occupiedRoomNights) + ' x ' + inp.bottlesPerRoomNight + ' per night', fmt.int(c.bottles.total)]);
-    rows.push(['Bottled water bought a year', fmt.int(c.bottles.total) + ' x ' + fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2), money(ctx, c.spend.annualLocal)]);
+    var pd = inp.decimals === 0 ? 0 : 2;
+    rows.push([inp.extraCostPerBottle > 0 ? 'Bottled water a year, incl. delivery, storage and disposal' : 'Bottled water bought a year', fmt.int(c.bottles.total) + ' x ' + (inp.extraCostPerBottle > 0 ? '(' + fmt.money(inp.symbol, inp.purchasePricePerBottle, pd) + ' + ' + fmt.money(inp.symbol, inp.extraCostPerBottle, pd) + ' extra)' : fmt.money(inp.symbol, inp.pricePerBottle, pd)), money(ctx, c.spend.annualLocal)]);
     var inRoomTxt = pr.reading === 'perChange' ? '85.00 ' + cur + ' x 12 / ' + pr.months + ' months' : (pr.reading === 'perYear' ? '85.00 ' + cur + ' (one change a year)' : '85.00 ' + cur + ' / 2 years');
     var sv = pr.servicingSource === 'user' ? 'your figure' : [pr.inRoomUnits ? fmt.int(pr.inRoomUnits) + ' x ' + inRoomTxt : null, pr.stations ? fmt.int(pr.stations) + ' x ' + fmt.dec(pr.stationPerYear, 2) + ' ' + cur : null].filter(Boolean).join(' + ') + conv;
     rows.push(['Service contract a year', sv, money(ctx, pr.servicingLocal)]);
@@ -528,7 +536,17 @@
 
   function renderMore(ctx) {
     var c = ctx.calc, inp = ctx.n.inputs;
-    var d = el('details', { class: 'card fine' }, el('summary', { text: 'Logistics and per-room figures' }));
+    var d = el('details', { class: 'card fine' }, el('summary', { text: 'More' }));
+    var args = R.argumentOrder(inp, F), note = ctx.n.country.safetyNote;
+    var ol = el('ol', { class: 'args' });
+    args.order.forEach(function (x) {
+      var li = el('li', {}, el('strong', { text: x.title }), ' ' + x.why);
+      if (x.key === 'safety' && args.cheapWater && note) li.appendChild(el('span', { class: 'small muted args-note' }, ' ' + ctx.n.country.name + ': ' + note.text + ' ', el('a', { href: note.url, target: '_blank', rel: 'noopener', text: note.source })));
+      ol.appendChild(li);
+    });
+    d.appendChild(el('h4', { class: 'more-h', text: 'What matters most for this hotel' }));
+    d.appendChild(ol);
+    d.appendChild(el('h4', { class: 'more-h', text: 'Logistics and per-room figures' }));
     var t = el('table', { class: 'kv' });
     function row(k, v) { t.appendChild(el('tr', {}, el('th', { text: k }), el('td', { text: v }))); }
     row('Cartons a year', fmt.int(c.logistics.cartonsPerYear));
@@ -559,9 +577,11 @@
       return d;
     }
     var g1 = group('Your hotel');
-    field(g1, 'occupancy', 'Occupancy (%)', Math.round(inp.occupancy * 1000) / 10, 1, { max: 100 }, ctx.n.provenance.occupancy.kind === 'user' ? 'Your figure' : 'National average');
+    field(g1, 'occupancy', 'Occupancy (%)', Math.round(inp.occupancy * 1000) / 10, 1, { max: 100 }, ctx.n.provenance.occupancy.kind === 'user' ? 'Your figure' : (ctx.n.provenance.occupancy.closest ? 'Closest match: ' + ctx.n.provenance.occupancy.label : 'National average'));
     field(g1, 'bottlesPerRoomNight', 'Bottles per room and night', inp.bottlesPerRoomNight, 0.5);
-    field(g1, 'pricePerBottle', 'Price per bottle (' + inp.currency + ')', Math.round(inp.pricePerBottle * 1000) / 1000, 0.01, null, ctx.n.provenance.pricePerBottle.kind === 'user' ? 'Your price' : 'Reference price');
+    field(g1, 'pricePerBottle', 'Price per bottle (' + inp.currency + ')', Math.round(inp.purchasePricePerBottle * 1000) / 1000, 0.01, null, ctx.n.provenance.pricePerBottle.kind === 'user' ? 'Your price' : 'Reference price');
+    field(g1, 'extraCostPerBottle', 'Extra cost per bottle for delivery, storage and disposal (' + inp.currency + ')', inp.extraCostPerBottle, 0.01, null, 'For example boat transport and waste removal at island resorts.');
+    field(g1, 'otherBottlesPerDay', 'Bottles used outside guest rooms per day (meeting rooms, staff, outlets)', inp.otherBottlesPerDay, 1);
     if (c.env.packagingKg != null) field(g1, 'bottleWeightG', 'Empty bottle weight (g)', Math.round(c.env.bottleWeightG * 100) / 100, 0.1);
     var g2 = group('Investment and service');
     field(g2, 'capex', 'Investment (' + inp.currency + ')', o.capex != null ? o.capex : (pr.capexLocal != null ? Math.round(pr.capexLocal) : ''), 1, { placeholder: 'from your proposal' }, (pr.capexSource === 'user' ? 'Your figure' : (pr.capexSource === 'pricelist' ? 'List price' : 'Not in the price list')) + (pr.capexLocal != null ? ', ' + money(ctx, pr.capexLocal) : ''));
@@ -596,8 +616,10 @@
       return li;
     }
     function srcOf(p) { return p.source || (p.url ? { url: p.url, publisher: 'source' } : null); }
-    list.appendChild(item('Occupancy', fmt.pct(inp.occupancy) + (prov.occupancy.kind === 'user' ? ', your figure' : ', ' + (cc.occupancy.unit || 'national average')), prov.occupancy.kind === 'user' ? null : srcOf(cc.occupancy)));
-    list.appendChild(item('Bottles per room and night', inp.bottlesPerRoomNight + (prov.bottlesPerRoomNight.kind === 'user' ? ', your answer' : ', assumed when not sure')));
+    list.appendChild(item('Occupancy', fmt.pct(inp.occupancy) + (prov.occupancy.kind === 'user' ? ', your figure' : (prov.occupancy.closest ? ', closest match: ' + prov.occupancy.label + ', ' + prov.occupancy.source.publisher : ', ' + (cc.occupancy.unit || 'national average'))), prov.occupancy.kind === 'user' || prov.occupancy.closest ? null : srcOf(cc.occupancy)));
+    list.appendChild(item('Bottles per room and night', inp.bottlesPerRoomNight + (prov.bottlesPerRoomNight.kind === 'user' ? ', your answer' : ', when not sure: about 3 per occupied room-night from nine public hotel cases (470 to 1,460 bottles per room and year)')));
+    if (inp.otherBottlesPerDay > 0) list.appendChild(item('Bottles outside guest rooms', fmt.int(inp.otherBottlesPerDay) + ' a day, your figure'));
+    if (inp.extraCostPerBottle > 0) list.appendChild(item('Extra cost per bottle', fmt.money(inp.symbol, inp.extraCostPerBottle, inp.decimals === 0 ? 0 : 2) + ' for delivery, storage and disposal, your figure'));
     if (inp.pricePerBottle > 0) list.appendChild(item('Price per bottle', fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + (prov.pricePerBottle.kind === 'user' ? ', your price' : ', ' + (prov.pricePerBottle.note || prov.pricePerBottle.label)), prov.pricePerBottle.kind === 'user' ? null : srcOf(prov.pricePerBottle)));
     list.appendChild(item('Labour cost', fmt.money(inp.symbol, inp.wageHourly, 2) + ' an hour' + (prov.wageHourly.kind === 'user' ? ', your figure' : ', ' + (cc.wageMonthly.label || 'reference wage')), prov.wageHourly.kind === 'user' ? null : srcOf(cc.wageMonthly)));
     list.appendChild(item('Handling time', inp.minutesPerRoomPerDay + ' min per room and day, ' + inp.minutesPerCarton + ' min per carton, assumed and adjustable'));

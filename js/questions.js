@@ -29,13 +29,13 @@
           { id: 'none', label: 'None' }
         ] },
         { id: 'bottlesPerRoomNight', type: 'single', label: 'Bottles per room and night', required: true, showIf: function (a) { return a.current && a.current !== 'none'; }, options: [
-          { id: 'default', label: 'Not sure', desc: 'We assume 2' }, { id: '1', label: '1' }, { id: '2', label: '2' }, { id: '3', label: '3' }, { id: '4', label: '4 or more' }
+          { id: 'default', label: 'Not sure', desc: 'We assume 3' }, { id: '1', label: '1' }, { id: '2', label: '2' }, { id: '3', label: '3' }, { id: '4', label: '4 or more' }
         ] },
         { id: 'bottleSizeMl', type: 'single', label: 'Bottle size', required: true, showIf: function (a) { return a.current && a.current !== 'none'; }, options: [
           { id: 'default', label: 'Not sure', desc: 'We assume 500 ml' }, { id: '330', label: '330 ml' }, { id: '500', label: '500 ml' }, { id: '600', label: '600 ml' }, { id: '1500', label: '1.5 L' }
         ] },
         { id: 'priceBand', type: 'single', label: 'Price you pay per bottle', required: true, showIf: function (a) { return a.current && a.current !== 'none'; }, dynamic: 'bottlePrices', options: [] },
-        { id: 'priceCustom', type: 'number', label: 'Price per bottle (local currency)', showIf: function (a) { return a.current && a.current !== 'none' && a.priceBand === 'custom'; }, min: 0, max: 100000, step: 0.01, placeholder: 'e.g. 0.65' }
+        { id: 'priceCustom', type: 'number', label: 'Price per bottle (local currency)', showIf: function (a) { return a.current && a.current !== 'none' && a.priceBand === 'custom'; }, min: 0, max: 100000 , step: 0.01 }
       ]
     },
     {
@@ -44,9 +44,6 @@
         { id: 'areas', type: 'multi', label: 'Where filtered water should go (choose all that apply)', required: true, options: [
           { id: 'rooms', label: 'Guest rooms' }, { id: 'fnb', label: 'Restaurants and bars' }, { id: 'meetings', label: 'Meetings and events' }, { id: 'boh', label: 'Staff areas' }
         ] },
-        { id: 'bottlesFnb', type: 'number', label: 'Bottles a day in restaurants and bars', min: 0, max: 100000, notSure: true, notSureDesc: 'Station cost shown on its own', showIf: function (a) { return (a.areas || []).indexOf('fnb') >= 0; } },
-        { id: 'bottlesMeetings', type: 'number', label: 'Bottles a day in meetings and events', min: 0, max: 100000, notSure: true, notSureDesc: 'Station cost shown on its own', showIf: function (a) { return (a.areas || []).indexOf('meetings') >= 0; } },
-        { id: 'bottlesBoh', type: 'number', label: 'Bottles a day in staff areas', min: 0, max: 100000, notSure: true, notSureDesc: 'Station cost shown on its own', showIf: function (a) { return (a.areas || []).indexOf('boh') >= 0; } },
         { id: 'temps', type: 'single', label: 'Water in the room', required: true, showIf: function (a) { return (a.areas || []).indexOf('rooms') >= 0; }, options: [
           { id: 'ambient', label: 'Ambient', desc: 'Filtered tap' }, { id: 'cold', label: 'Chilled' }, { id: 'hotcold', label: 'Hot and chilled' }, { id: 'sparkling', label: 'Chilled and sparkling' }
         ] }

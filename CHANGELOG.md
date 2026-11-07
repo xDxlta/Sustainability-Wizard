@@ -1,5 +1,32 @@
 # Changelog
 
+## Version 2.3 (branch claude/wizard-v2), 7 November 2026
+
+- Bottles per occupied room-night: default 3 (was 2), derived from nine public hotel cases (470 to 1,460
+  bottles per room and year, median about 659). "Not sure" reads "We assume 3". The "2 bottles" case
+  studies stay in the register note.
+- Bottle prices: references carry a tier (mass, foodservice, premium) and `typical: true` for mass-market
+  references. "Not sure" uses the median of the typical references only. New references: Malaysia B2B
+  wholesale and dealer prices (typical) and a premium glass reference; Indonesia two more mass-brand
+  marketplace prices (typical), a foodservice and a premium reference; Singapore premium reference at the
+  regular price S$56.40 (was a promotion), Singapore "Not sure" now the mass-market reference only. Help
+  text under "Enter our price". Price options use thousands separators.
+- Occupancy "Not sure": optional dropdown "Closest match" (default national average) with city, province
+  and segment figures for Malaysia, Indonesia and the Philippines (status team-checked, links to be pasted).
+- Adjust the assumptions: "Bottles used outside guest rooms per day" (counted in bottles, plastic, CO2e,
+  handling time and the station block) and "Extra cost per bottle for delivery, storage and disposal"
+  (added to the price in the savings, shown in the calculation on the owner sheet when above 0). The three
+  optional bottles-per-area questions added to step 3 in d87c632 are removed again: no questions in the
+  main flow.
+- Top tiles lead with money only when the cash payback falls within five years; otherwise they show the
+  yearly saving, staff time, bottles and plastic, and the service-plan line appears.
+- More: the argument order is shown with a water-safety country note for Indonesia (30%, 2024) and
+  Malaysia (95%, 2024) in cheap-water markets; Indonesia's safe-water figure updated to the SDG 6 portal.
+- Demo script rewritten for the current code (service one change per room and year, 3 bottles, Surabaya
+  with "Enter our price" Rp9,750, Kuala Lumpur 5-star). Benchmark and acceptance tests print the payback per
+  country at defaults, at the closest-match occupancy and at the foodservice or premium reference.
+- "1 months" now reads "1 month".
+
 ## Version 2.2 (branch claude/wizard-v2), 2 November 2026
 
 Note: the entries for the work between 2.1 and this release were written to the wrong heading by the

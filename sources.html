@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sources and assumptions - Swisspro Sustainability Wizard</title>
-  <link rel="stylesheet" href="styles.css?v=2.2b">
+  <link rel="stylesheet" href="styles.css?v=2.3">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -25,8 +25,8 @@
     <section class="card" id="swisspro"></section>
   </main>
   <footer class="site-footer"><div class="wrap"><p class="muted">Swisspro Pte Ltd, Singapore.</p></div></footer>
-  <script src="js/factors.js?v=2.2b"></script>
-  <script src="js/pricelist.js?v=2.2b"></script>
+  <script src="js/factors.js?v=2.3"></script>
+  <script src="js/pricelist.js?v=2.3"></script>
   <script>
   (function () {
     var F = window.SW.factors, PL = window.SW.pricelist;
@@ -44,22 +44,28 @@
       minutes_per_carton_default: 'Receiving, storing and distributing one carton.',
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
+      bottles_per_room_night_default: 'Many figures are announcements or expectations and some include food and beverage outlets. Industry case studies that describe two bottles a night are the lower view; enter your own figure where you have it.',
+      extra_cost_per_bottle_default: 'Enter your own figure under Adjust the assumptions, for example boat transport and waste removal at island resorts.',
+      other_bottles_per_day_default: 'Enter your own figure under Adjust the assumptions.',
     };
     var h = '<h2>Calculation factors</h2>';
     Object.keys(F.factors).forEach(function (k) {
       var f = F.factors[k];
-      h += '<div class="factor" id="' + esc(k) + '"><h3>' + esc(f.label || k) + '</h3><div class="val">' + (f.value == null ? 'not available' : val(f.value, f.unit)) + ' <span class="small muted" style="font-weight:400">(' + kindWord(f) + ')</span></div>' + src(f.source) + (PUBLIC_NOTES[k] ? '<p class="small">' + esc(PUBLIC_NOTES[k]) + '</p>' : '') + '</div>';
+      var cases = f.cases ? '<p class="small">Bottles per room and year in the cases: ' + f.cases.map(function (c, i) { return c.perRoomYear.toLocaleString('en-US') + ' (<a href="' + esc(c.url) + '" rel="noopener">source ' + (i + 1) + '</a>)'; }).join(', ') + '. ' + esc(f.rule) + '</p>' : '';
+      h += '<div class="factor" id="' + esc(k) + '"><h3>' + esc(f.label || k) + '</h3><div class="val">' + (f.value == null ? 'not available' : val(f.value, f.unit)) + ' <span class="small muted" style="font-weight:400">(' + kindWord(f) + ')</span></div>' + src(f.source) + cases + (PUBLIC_NOTES[k] ? '<p class="small">' + esc(PUBLIC_NOTES[k]) + '</p>' : '') + '</div>';
     });
     document.getElementById('factors').innerHTML = h;
 
-    h = '<h2>Market reference values</h2><p class="small muted">Used when you answer "Not sure". Occupancy: the newest official national figure for the latest full year. Labour: the statutory minimum wage in force, so the staff-time value is conservative. Bottle price: the lowest published carton price of a national brand in 500 or 600 ml bottles. Exchange rate: one published US-dollar rate per currency on a reference date in late October 2026.</p>';
+    h = '<h2>Market reference values</h2><p class="small muted">Used when you answer "Not sure". Occupancy: the newest official national figure for the latest full year, or the closest match you pick. Labour: the statutory minimum wage in force, so the staff-time value is conservative. Bottle price: the median of the mass-market references; foodservice and premium references are options only. Exchange rate: one published US-dollar rate per currency on a reference date in late October 2026.</p>';
     F.marketOrder.filter(function (code) { return code !== 'OTHER'; }).forEach(function (code) {
       var c = F.countries[code];
       h += '<div class="factor"><h3>' + esc(c.name.charAt(0).toUpperCase() + c.name.slice(1)) + ' (' + esc(c.currency) + ')</h3>';
       h += '<p><strong>Exchange rate:</strong> ' + val(1 / c.fx.value, c.currency + ' per USD') + '</p>' + src(c.fx.source);
       h += '<p><strong>Occupancy:</strong> ' + val(Math.round(c.occupancy.value * 1000) / 10, '%, ' + (c.occupancy.unit || '')) + '</p>' + src(c.occupancy.source);
       h += '<p><strong>Labour cost reference:</strong> ' + val(c.wageMonthly.value, c.wageMonthly.unit) + (c.wageMonthly.label ? ', ' + esc(c.wageMonthly.label) : '') + '</p>' + src(c.wageMonthly.source);
-      if (c.bottlePrices.length) { h += '<p><strong>Bottle price references</strong></p><ul class="small">'; c.bottlePrices.forEach(function (b) { h += '<li>' + esc(b.label) + ': ' + esc(c.symbol) + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle (' + esc(b.ref) + '). <a href="' + esc(b.url) + '" rel="noopener">Open the source</a></li>'; }); h += '</ul>'; }
+      var TIER = { mass: 'mass market, used for Not sure', foodservice: 'foodservice, option only', premium: 'premium, option only' };
+      if (c.bottlePrices.length) { h += '<p><strong>Bottle price references</strong></p><ul class="small">'; c.bottlePrices.forEach(function (b) { h += '<li>' + esc(b.label) + ': ' + esc(c.symbol) + b.price.toFixed(c.decimals === 0 ? 0 : 2) + ' per bottle (' + esc(b.refPublic || b.ref) + '; ' + TIER[b.tier] + (b.accessed ? '; accessed ' + esc(b.accessed) : '') + '). <a href="' + esc(b.url) + '" rel="noopener">Open the source</a></li>'; }); h += '</ul>'; }
+      if (c.occupancyRefs && c.occupancyRefs.length) { h += '<p><strong>Occupancy, closest match when you answer Not sure</strong></p><ul class="small">'; c.occupancyRefs.forEach(function (r) { h += '<li>' + esc(r.label) + ': ' + (Math.round(r.value * 1000) / 10) + '% (' + esc(r.period) + '), ' + esc(r.publicSource) + (r.url ? '. <a href="' + esc(r.url) + '" rel="noopener">Open the source</a>' : '. Document reference held by the team, link to follow') + '</li>'; }); h += '</ul>'; }
       h += '</div>';
     });
     document.getElementById('markets').innerHTML = h;

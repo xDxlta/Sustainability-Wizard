@@ -82,7 +82,8 @@
    *      share of safely managed drinking water where it is below the world share.
    * Never a negative statement.
    */
-  function leadStatement(calc, pb, capex, service, safeWater) {
+  function leadStatement(calc, pb, capex, service, safeWater, calcAll) {
+    var all = calcAll || calc;
     var spend = calc.spend.annualLocal, staff = calc.labour.quantified ? calc.labour.costLocal : 0, orn = calc.bottles.occupiedRoomNights;
     if (pb.available && spend > 0) {
       if (isFinite(pb.cashPaybackYears) && pb.cashPaybackYears <= VIEW_YEARS) return { kind: 'payback', years: pb.cashPaybackYears, saving: pb.cashSavingsPerYear, fullYears: pb.fullPaybackYears };
@@ -94,11 +95,13 @@
         if (swissNight < bottledNight) return { kind: 'per-night', swisspro: swissNight, bottled: bottledNight };
       }
     }
-    return { kind: 'benefits', bottles: calc.bottles.total, spend: spend, hours: calc.labour.hours, staffValue: staff, safeWater: safeWater || null };
+    return { kind: 'benefits', bottles: all.bottles.total, outside: all.bottles.total - calc.bottles.total, spend: spend, hours: all.labour.hours, staffValue: all.labour.quantified ? all.labour.costLocal : 0, safeWater: safeWater || null };
   }
 
   /** True when the cash case pays back (finite payback); decides between money tiles and benefit tiles. */
   function cashPaysBack(pb) { return !!(pb && pb.available && isFinite(pb.cashPaybackYears)); }
+  /** True when the cash payback falls inside the five-year view: then the top tiles lead with money. */
+  function cashShort(pb) { return cashPaysBack(pb) && pb.cashPaybackYears <= VIEW_YEARS; }
 
   /**
    * Builds the business case. deps: { F, PL, R, E }. Returns the base case, the upgrade (if any),
@@ -161,7 +164,7 @@
       stations = {
         areas: stationAreas, count: stRec.unitPlan.stations, solutions: stRec.solutions, lines: stPrice.lines, unpriced: stPrice.unpriced,
         capex: stCapex, service: stService, stationPerYear: PL.stationServicePerYear(),
-        counted: counted, unknownAreas: inputs.otherBottlesUnknown || [], bottlesPerDay: inputs.otherBottlesPerDay || 0, bottles: stBottles, spend: stSpend, staffValue: stStaff,
+        counted: counted, bottlesPerDay: inputs.otherBottlesPerDay || 0, bottles: stBottles, spend: stSpend, staffValue: stStaff,
         payback: counted && stCapex != null ? E.payback({ capex: stCapex, annualService: stService }, { annualLocal: stSpend }, { costLocal: stStaff }) : null,
         combined: counted && stCapex != null && capex != null ? E.payback({ capex: capex + stCapex, annualService: service + stService }, { annualLocal: calcAll.spend.annualLocal }, { costLocal: calcAll.labour.costLocal }) : null
       };
@@ -179,10 +182,10 @@
       reading: baseSvc.reading, months: baseSvc.months, inRoomPerYear: baseSvc.inRoomPerYear, stationPerYear: baseSvc.stationPerYear,
       servicingListPerYear: baseSvc.listPerYear, servicingLocal: service, servicingSource: serviceSource,
       capexLocal: capex, capexSource: capexSource, lines: basePrice.lines, unpriced: basePrice.unpriced,
-      payback: pb, cashPaysBack: cashPaysBack(pb), upgrade: upgrade, stationBlock: stations, fiveYear: view, perRoomMonth: month, safeWater: safeWater,
-      lead: leadStatement(calcRooms, pb, capex == null ? 0 : capex, service, safeWater)
+      payback: pb, cashPaysBack: cashPaysBack(pb), cashShort: cashShort(pb), upgrade: upgrade, stationBlock: stations, fiveYear: view, perRoomMonth: month, safeWater: safeWater,
+      lead: leadStatement(calcRooms, pb, capex == null ? 0 : capex, service, safeWater, calcAll)
     };
   }
 
-  return { build: build, cashPaysBack: cashPaysBack, listRate: listRate, priceSolutions: priceSolutions, serviceFor: serviceFor, fiveYear: fiveYear, perRoomMonth: perRoomMonth, leadStatement: leadStatement, VIEW_YEARS: VIEW_YEARS, SPREAD_YEARS: SPREAD_YEARS };
+  return { build: build, cashPaysBack: cashPaysBack, cashShort: cashShort, listRate: listRate, priceSolutions: priceSolutions, serviceFor: serviceFor, fiveYear: fiveYear, perRoomMonth: perRoomMonth, leadStatement: leadStatement, VIEW_YEARS: VIEW_YEARS, SPREAD_YEARS: SPREAD_YEARS };
 });

@@ -11,8 +11,8 @@ test('market defaults are applied and carry kind + verification status', () => {
   assert.equal(n.inputs.occupancy, F.countries.MY.occupancy.value);
   assert.equal(n.provenance.occupancy.kind, 'sourced');
   assert.equal(n.provenance.occupancy.status, 'unverified');
-  assert.equal(n.inputs.bottlesPerRoomNight, 2);
-  assert.equal(n.provenance.bottlesPerRoomNight.kind, 'assumption');
+  assert.equal(n.inputs.bottlesPerRoomNight, 3);
+  assert.equal(n.provenance.bottlesPerRoomNight.kind, 'derived');
   assert.equal(n.inputs.bottleSizeMl, 500);
   assert.equal(n.provenance.bottleSizeMl.kind, 'assumption');
   assert.ok(Math.abs(n.inputs.wageHourly - 1700 / (2080 / 12)) < 1e-9);
@@ -20,12 +20,13 @@ test('market defaults are applied and carry kind + verification status', () => {
 
 test('"unknown" price uses the TYPICAL reference price: the median of the market references', () => {
   const n = M.normalise(F, answers, {});
-  const p = F.countries.MY.bottlePrices.map(b => b.price).sort((a, b) => a - b);
+  const p = F.countries.MY.bottlePrices.filter(b => b.typical).map(b => b.price).sort((a, b) => a - b);
+  assert.ok(F.countries.MY.bottlePrices.some(b => !b.typical)); // premium references exist but never drive "Not sure"
   const median = p.length % 2 ? p[(p.length - 1) / 2] : (p[p.length / 2 - 1] + p[p.length / 2]) / 2;
   assert.ok(Math.abs(n.inputs.pricePerBottle - median) < 1e-9);
   assert.equal(n.provenance.pricePerBottle.typical, true);
-  assert.match(n.provenance.pricePerBottle.note, /median of 2 references/);
-  assert.equal(M.typicalPrice({ bottlePrices: [{ price: 1 }, { price: 5 }, { price: 2 }] }), 2);
+  assert.match(n.provenance.pricePerBottle.note, /median of 4 mass-market references/);
+  assert.equal(M.typicalPrice({ bottlePrices: [{ price: 1, typical: true }, { price: 5, typical: true }, { price: 2, typical: true }, { price: 99, typical: false }] }), 2);
 });
 
 test('user answers override defaults; custom price is used', () => {
@@ -76,7 +77,7 @@ test('register integrity: kinds, statuses, URLs, rules, assumption notes', () =>
     const f = F.factors[k];
     assert.ok(kinds.includes(f.kind), k + ' kind');
     if (f.kind === 'sourced') {
-      assert.ok(['opened', 'team-opened', 'unverified', 'missing'].includes(f.status), k + ' status');
+      assert.ok(['opened', 'team-opened', 'team-checked', 'unverified', 'missing'].includes(f.status), k + ' status');
       assert.ok(f.source && /^https?:\/\//.test(f.source.url), k + ' url');
       if (f.status === 'missing') assert.equal(f.value, null);
     }
@@ -86,7 +87,8 @@ test('register integrity: kinds, statuses, URLs, rules, assumption notes', () =>
   F.marketOrder.forEach(c => {
     const C = F.countries[c];
     ['fx', 'occupancy', 'wageMonthly'].forEach(p => { assert.ok(C[p] && C[p].kind, c + '.' + p); if (C[p].kind === 'sourced') assert.ok(C[p].status && C[p].rule, c + '.' + p + ' status/rule'); });
-    C.bottlePrices.forEach(b => { assert.ok(/^https?:\/\//.test(b.url), c + ' price url'); assert.equal(b.status, 'unverified'); });
+    C.bottlePrices.forEach(b => { assert.ok(/^https?:\/\//.test(b.url), c + ' price url'); assert.ok(['unverified', 'team-opened'].includes(b.status), c + ' price status'); assert.ok(['mass', 'foodservice', 'premium'].includes(b.tier), c + ' tier'); assert.equal(typeof b.typical, 'boolean'); assert.ok(b.refPublic, c + ' public reference'); assert.equal(b.typical, b.tier === 'mass'); });
+    (C.occupancyRefs || []).forEach(r => { assert.equal(r.status, 'team-checked'); assert.ok(r.value > 0 && r.value < 1 && r.publisher && r.document && r.period && r.publicSource, c + ' occupancy ref ' + r.id); assert.ok(r.url === null || /^https:\/\//.test(r.url)); });
   });
   assert.deepEqual(F.marketOrder.slice(0, 3), ['MY', 'ID', 'PH']);
   assert.ok(F.rules.occupancy && F.rules.wage && F.rules.fx && F.rules.co2Pet);

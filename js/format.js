@@ -25,7 +25,7 @@
     if (y == null) return '-';
     if (!isFinite(y)) return 'no payback';
     if (y > 30) return 'more than 30 years';
-    if (y < 1) return Math.round(y * 12) + ' months';
+    if (y < 1) { var mo = Math.round(y * 12); return mo < 1 ? 'under 1 month' : mo === 1 ? '1 month' : mo + ' months'; }
     return dec(y, 1) + ' years';
   }
   function cap(s) { s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); }

@@ -193,6 +193,11 @@ button.rail-link:hover { text-decoration: underline; }
 .print-only { display: none; }
 .sub-block { margin-top: var(--s-5); }
 .plan-line { margin-top: var(--s-4); font-weight: 500; }
+.closest { display: grid; gap: 2px; flex: 1 1 260px; }
+.closest .input { max-width: none; }
+.args { margin: var(--s-2) 0 var(--s-4); padding-left: 1.2em; display: grid; gap: var(--s-2); font-size: var(--fs-sm); }
+.args-note { display: block; }
+.more-h { margin-top: var(--s-4); font-size: var(--fs-md); }
 .sub-block h4 { font-size: var(--fs-md); margin-bottom: var(--s-2); }
 .sub-block > p { margin-top: var(--s-2); }
 .legend { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: var(--fs-sm); color: var(--ink-2); margin-bottom: var(--s-3); }
