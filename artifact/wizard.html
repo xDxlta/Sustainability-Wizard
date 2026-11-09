@@ -506,6 +506,11 @@ table.products td:nth-child(3) { width: 30%; }
     },
     extra_cost_per_bottle_default: { value: 0, unit: 'local currency per bottle', kind: 'assumption', label: 'Extra cost per bottle for delivery, storage and disposal', note: 'No published figure; 0 unless the hotel enters its own (for example boat transport and waste removal at island resorts). Added to the price per bottle in the savings.' },
     other_bottles_per_day_default: { value: 0, unit: 'bottles a day outside guest rooms', kind: 'assumption', label: 'Bottles used outside guest rooms per day', note: 'No published figure; 0 unless the hotel enters its own (meeting rooms, staff, outlets). Counted in bottles, plastic, CO2e and handling time, and as the saving of the drinking-station block.' },
+    client_water_pretreatment_2026: {
+      value: 'Written answer, 9 Nov 2026', unit: '', kind: 'client-statement', status: 'client-reported', label: 'Water supply and pre-treatment (client statement)',
+      source: { publisher: 'Swisspro', title: 'Written answer to the project team', quote: 'Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained.', year: '2026', date: '2026-11-09' },
+      note: 'Swisspro, written answer to the project team, 9 Nov 2026. Used for the help text under the water supply question of the proposal form, the pre-treatment line for own wells or treatment plants, and the storage-tank argument.'
+    },
     westin_case_2024: {
       value: 2, unit: 'years to break even, Westin Singapore, 305 guest rooms', kind: 'sourced-secondary', label: 'Reference case: Westin Singapore (Swisspro, 2024)',
       source: { publisher: 'Final Presentation 2024, Swisspro student team', title: 'p. 13 and p. 44, figures provided by Swisspro', quote: 'Upfront investment S$42,700 (305 x S$140 simple tap); yearly filter change S$19,825 (305 x S$65 per filter, not including service, one change per room per year); plastic bottles S$40,640 a year (243,840 bottles at S$0.17); break-even in about 2 years', year: '2024' },
@@ -951,7 +956,7 @@ table.products td:nth-child(3) { width: 30%; }
     ] },
     { id: 'email', type: 'email', label: 'Work email', placeholder: 'Optional' },
     { id: 'phone', type: 'tel', label: 'Phone', placeholder: 'Optional' },
-    { id: 'source', type: 'select', label: 'Water supply', options: [
+    { id: 'source', type: 'select', label: 'Water supply', help: 'Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained.', rerender: true, options: [
       { id: '', label: 'Not sure' }, { id: 'mains', label: 'Municipal mains' }, { id: 'tank', label: 'Mains via storage tank' }, { id: 'well', label: 'Own well or treatment plant' }
     ] },
     { id: 'halal', type: 'select', label: 'Halal certificate', options: [
@@ -1185,6 +1190,14 @@ table.products td:nth-child(3) { width: 30%; }
     return { order: order.map(function (k) { return args[k]; }), cheapWater: cheapWater, priceUsd: priceUsd };
   }
 
+  /* Notes from the water supply answer of the proposal form (client statement, 9 Nov 2026). */
+  function waterSupplyNotes(source) {
+    return {
+      result: source === 'well' ? 'Please check your pre-treatment (particle and activated carbon filtration) before installation.' : null,
+      argument: source === 'tank' ? 'A filter at the tap also covers the storage tanks and pipes after your pre-treatment.' : null
+    };
+  }
+
   function segment(a, overrides) {
     var lower = !!(overrides && overrides.inRoomTap && a.temps && a.temps !== 'ambient' && has(a.areas, 'rooms'));
     return { current: LABELS.current[a.current] || '-', areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; }), temps: LABELS.temps[a.temps] || null, lowerCost: lower, tempsShown: lower ? LABELS.temps.ambient : (LABELS.temps[a.temps] || null) };
@@ -1195,7 +1208,7 @@ table.products td:nth-child(3) { width: 30%; }
     return { segment: segment(a, overrides), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL, overrides), alternative: alternative(a, PL, overrides), arguments: args.order, cheapWater: args.cheapWater, labels: LABELS };
   }
 
-  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
+  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, waterSupplyNotes: waterSupplyNotes, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
 });
 
 /* Business case for the owner (version 2.2). Pure functions, browser and Node.
@@ -1703,6 +1716,8 @@ table.products td:nth-child(3) { width: 30%; }
     root.appendChild(el('section', { class: 'verdict verdict-' + v.tone, id: 'lead' },
       el('p', { class: 'verdict-head', text: v.head }),
       v.sub ? el('p', { class: 'verdict-sub', text: v.sub }) : null));
+    var wsn = R.waterSupplyNotes(state.proposal.source);
+    if (wsn.result) root.appendChild(el('p', { class: 'notice', id: 'pretreatment', text: wsn.result }));
 
     var tiles = el('div', { class: 'tiles' }), pb0 = c.payback, pr0 = ctx.pr, all = ctx.calcAll;
     function tile(label, value, sub, cls) {
@@ -1969,6 +1984,7 @@ table.products td:nth-child(3) { width: 30%; }
     var ol = el('ol', { class: 'args' });
     args.order.forEach(function (x) {
       var li = el('li', {}, el('strong', { text: x.title }), ' ' + x.why);
+      if (x.key === 'safety' && R.waterSupplyNotes(state.proposal.source).argument) li.appendChild(el('span', { class: 'small args-note', id: 'tank-note', text: ' ' + R.waterSupplyNotes(state.proposal.source).argument }));
       if (x.key === 'safety' && args.cheapWater && note) li.appendChild(el('span', { class: 'small muted args-note' }, ' ' + ctx.n.country.name + ': ' + note.text + ' ', el('a', { href: note.url, target: '_blank', rel: 'noopener', text: note.source })));
       ol.appendChild(li);
     });
@@ -2082,6 +2098,7 @@ table.products td:nth-child(3) { width: 30%; }
     L.push('Wanted: ' + rec.segment.areas.join(', ') + (rec.segment.temps ? '; ' + rec.segment.temps + ' water in the room' : '') + '.');
     var extra = []; if (p.source) extra.push('Water supply: ' + (R.LABELS.source[p.source] || p.source)); if (p.halal) extra.push('Halal certificate requested'); if (p.timing) extra.push('Timing: ' + R.LABELS.timing[p.timing]); if (p.approval) extra.push('Approval by: ' + R.LABELS.approval[p.approval]);
     if (extra.length) L.push(extra.join('. ') + '.');
+    var wsNote = R.waterSupplyNotes(p.source).result; if (wsNote) L.push(wsNote);
     L.push('');
     L.push('Indicative figures per year');
     L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' litres)');
@@ -2113,9 +2130,10 @@ table.products td:nth-child(3) { width: 30%; }
       var d = el('div', {});
       d.appendChild(el('label', { for: 'pf-' + f.id, text: f.label + (REQUIRED[f.id] ? '' : ' (optional)') }));
       if (f.type === 'select') {
-        var sel = el('select', { class: 'input', id: 'pf-' + f.id, onchange: function (e) { p[f.id] = e.target.value; save(); } });
+        var sel = el('select', { class: 'input', id: 'pf-' + f.id, onchange: function (e) { p[f.id] = e.target.value; save(); if (f.rerender) { renderResults(); var pr = document.getElementById('pf-' + f.id); if (pr) { pr.scrollIntoView({ block: 'center' }); pr.focus(); } } } });
         f.options.forEach(function (o) { var opt = el('option', { value: o.id, text: o.label }); if ((p[f.id] || '') === o.id) opt.selected = true; sel.appendChild(opt); });
         d.appendChild(sel);
+        if (f.help) d.appendChild(el('span', { class: 'hint', text: f.help }));
       } else {
         d.appendChild(el('input', { class: 'input', id: 'pf-' + f.id, type: f.type, placeholder: REQUIRED[f.id] ? 'Required' : '', required: REQUIRED[f.id] ? 'required' : null, autocomplete: f.id === 'email' ? 'email' : (f.id === 'name' ? 'name' : (f.id === 'phone' ? 'tel' : 'organization')), value: p[f.id] || '', oninput: function (e) { p[f.id] = e.target.value; save(); } }));
       }

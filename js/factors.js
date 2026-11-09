@@ -117,6 +117,11 @@
     },
     extra_cost_per_bottle_default: { value: 0, unit: 'local currency per bottle', kind: 'assumption', label: 'Extra cost per bottle for delivery, storage and disposal', note: 'No published figure; 0 unless the hotel enters its own (for example boat transport and waste removal at island resorts). Added to the price per bottle in the savings.' },
     other_bottles_per_day_default: { value: 0, unit: 'bottles a day outside guest rooms', kind: 'assumption', label: 'Bottles used outside guest rooms per day', note: 'No published figure; 0 unless the hotel enters its own (meeting rooms, staff, outlets). Counted in bottles, plastic, CO2e and handling time, and as the saving of the drinking-station block.' },
+    client_water_pretreatment_2026: {
+      value: 'Written answer, 9 Nov 2026', unit: '', kind: 'client-statement', status: 'client-reported', label: 'Water supply and pre-treatment (client statement)',
+      source: { publisher: 'Swisspro', title: 'Written answer to the project team', quote: 'Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained.', year: '2026', date: '2026-11-09' },
+      note: 'Swisspro, written answer to the project team, 9 Nov 2026. Used for the help text under the water supply question of the proposal form, the pre-treatment line for own wells or treatment plants, and the storage-tank argument.'
+    },
     westin_case_2024: {
       value: 2, unit: 'years to break even, Westin Singapore, 305 guest rooms', kind: 'sourced-secondary', label: 'Reference case: Westin Singapore (Swisspro, 2024)',
       source: { publisher: 'Final Presentation 2024, Swisspro student team', title: 'p. 13 and p. 44, figures provided by Swisspro', quote: 'Upfront investment S$42,700 (305 x S$140 simple tap); yearly filter change S$19,825 (305 x S$65 per filter, not including service, one change per room per year); plastic bottles S$40,640 a year (243,840 bottles at S$0.17); break-even in about 2 years', year: '2024' },

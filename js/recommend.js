@@ -111,6 +111,14 @@
     return { order: order.map(function (k) { return args[k]; }), cheapWater: cheapWater, priceUsd: priceUsd };
   }
 
+  /* Notes from the water supply answer of the proposal form (client statement, 9 Nov 2026). */
+  function waterSupplyNotes(source) {
+    return {
+      result: source === 'well' ? 'Please check your pre-treatment (particle and activated carbon filtration) before installation.' : null,
+      argument: source === 'tank' ? 'A filter at the tap also covers the storage tanks and pipes after your pre-treatment.' : null
+    };
+  }
+
   function segment(a, overrides) {
     var lower = !!(overrides && overrides.inRoomTap && a.temps && a.temps !== 'ambient' && has(a.areas, 'rooms'));
     return { current: LABELS.current[a.current] || '-', areas: (a.areas || []).map(function (x) { return LABELS.areas[x] || x; }), temps: LABELS.temps[a.temps] || null, lowerCost: lower, tempsShown: lower ? LABELS.temps.ambient : (LABELS.temps[a.temps] || null) };
@@ -121,5 +129,5 @@
     return { segment: segment(a, overrides), unitPlan: unitPlan(a, overrides), solutions: solutions(a, PL, overrides), alternative: alternative(a, PL, overrides), arguments: args.order, cheapWater: args.cheapWater, labels: LABELS };
   }
 
-  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
+  return { recommend: recommend, unitPlan: unitPlan, solutions: solutions, alternative: alternative, describe: describe, inRoomSolution: inRoomSolution, stationSolution: stationSolution, argumentOrder: argumentOrder, waterSupplyNotes: waterSupplyNotes, LABELS: LABELS, TEMP_LABEL: TEMP_LABEL };
 });

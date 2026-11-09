@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sources and assumptions - Swisspro Sustainability Wizard</title>
-  <link rel="stylesheet" href="styles.css?v=2.3">
+  <link rel="stylesheet" href="styles.css?v=2.3b">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -25,13 +25,13 @@
     <section class="card" id="swisspro"></section>
   </main>
   <footer class="site-footer"><div class="wrap"><p class="muted">Swisspro Pte Ltd, Singapore.</p></div></footer>
-  <script src="js/factors.js?v=2.3"></script>
-  <script src="js/pricelist.js?v=2.3"></script>
+  <script src="js/factors.js?v=2.3b"></script>
+  <script src="js/pricelist.js?v=2.3b"></script>
   <script>
   (function () {
     var F = window.SW.factors, PL = window.SW.pricelist;
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function kindWord(f) { return f.kind === 'assumption' ? 'Assumption, adjustable' : (f.kind === 'derived' ? 'Derived' : (f.kind === 'constant' ? 'Constant' : (f.kind === 'sourced-secondary' ? 'Reference case' : 'Reference value'))); }
+    function kindWord(f) { return f.kind === 'assumption' ? 'Assumption, adjustable' : (f.kind === 'derived' ? 'Derived' : (f.kind === 'constant' ? 'Constant' : (f.kind === 'sourced-secondary' ? 'Reference case' : (f.kind === 'client-statement' ? 'Client statement' : 'Reference value')))); }
     function src(s) { if (!s) return ''; return '<p class="small muted">' + esc(s.publisher || '') + (s.title ? ', ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? '. <a href="' + esc(s.url) + '" rel="noopener">Open the source</a>' : '') + '</p>' + (s.url ? '' : (s.quote ? '<p class="small">' + esc(s.quote) + '</p>' : '')); }
     function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? String(Number(v.toPrecision(4))) : (Math.round(v * 1000) / 1000).toLocaleString('en-US')) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
     var PUBLIC_NOTES = {
@@ -45,6 +45,7 @@
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
       bottles_per_room_night_default: 'Many figures are announcements or expectations and some include food and beverage outlets. Industry case studies that describe two bottles a night are the lower view; enter your own figure where you have it.',
+      client_water_pretreatment_2026: 'Swisspro, written answer to the project team, 9 Nov 2026. Shown under the water supply question of the proposal form.',
       extra_cost_per_bottle_default: 'Enter your own figure under Adjust the assumptions, for example boat transport and waste removal at island resorts.',
       other_bottles_per_day_default: 'Enter your own figure under Adjust the assumptions.',
     };

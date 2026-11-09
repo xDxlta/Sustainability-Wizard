@@ -72,7 +72,7 @@ test('bottle price options: "not sure" first, every reference band, then custom'
 });
 
 test('register integrity: kinds, statuses, URLs, rules, assumption notes', () => {
-  const kinds = ['sourced', 'sourced-secondary', 'derived', 'assumption', 'constant'];
+  const kinds = ['sourced', 'sourced-secondary', 'client-statement', 'derived', 'assumption', 'constant'];
   Object.keys(F.factors).forEach(k => {
     const f = F.factors[k];
     assert.ok(kinds.includes(f.kind), k + ' kind');

@@ -275,6 +275,8 @@
     root.appendChild(el('section', { class: 'verdict verdict-' + v.tone, id: 'lead' },
       el('p', { class: 'verdict-head', text: v.head }),
       v.sub ? el('p', { class: 'verdict-sub', text: v.sub }) : null));
+    var wsn = R.waterSupplyNotes(state.proposal.source);
+    if (wsn.result) root.appendChild(el('p', { class: 'notice', id: 'pretreatment', text: wsn.result }));
 
     var tiles = el('div', { class: 'tiles' }), pb0 = c.payback, pr0 = ctx.pr, all = ctx.calcAll;
     function tile(label, value, sub, cls) {
@@ -541,6 +543,7 @@
     var ol = el('ol', { class: 'args' });
     args.order.forEach(function (x) {
       var li = el('li', {}, el('strong', { text: x.title }), ' ' + x.why);
+      if (x.key === 'safety' && R.waterSupplyNotes(state.proposal.source).argument) li.appendChild(el('span', { class: 'small args-note', id: 'tank-note', text: ' ' + R.waterSupplyNotes(state.proposal.source).argument }));
       if (x.key === 'safety' && args.cheapWater && note) li.appendChild(el('span', { class: 'small muted args-note' }, ' ' + ctx.n.country.name + ': ' + note.text + ' ', el('a', { href: note.url, target: '_blank', rel: 'noopener', text: note.source })));
       ol.appendChild(li);
     });
@@ -654,6 +657,7 @@
     L.push('Wanted: ' + rec.segment.areas.join(', ') + (rec.segment.temps ? '; ' + rec.segment.temps + ' water in the room' : '') + '.');
     var extra = []; if (p.source) extra.push('Water supply: ' + (R.LABELS.source[p.source] || p.source)); if (p.halal) extra.push('Halal certificate requested'); if (p.timing) extra.push('Timing: ' + R.LABELS.timing[p.timing]); if (p.approval) extra.push('Approval by: ' + R.LABELS.approval[p.approval]);
     if (extra.length) L.push(extra.join('. ') + '.');
+    var wsNote = R.waterSupplyNotes(p.source).result; if (wsNote) L.push(wsNote);
     L.push('');
     L.push('Indicative figures per year');
     L.push('- Bottles avoided: ' + fmt.int(c.bottles.total) + ' (' + fmt.int(c.env.litres) + ' litres)');
@@ -685,9 +689,10 @@
       var d = el('div', {});
       d.appendChild(el('label', { for: 'pf-' + f.id, text: f.label + (REQUIRED[f.id] ? '' : ' (optional)') }));
       if (f.type === 'select') {
-        var sel = el('select', { class: 'input', id: 'pf-' + f.id, onchange: function (e) { p[f.id] = e.target.value; save(); } });
+        var sel = el('select', { class: 'input', id: 'pf-' + f.id, onchange: function (e) { p[f.id] = e.target.value; save(); if (f.rerender) { renderResults(); var pr = document.getElementById('pf-' + f.id); if (pr) { pr.scrollIntoView({ block: 'center' }); pr.focus(); } } } });
         f.options.forEach(function (o) { var opt = el('option', { value: o.id, text: o.label }); if ((p[f.id] || '') === o.id) opt.selected = true; sel.appendChild(opt); });
         d.appendChild(sel);
+        if (f.help) d.appendChild(el('span', { class: 'hint', text: f.help }));
       } else {
         d.appendChild(el('input', { class: 'input', id: 'pf-' + f.id, type: f.type, placeholder: REQUIRED[f.id] ? 'Required' : '', required: REQUIRED[f.id] ? 'required' : null, autocomplete: f.id === 'email' ? 'email' : (f.id === 'name' ? 'name' : (f.id === 'phone' ? 'tel' : 'organization')), value: p[f.id] || '', oninput: function (e) { p[f.id] = e.target.value; save(); } }));
       }

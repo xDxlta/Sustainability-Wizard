@@ -26,6 +26,10 @@
   with "Enter our price" Rp9,750, Kuala Lumpur 5-star). Benchmark and acceptance tests print the payback per
   country at defaults, at the closest-match occupancy and at the foodservice or premium reference.
 - "1 months" now reads "1 month".
+- Water supply and pre-treatment (client statement, Swisspro, 9 Nov 2026): help text under "Water supply" in
+  the proposal form; "Own well or treatment plant" adds a pre-treatment check line to the result (under the
+  lead, printed on the owner sheet) and to the summary text; "Mains via storage tank" adds the storage-tank
+  argument under water safety in More. New register kind `client-statement`.
 
 ## Version 2.2 (branch claude/wizard-v2), 2 November 2026
 

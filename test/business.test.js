@@ -111,7 +111,7 @@ test('five-year view crosses at the payback; per-room-per-month is arithmetic on
 test('5. provenance: every factor has provenance and the Westin case is in the register and on the sources page', () => {
   Object.keys(F.factors).forEach(k => {
     const f = F.factors[k];
-    assert.ok(['sourced', 'sourced-secondary', 'derived', 'assumption', 'constant'].includes(f.kind), k);
+    assert.ok(['sourced', 'sourced-secondary', 'client-statement', 'derived', 'assumption', 'constant'].includes(f.kind), k);
     assert.ok(f.source || f.note || f.kind === 'constant' || f.kind === 'derived', k + ' has no provenance');
   });
   const w = F.factors.westin_case_2024;
@@ -226,4 +226,18 @@ test('benchmark per country: defaults, 3 bottles with the closest-match occupanc
     out.push(code + ': defaults ' + y(d.cashPaybackYears) + ' / ' + y(d.fullPaybackYears) + ' | closest ' + y(c.cashPaybackYears) + ' / ' + y(c.fullPaybackYears) + ' | ' + (alt ? alt.tier : 'no reference') + ' ' + (p ? y(p.cashPaybackYears) + ' / ' + y(p.fullPaybackYears) : '-'));
   }
   console.log('    payback in years, cash / including staff time freed\n    ' + out.join('\n    '));
+});
+
+test('water supply (client statement, 9 Nov 2026): own well asks to check the pre-treatment, a storage tank adds an argument', () => {
+  const c = F.factors.client_water_pretreatment_2026;
+  assert.equal(c.kind, 'client-statement');
+  assert.equal(c.source.publisher, 'Swisspro');
+  assert.equal(c.source.date, '2026-11-09');
+  assert.equal(R.waterSupplyNotes('well').result, 'Please check your pre-treatment (particle and activated carbon filtration) before installation.');
+  assert.equal(R.waterSupplyNotes('well').argument, null);
+  assert.equal(R.waterSupplyNotes('tank').argument, 'A filter at the tap also covers the storage tanks and pipes after your pre-treatment.');
+  assert.equal(R.waterSupplyNotes('tank').result, null);
+  ['mains', '', undefined].forEach(v => assert.deepEqual(R.waterSupplyNotes(v), { result: null, argument: null }));
+  const Q = require('../js/questions.js');
+  assert.match(Q.proposalFields.find(f => f.id === 'source').help, /reverse osmosis is usually not needed/);
 });

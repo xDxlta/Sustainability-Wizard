@@ -68,6 +68,11 @@ Choice rules where sources disagree (applied once per factor): see `js/factors.j
 | Safely managed drinking water, Philippines | 48 % (2022) | https://documents1.worldbank.org/curated/en/099060525091012191/pdf/P510359-d6d250a7-d2a8-46a2-a626-c0f00e8436f8.pdf (World Bank, citing JMP) | "as of 2022, 48 percent of the population has access to safely managed water" | no | A tap-water guide gives 53 %, which is a different indicator |
 | Safely managed drinking water, Malaysia | 95 % (2024) | https://sdg6data.org/en/country-or-area/Malaysia (UN-Water SDG 6 portal, JMP indicator 6.1.1) | "95% (2024)" | no | Above the world share, so not shown on the result page |
 
+## Client statements
+| Statement | Use in the wizard | Source | Status |
+| --- | --- | --- | --- |
+| "Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained." | Help text under "Water supply" in the proposal form; "Own well or treatment plant" adds the line "Please check your pre-treatment (particle and activated carbon filtration) before installation." to the result and the summary text; "Mains via storage tank" adds "A filter at the tap also covers the storage tanks and pipes after your pre-treatment." under water safety in More | Swisspro, written answer to the project team, 9 Nov 2026 (register: `client_water_pretreatment_2026`, kind `client-statement`) | client-reported; the written answer is held by the team |
+
 ## Occupancy closest matches (status team-checked; links to be pasted by the team)
 Shown only after "Not sure" on occupancy, in the dropdown "Closest match" (default: national average). The
 values come from the documents below; the register has `url: null` until the team pastes the link.

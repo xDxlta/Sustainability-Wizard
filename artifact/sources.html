@@ -506,6 +506,11 @@ table.products td:nth-child(3) { width: 30%; }
     },
     extra_cost_per_bottle_default: { value: 0, unit: 'local currency per bottle', kind: 'assumption', label: 'Extra cost per bottle for delivery, storage and disposal', note: 'No published figure; 0 unless the hotel enters its own (for example boat transport and waste removal at island resorts). Added to the price per bottle in the savings.' },
     other_bottles_per_day_default: { value: 0, unit: 'bottles a day outside guest rooms', kind: 'assumption', label: 'Bottles used outside guest rooms per day', note: 'No published figure; 0 unless the hotel enters its own (meeting rooms, staff, outlets). Counted in bottles, plastic, CO2e and handling time, and as the saving of the drinking-station block.' },
+    client_water_pretreatment_2026: {
+      value: 'Written answer, 9 Nov 2026', unit: '', kind: 'client-statement', status: 'client-reported', label: 'Water supply and pre-treatment (client statement)',
+      source: { publisher: 'Swisspro', title: 'Written answer to the project team', quote: 'Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained.', year: '2026', date: '2026-11-09' },
+      note: 'Swisspro, written answer to the project team, 9 Nov 2026. Used for the help text under the water supply question of the proposal form, the pre-treatment line for own wells or treatment plants, and the storage-tank argument.'
+    },
     westin_case_2024: {
       value: 2, unit: 'years to break even, Westin Singapore, 305 guest rooms', kind: 'sourced-secondary', label: 'Reference case: Westin Singapore (Swisspro, 2024)',
       source: { publisher: 'Final Presentation 2024, Swisspro student team', title: 'p. 13 and p. 44, figures provided by Swisspro', quote: 'Upfront investment S$42,700 (305 x S$140 simple tap); yearly filter change S$19,825 (305 x S$65 per filter, not including service, one change per room per year); plastic bottles S$40,640 a year (243,840 bottles at S$0.17); break-even in about 2 years', year: '2024' },
@@ -748,7 +753,7 @@ table.products td:nth-child(3) { width: 30%; }
   (function () {
     var F = window.SW.factors, PL = window.SW.pricelist;
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function kindWord(f) { return f.kind === 'assumption' ? 'Assumption, adjustable' : (f.kind === 'derived' ? 'Derived' : (f.kind === 'constant' ? 'Constant' : (f.kind === 'sourced-secondary' ? 'Reference case' : 'Reference value'))); }
+    function kindWord(f) { return f.kind === 'assumption' ? 'Assumption, adjustable' : (f.kind === 'derived' ? 'Derived' : (f.kind === 'constant' ? 'Constant' : (f.kind === 'sourced-secondary' ? 'Reference case' : (f.kind === 'client-statement' ? 'Client statement' : 'Reference value')))); }
     function src(s) { if (!s) return ''; return '<p class="small muted">' + esc(s.publisher || '') + (s.title ? ', ' + esc(s.title) : '') + (s.year ? ' (' + esc(s.year) + ')' : '') + (s.url ? '. <a href="' + esc(s.url) + '" rel="noopener">Open the source</a>' : '') + '</p>' + (s.url ? '' : (s.quote ? '<p class="small">' + esc(s.quote) + '</p>' : '')); }
     function val(v, unit) { if (typeof v === 'number') return (Math.abs(v) < 1 && v !== 0 ? String(Number(v.toPrecision(4))) : (Math.round(v * 1000) / 1000).toLocaleString('en-US')) + ' ' + esc(unit || ''); return esc(v) + ' ' + esc(unit || ''); }
     var PUBLIC_NOTES = {
@@ -762,6 +767,7 @@ table.products td:nth-child(3) { width: 30%; }
       stock_weeks_default: 'Sets the peak number of pallets in the store and the delivery frequency.',
       working_hours_per_fte_year: '40 hours x 52 weeks.',
       bottles_per_room_night_default: 'Many figures are announcements or expectations and some include food and beverage outlets. Industry case studies that describe two bottles a night are the lower view; enter your own figure where you have it.',
+      client_water_pretreatment_2026: 'Swisspro, written answer to the project team, 9 Nov 2026. Shown under the water supply question of the proposal form.',
       extra_cost_per_bottle_default: 'Enter your own figure under Adjust the assumptions, for example boat transport and waste removal at island resorts.',
       other_bottles_per_day_default: 'Enter your own figure under Adjust the assumptions.',
     };

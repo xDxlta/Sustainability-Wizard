@@ -60,7 +60,7 @@
     ] },
     { id: 'email', type: 'email', label: 'Work email', placeholder: 'Optional' },
     { id: 'phone', type: 'tel', label: 'Phone', placeholder: 'Optional' },
-    { id: 'source', type: 'select', label: 'Water supply', options: [
+    { id: 'source', type: 'select', label: 'Water supply', help: 'Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained.', rerender: true, options: [
       { id: '', label: 'Not sure' }, { id: 'mains', label: 'Municipal mains' }, { id: 'tank', label: 'Mains via storage tank' }, { id: 'well', label: 'Own well or treatment plant' }
     ] },
     { id: 'halal', type: 'select', label: 'Halal certificate', options: [

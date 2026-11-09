@@ -18,7 +18,7 @@ const scenarios = {
   kl_luxury_150: { country: 'MY', rooms: '150', occupancy: 'default', current: 'glass_bought', bottlesPerRoomNight: '2', bottleSizeMl: '330', priceBand: 'custom', priceCustom: '2.50', areas: ['rooms', 'fnb', 'meetings'], temps: 'sparkling', _otherBottles: 40, _proposal: { name: 'Demo User', hotel: 'Demo Luxury Hotel Kuala Lumpur', email: 'demo@example.com', source: 'tank', halal: 'yes', timing: '3to12', approval: 'owner' }, _capex: 450000 },
   surabaya_select_250: { country: 'ID', rooms: '250', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '600', priceBand: 'unknown', areas: ['rooms', 'boh'], temps: 'cold', _proposal: { hotel: 'Demo Select Hotel Surabaya' } },
   kl_5star_200: { country: 'MY', rooms: '200', occupancy: 'default', occupancyRef: 'kl5', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient', _proposal: { hotel: 'Demo Five-Star Hotel Kuala Lumpur' } },
-  manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila' } }
+  manila_premium_300: { country: 'PH', rooms: '300', occupancy: 'default', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms', 'fnb', 'meetings', 'boh'], temps: 'hotcold', _proposal: { hotel: 'Demo Premium Hotel Manila', source: 'well' } }
 };
 
 (async () => {
@@ -120,6 +120,8 @@ const scenarios = {
       const prop = answers._proposal || {};
       for (const [k, v] of Object.entries(prop)) { const sel = await page.$(`select#pf-${k}`); if (sel) await page.selectOption(`#pf-${k}`, v); else if (await page.$(`#pf-${k}`)) await page.fill(`#pf-${k}`, v); }
       const details = await page.$$('details'); for (const d of details) { await d.evaluate(e => e.open = true); }
+      if (prop.source === 'well') { const ok = await page.evaluate(() => /Please check your pre-treatment/.test(document.body.innerText) && /Please check your pre-treatment/.test(window.SW.app.summaryText(window.SW.app.compute()))); if (!ok) errors.push('pre-treatment line missing for own well'); }
+      if (prop.source === 'tank') { if (!(await page.$('#tank-note'))) errors.push('storage-tank argument missing'); }
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
       ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });

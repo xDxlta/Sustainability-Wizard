@@ -55,6 +55,8 @@ mass-market references); guest rooms only; ambient.
 "Print for the owner (PDF)": lead, tiles, business case, five-year view and calculation path on two A4
 pages. Then the request form: hotel, segment, rooms and contact are required; the email draft carries the
 same figures.
+Choose "Own well or treatment plant" as the water supply: the result asks to check the pre-treatment
+(particle and activated carbon filtration). "Mains via storage tank" adds the storage-tank argument under More.
 
 ## 6. Transparency (30 s)
 Open "Sources": every factor with its source, the public hotel cases behind 3 bottles per room-night, the
