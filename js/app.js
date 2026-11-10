@@ -106,7 +106,7 @@
         var group = el('div', { class: 'options' + shape, style: '--n:' + opts.length + ';--rest:' + (opts.length - 1), role: f.type === 'single' ? 'radiogroup' : 'group', 'aria-labelledby': f.label ? 'lbl-' + f.id : 'step-title' });
         opts.forEach(function (o) {
           var selected = f.type === 'single' ? a[f.id] === o.id : has(a[f.id], o.id);
-          group.appendChild(el('button', { type: 'button', class: 'opt' + (selected ? ' selected' : ''), role: f.type === 'single' ? 'radio' : 'checkbox', 'aria-checked': selected ? 'true' : 'false', 'data-opt': o.id,
+          group.appendChild(el('button', { type: 'button', class: 'opt' + (selected ? ' selected' : '') + (o.desc && o.desc.length > 40 ? ' opt-long' : ''), role: f.type === 'single' ? 'radio' : 'checkbox', 'aria-checked': selected ? 'true' : 'false', 'data-opt': o.id,
             onclick: function () {
               if (f.type === 'single') a[f.id] = o.id;
               else { var cur = (a[f.id] || []).slice(); if (has(cur, o.id)) cur.splice(cur.indexOf(o.id), 1); else cur.push(o.id); a[f.id] = cur; }
@@ -259,7 +259,7 @@
     var root = el('div', { class: 'results' });
     var occAssumed = prov.occupancy.kind !== 'user', bpnAssumed = prov.bottlesPerRoomNight.kind !== 'user', sizeAssumed = prov.bottleSizeMl.kind !== 'user';
     var facts = [
-      fmt.pct(inp.occupancy) + ' occupancy' + (occAssumed ? ' (national average)' : ''),
+      fmt.pct(inp.occupancy) + ' occupancy' + (prov.occupancy.closest ? ' (' + prov.occupancy.label.replace(' (', ', ').replace(/\)$/, '') + ')' : (occAssumed ? ' (national average)' : '')),
       rec.segment.current,
       inp.bottlesPerRoomNight ? inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per night' + (bpnAssumed || sizeAssumed ? ' (assumed)' : '') : null,
       inp.pricePerBottle > 0 ? fmt.money(inp.symbol, inp.pricePerBottle, inp.decimals === 0 ? 0 : 2) + ' per bottle' + (prov.pricePerBottle.kind !== 'user' ? ' (reference price)' : '') : null,
@@ -280,7 +280,7 @@
 
     var tiles = el('div', { class: 'tiles' }), pb0 = c.payback, pr0 = ctx.pr, all = ctx.calcAll;
     function tile(label, value, sub, cls) {
-      return el('div', { class: 'tile' + (cls ? ' ' + cls : '') }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length >= 9 ? ' value-long' : ''), text: value }), el('div', { class: 'sub', text: sub || '' }));
+      return el('div', { class: 'tile' + (cls ? ' ' + cls : '') }, el('div', { class: 'label', text: label }), el('div', { class: 'value' + (String(value).length >= 12 ? ' value-long' : ''), text: value }), el('div', { class: 'sub', text: sub || '' }));
     }
     var envLine = [];
     if (pr0.cashShort) {

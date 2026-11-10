@@ -1,9 +1,14 @@
 ---
 name: swisspro-design
-description: Design rules for anything built for Swisspro's website (the Sustainability Wizard and future pages). Use before changing styles.css, page layout, components or on-page copy, and before building any new Swisspro page. Covers brand tokens and how to read them from the live site, layout grid, components, copy rules and a checklist against generic AI-built website patterns.
+description: Design rules for anything built for Swisspro's website (the Sustainability Wizard and future pages). The design language is Apple's Human Interface Guidelines applied to the web. Use before changing styles.css, page layout, components or on-page copy, and before building any new Swisspro page. Covers tokens, components, how to read the brand values from the live site, copy rules and checks.
 ---
 
 # Swisspro design
+
+Design language since 10 Nov 2026: Apple Human Interface Guidelines, applied to the web. Read
+`references/apple-web.md` first; it holds the principles, tokens and components. The working method
+(plan, check against the brief, build, critique on screenshots) is the vendored `frontend-design` skill.
+Where this file and `references/apple-web.md` differ, `references/apple-web.md` wins.
 
 The wizard must look like a part of Swisspro's own website, not like a separate product. When the
 two disagree, the live site wins.

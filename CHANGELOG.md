@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 2.4 (branch claude/wizard-v2), 10 November 2026
+
+- Redesign in Apple's design language (Human Interface Guidelines applied to the web): system font, light
+  grey page with white panels and no borders or shadows, one interactive colour, pill buttons, sticky
+  translucent header, step indicator with three bars, segmented controls for short choices, inset grouped
+  lists with checkmarks for longer ones, circles for multi-select, centred intro and result headline,
+  tiles on a shared row grid so the numbers line up, chevron disclosures, single-column request form.
+- Fixes found in the screenshot review: occupancy closest match now shown in the answer line (it said
+  "national average"), step labels aligned, number field and "Not sure" the same height.
+- Skills: Anthropic's `frontend-design` skill vendored in `.claude/skills/frontend-design` (Apache 2.0);
+  `swisspro-design` updated with `references/apple-web.md`, written from the Apple HIG via the index in
+  raintree-technology/apple-hig-skills (MIT).
+
 ## Version 2.3 (branch claude/wizard-v2), 7 November 2026
 
 - Bottles per occupied room-night: default 3 (was 2), derived from nine public hotel cases (470 to 1,460
