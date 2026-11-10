@@ -87,7 +87,7 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
     const pages = (pdf.match(/\/Type\s*\/Page[^s]/g) || []).length;
     const checks = {
       payback: has(/Cash payback/),
-      annualSaving: has(/Net cash saving, per year/),
+      annualSaving: has(/Net saving, a year/),
       calculationPath: /Occupied room-nights/.test(printText) && /=/.test(printText),
       leadInPrint: !!printText.match(/Pays for itself|Saves about|per occupied room-night|Your guest rooms use/),
       fiveYearInPrint: /Five years: bottled water against Swisspro/.test(printText),
@@ -104,6 +104,7 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
     const send = await page.$('#proposal .btn-primary');
     await send.click(); await page.waitForTimeout(100);
     const required = await page.$$eval('#proposal .error:not([hidden])', els => els.map(e => e.id.replace('perr-', '')));
+    await page.$$eval('#proposal details', ds => ds.forEach(d => { d.open = true; }));
     const fill = { name: 'Test Person', hotel: 'Test Hotel', email: 'test@example.com', phone: '+60 3 1234 5678' };
     for (const [k, v] of Object.entries(fill)) if (await page.$('#pf-' + k)) await page.fill('#pf-' + k, v);
     if (await page.$('#pf-segment')) await page.selectOption('#pf-segment', { index: 2 });

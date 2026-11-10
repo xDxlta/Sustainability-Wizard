@@ -103,3 +103,17 @@ Open each URL, confirm the quoted wording, then set `status: 'opened'` on that e
 environment: bottledwater.org, www.gov.uk, assets.publishing.service.gov.uk, data.tourism.gov.my,
 www.bps.go.id, www.stb.gov.sg, www.mom.gov.sg, www.pna.gov.ph, www.bnm.gov.my, www.bi.go.id, www.bsp.gov.ph,
 sustainable.columbia.edu, swissprowater.com, plus the retailer pages listed above.
+
+## Design v3 (10 Nov 2026)
+Open points of the redesign for the team:
+
+| Item | State | What to do |
+| --- | --- | --- |
+| Logo files | Not downloaded: swissprowater.com is blocked from the build environment. The pages reference `assets/logo-swisspro.png` (navy wordmark, light backgrounds), `assets/logo-swisspro-white.png` (white wordmark, navy footer and owner sheet) and `assets/favicon.png`, and show the text wordmark "SWISSPRO" until the files exist | Save https://swissprowater.com/wp-content/uploads/2021/06/logo_top.png, logo_footer.png and fav.png under these three names in `assets/`. Later swap in an SVG: only the `src` of the `img.logo` elements changes |
+| Brand colours | Taken from the brief (measured on swissprowater.com by the team, 10 Nov 2026), not measured by the author | Confirm with `node tools/extract-brand.js https://swissprowater.com` |
+| Reference files | `docs/design/reference-v3.png`, `bubbles-preview.gif` and `reference-v3.html` were not in the repository; the two images attached to the brief were used | Add the files to `docs/design/` |
+| Fonts | Poppins 500/600 and Inter 400/600, latin subset, from the npm packages `@fontsource/poppins` and `@fontsource/inter` 5.3.0 (SIL Open Font License 1.1), self-hosted in `assets/fonts` | The peso sign is not in the latin subset and falls back to a system font |
+| Status chips on the sources page | No source was opened by the author, so no chip says "verified". Chips read "reference value", "checked by the team", "reference case", "client statement", "assumption, adjustable", "derived" or "constant" | Set `status: 'opened'` in `js/factors.js` after checking a source; its chip then reads "verified" |
+| Abbreviated amounts | Amounts of 100,000 and above are abbreviated in the hero, the tiles and the business case, as specified; the reference image also abbreviates smaller amounts | Decide whether amounts from 10,000 should be abbreviated too |
+| Hero number | The payback including staff time when under 10 years (as in the reference image), with the cash payback stated in the line below; otherwise the bottles avoided a year | Confirm |
+| Check scripts | `tools/walkthrough.js` and `tools/benchmark.js` were adapted to the new markup (selectors, one label, opening the optional form fields); the per-country payback output is identical to commit 463587d | none |

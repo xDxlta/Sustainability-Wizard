@@ -1,5 +1,30 @@
 # Changelog
 
+## Version 3.0 (branch claude/wizard-v2), 10 November 2026: Swisspro design
+
+No calculation, factor, source, question or default changed; the 50 tests pass unchanged and the
+per-country benchmark output is identical to commit 463587d.
+
+- Brand: Swisspro navy, lake blue as the one interactive colour, glacier tints, gold as a thin accent,
+  Poppins and Inter self-hosted (no external requests). White sticky header with the logo (text wordmark
+  until the official files are added), navy footer.
+- Water character: layered wave edge and rising glass bubbles (CSS only, three depth layers) on the intro
+  hero and the result hero; bubbles pause when the page is hidden and stand still under reduced motion.
+- Intro: navy hero with headline, one paragraph, "Start the wizard", a line of facts and a preview card.
+- Steps: three-segment progress, tiles for short options, grouped rows with a check for long lists,
+  "Not sure" as a checkbox under the tiles, occupancy as a field with a % suffix and a "Not sure" checkbox
+  that opens "Closest match", "Enter our price" opens its input inside the row, "Back" on every step.
+- Results: one navy hero with the payback (staff time included, cash payback in the line below; bottles
+  avoided when no payback under 10 years), four tiles, "Request a proposal" and "Print for the owner".
+  Business case in five rows with one disclosure for per room, five-year chart and calculation. Set-up with
+  the base case as the main card, upgrades and drinking stations as rows. More, Adjust the assumptions and
+  Where the numbers come from as one grouped list. Proposal form with four visible fields, sticky on
+  desktop, a bottom bar on phones. Desktop page about 1,500 to 2,000 px collapsed (was about 3,900).
+- Numbers: "RM 0.81", "SGD 140", "Rp 496M", minus sign instead of red, "1,090 h", "1.5 t".
+- Owner sheet: own print layout with navy header strip, payback and tiles, business case, five-year table,
+  calculation and contact; one to two A4 pages.
+- Sources page: 760 px column, one row per source with a status chip.
+
 ## Version 2.4 (branch claude/wizard-v2), 10 November 2026
 
 - Redesign in Apple's design language (Human Interface Guidelines applied to the web): system font, light

@@ -5,10 +5,10 @@ description: Design rules for anything built for Swisspro's website (the Sustain
 
 # Swisspro design
 
-Design language since 10 Nov 2026: Apple Human Interface Guidelines, applied to the web. Read
-`references/apple-web.md` first; it holds the principles, tokens and components. The working method
-(plan, check against the brief, build, critique on screenshots) is the vendored `frontend-design` skill.
-Where this file and `references/apple-web.md` differ, `references/apple-web.md` wins.
+Design v3 (10 Nov 2026) is the Swisspro brand design: navy, lake blue, glacier tints, gold accent, Poppins and
+Inter, waves and glass bubbles on the two navy panels. The tokens and their rules are at the top of `styles.css`;
+the brief is summarised in CHANGELOG.md (Version 3.0) and open points are in VERIFY.md (Design v3). The sections
+below and `references/apple-web.md` describe the earlier neutral design and apply only where they do not conflict.
 
 The wizard must look like a part of Swisspro's own website, not like a separate product. When the
 two disagree, the live site wins.
@@ -86,4 +86,3 @@ no left accent stripe on callouts, no pill chips for plain facts, no filler copy
 2. `node tools/walkthrough.js` (three scenarios, desktop and phone, overflow and jargon checks)
 3. Look at the screenshots in `docs/screenshots` and `tools/out` at full size and go through the
    checklist in `references/anti-ai-tells.md`.
-4. `node tools/build-artifact.js` for the hosted preview.

@@ -62,7 +62,6 @@ js/questions.js       the three steps and the optional proposal fields
 js/app.js             UI rendering, local storage, proposal summary
 test/*.test.js        node --test unit tests (32)
 tools/walkthrough.js  headless Chromium end-to-end run with screenshots (three market scenarios)
-tools/build-artifact.js single-file build for hosted previews
 VERIFY.md             every factor with value, URL, quote and whether the page was opened
 CHANGELOG.md          changes against version 1
 docs/                 methodology, research notes, demo script, pricing how-to, open items, screenshots

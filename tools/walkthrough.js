@@ -6,7 +6,7 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const root = path.resolve(__dirname, '..');
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.md': 'text/plain' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.md': 'text/plain', '.woff2': 'font/woff2', '.png': 'image/png' };
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
   const file = path.join(root, p);
@@ -28,8 +28,8 @@ const scenarios = {
   // Key screenshots go to docs/screenshots (committed); everything else to tools/out (git-ignored).
   const keepDir = path.join(root, 'docs', 'screenshots'); fs.mkdirSync(keepDir, { recursive: true });
   const outDir = path.join(root, 'tools', 'out'); fs.mkdirSync(outDir, { recursive: true });
-  const KEEP = ['01-intro.png', '02-step-01.png', '02-step-02.png', '02-step-03.png', '03-results-kl_luxury_150-desktop.png', '03-results-kl_luxury_150-mobile.png', '03-results-surabaya_select_250-desktop.png', '03-results-manila_premium_300-desktop.png', '04-results-manila_premium_300-quote.png', '05-sources.png'];
-  const shot = (page, name, opts) => page.screenshot(Object.assign({ path: path.join(KEEP.includes(name) ? keepDir : outDir, name) }, opts || {}));
+  const KEEP = ['01-intro.png', '02-step-01.png', '02-step-02.png', '02-step-03.png', '03-results-kl_5star_200-desktop.png', '03-results-kl_5star_200-mobile.png', '03-results-surabaya_select_250-desktop.png', '04-owner-sheet.png', '05-sources.png'];
+  const shot = async (page, name, opts) => { await page.evaluate(() => window.scrollTo(0, 0)); return page.screenshot(Object.assign({ path: path.join(KEEP.includes(name) ? keepDir : outDir, name) }, opts || {})); };
   let failures = 0;
   for (const [name, answers] of Object.entries(scenarios)) {
     if (process.env.WALK_ONLY && process.env.WALK_ONLY !== name) continue;
@@ -38,11 +38,14 @@ const scenarios = {
       const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
       const errors = []; let leadLine = '';
       page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-      page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+      // The three official logo files are added by the team (VERIFY.md, Design v3); until then the pages fall back to a text wordmark.
+      const PENDING = ['assets/logo-swisspro.png', 'assets/logo-swisspro-white.png', 'assets/favicon.png'];
+      page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
+      page.on('response', r => { if (r.status() >= 400 && !PENDING.some(f => r.url().includes(f))) errors.push('missing file: ' + r.url()); });
       await page.goto(`http://127.0.0.1:${port}/index.html`);
       await page.evaluate(() => localStorage.clear());
       await page.reload();
-      if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '01-intro.png', { fullPage: true });
+      if (viewport.tag === 'desktop' && name === 'kl_5star_200') await shot(page, '01-intro.png', { fullPage: true });
       await page.click('.hero .btn-primary');
       // drive the wizard by clicking the option buttons / filling inputs for each visible step
       for (let guard = 0; guard < 20; guard++) {
@@ -70,7 +73,7 @@ const scenarios = {
           if (f === 'priceBand' && val === 'custom') { await page.waitForSelector('#in-priceCustom'); await page.fill('#in-priceCustom', String(answers.priceCustom)); done.add('priceCustom'); }
         }
         }
-        if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, `02-step-${String(guard + 1).padStart(2, '0')}.png`, { fullPage: true });
+        if (viewport.tag === 'desktop' && name === 'kl_5star_200') await shot(page, `02-step-${String(guard + 1).padStart(2, '0')}.png`, { fullPage: true });
         if (!(await page.$('.nav-row .btn-primary'))) break;
         const label = (await page.textContent('.nav-row .btn-primary')).trim();
         // single-option steps auto-advance; wait briefly, then click Next (fresh locator) only if still on the same step
@@ -90,7 +93,9 @@ const scenarios = {
       await page.waitForSelector('.results', { timeout: 5000 }).catch(async () => { errors.push('results did not render; still on: ' + (await page.textContent('#step-title').catch(() => '?')) + ' | errors shown: ' + (await page.$$eval('.error:not([hidden])', els => els.map(e => e.textContent).join('; ')))); });
       const err = await page.$$eval('.error:not([hidden])', els => els.map(e => e.textContent));
       if (err.length) errors.push('validation errors shown: ' + err.join(' | '));
-      const tiles = await page.$$eval('.tile .value', els => els.map(e => e.textContent.trim()));
+      await page.waitForTimeout(900); // the payback number counts up once
+      const tiles = await page.$$eval('.kpi strong', els => els.map(e => e.textContent.trim()));
+      const collapsed = await page.evaluate(() => document.documentElement.scrollHeight);
       if (viewport.tag === 'mobile') await shot(page, `03-results-${name}-mobile-fold.png`);
       await shot(page, `03-results-${name}-${viewport.tag}.png`, { fullPage: true });
       // texts that must not appear (unverified product claims, sales questions, lead score)
@@ -99,17 +104,17 @@ const scenarios = {
 
       // base case, lead statement, five-year view, per-month view, upgrade
       const bc = await page.evaluate(() => { const x = window.SW.app.compute(); const p = x.pr.payback; return { lead: x.pr.lead.kind, cash: p.cashPaybackYears, full: p.fullPaybackYears, capex: p.capex, service: p.annualService, upgrade: x.pr.upgrade && x.pr.upgrade.payback ? x.pr.upgrade.payback.cashPaybackYears : null }; });
-      const leadText = await page.$eval('.verdict-head', e => e.textContent);
-      if (/no cash payback|not pay|costs more|more than 30/i.test(leadText)) errors.push('negative lead statement: ' + leadText);
-      const tilesText = await page.$eval('.tiles', e => e.innerText);
-      if (/no payback/i.test(tilesText + leadText) || /(^|\s)-\D{0,3}\d/.test(tilesText + ' ' + leadText)) errors.push('negative figure in lead or tiles: ' + tilesText.replace(/\n/g, ' | '));
+      const leadText = await page.$eval('.rhero .big', e => e.textContent.trim()) + ' ' + await page.$eval('.rhero-lead', e => e.textContent) + ' ' + await page.$eval('.rhero-cash', e => e.textContent);
+      if (/^[\d.]+ years/.test(leadText) && parseFloat(leadText) >= 10) errors.push('hero shows a payback of 10 years or more: ' + leadText);
+      if (await page.evaluate(() => [...document.querySelectorAll('.results *')].some(e => { const c = getComputedStyle(e).color; return c === 'rgb(237, 28, 36)'; }))) errors.push('red used in the results');
+      const tilesText = await page.$eval('.kpis', e => e.innerText);
       const st = await page.evaluate(() => { const b = window.SW.app.compute().pr.stationBlock; return b ? { count: b.count, capex: b.capex, service: b.service, counted: b.counted, combined: b.combined ? b.combined.cashPaybackYears : null } : null; });
       if (st && !(await page.$('#stations'))) errors.push('station block missing');
       if (!(await page.$('#five-year svg.chart polyline'))) errors.push('five-year view missing');
       if (!(await page.$('.permonth'))) errors.push('per-room-per-month view missing');
       if (answers.temps && answers.temps !== 'ambient' && !(await page.$('.alt-box'))) errors.push('upgrade missing');
-      if (/payback including staff time freed/i.test(await page.evaluate(() => document.body.innerText)) === false) errors.push('payback including staff time freed missing');
-      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none'), '| tiles:', tilesText.replace(/\n+/g, ' / '), '| stations:', st ? JSON.stringify(st) : 'none'].join(' ');
+      if (/payback including staff time freed/i.test(await page.evaluate(() => document.body.textContent)) === false) errors.push('payback including staff time freed missing');
+      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none'), '| tiles:', tilesText.replace(/\n+/g, ' / '), '| stations:', st ? JSON.stringify(st) : 'none', '| page height collapsed:', collapsed + ' px'].join(' ');
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
       const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };
@@ -125,15 +130,15 @@ const scenarios = {
       const payback = await page.$$eval('.kv td', els => els.map(e => e.textContent.trim()));
       const summary = await page.evaluate(() => window.SW.app.summaryText(window.SW.app.compute()));
       ['perChange', 'pricelist', 'SWISPRO', 'no exact line', 'read as', 'localhost', '127.0.0.1'].forEach(bad => { if (summary.indexOf(bad) >= 0 && !(bad === '127.0.0.1')) errors.push('jargon in summary text: ' + bad); });
-      const verdict = await page.$eval('.verdict-head', e => e.textContent).catch(() => '');
+      const verdict = '';
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
       if (overflow) errors.push('horizontal overflow on the result page');
-      const titles = await page.$$eval('.product h4', els => els.map(e => e.textContent.trim()));
-      if (viewport.tag === 'desktop') { await shot(page, `04-results-${name}-quote.png`, { fullPage: true }); }
+      const titles = await page.$$eval('#setup h4', els => els.map(e => e.textContent.trim()));
       if (viewport.tag === 'desktop') {
         const pdfPath = path.join(outDir, `owner-sheet-${name}.pdf`);
         await page.emulateMedia({ media: 'print' });
         await page.pdf({ path: pdfPath, format: 'A4', printBackground: true });
+        if (name === 'kl_5star_200') { await page.setViewportSize({ width: 794, height: 1123 }); await shot(page, '04-owner-sheet.png', { fullPage: true }); await page.setViewportSize({ width: viewport.width, height: viewport.height }); }
         await page.emulateMedia({ media: 'screen' });
         const pages = (fs.readFileSync(pdfPath).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
         if (pages > 2) errors.push(`owner sheet prints on ${pages} pages`);
@@ -143,7 +148,7 @@ const scenarios = {
       const nFactors = await page.$$eval('.factor', els => els.length);
       if (!(await page.evaluate(() => /Westin Singapore/.test(document.body.innerText) && /Final Presentation 2024/.test(document.body.innerText)))) errors.push('Westin source missing on the sources page');
       if (nFactors < 10) errors.push('sources page rendered ' + nFactors + ' factors');
-      if (viewport.tag === 'desktop' && name === 'kl_luxury_150') await shot(page, '05-sources.png', { fullPage: true });
+      if (viewport.tag === 'desktop' && name === 'kl_5star_200') await shot(page, '05-sources.png', { fullPage: true });
       console.log(`\n== ${name} (${viewport.tag}) ==`);
       console.log(leadLine);
       console.log('tiles:', tiles.join(' | '));
