@@ -1,0 +1,119 @@
+# VERIFY.md: every factor, its value, URL, quoted wording, and whether the page was opened
+
+Status on 30 October 2026: the build environment could not open any external page (every host was
+denied by the network policy). Therefore **no sourced web value has been verified by the author by
+opening its page**. Each such row says "opened: no". The quoted wording is what a search-engine
+excerpt of the page returned; it must be checked against the page before the wizard goes live.
+The wizard labels these values "Sourced, unverified" in the UI and in `js/factors.js`.
+
+Two kinds of rows are different: values the project team opened or reported themselves ("opened: team")
+and the price-list lines, which the team transcribed verbatim from the PDF ("source: price list").
+To verify from outside this environment: repository `xDxlta/Sustainability-Wizard`, branch
+`claude/wizard-v2`, this file, plus `js/factors.js` for the exact values. After checking a row, set
+`status: 'opened'` on the entry in `js/factors.js` and paste the confirmed wording into the row.
+
+Choice rules where sources disagree (applied once per factor): see `js/factors.js` (`rules`) and the
+"Choice rule" column.
+
+| Factor | Value used | URL | Quoted wording (from excerpt) | Opened | Choice rule / note |
+| --- | --- | --- | --- | --- | --- |
+| Empty 500 ml PET bottle weight | 9.89 g | https://bottledwater.org/?p=652 | "the average 16.9-ounce PET bottle fell 48 percent to 9.89 grams between 2000 and 2014" | no | IBWA/BMC 2014 average; a 2015 IBWA release revised the series to 9.25 g |
+| PET emission factor | 3,861.58 kg CO2e/t | https://greencalculus.com/data/defra-emission-factors/ (official: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025) | "PET primary production value of 3861.58251 kg CO2e per tonne, with a closed-loop figure of 2211.58251" | no | Newest UK Government set (2025), PET primary incl. forming; other third-party quotes 3,121 to 4,032 |
+| Average petrol car | 0.16272 kg CO2e/km | https://greencalculus.com/guides/defra-conversion-factors-what-changed/ | "Average car, petrol ... kg CO2e per km \| 0.16272" | no | 2025 set |
+| Glass bottle emission factor | 0.061 kg CO2e per litre (glass scenario) | https://sustainable.columbia.edu/sites/default/files/content/Documents/1-s2.0-S0959652616311234-main.pdf (Garfi et al. 2016, J. Cleaner Production 137, 997-1003) | exact wording still to be pasted here by the team (value reported as "0,061 kg CO2 pro Liter") | team (30 Oct 2026) | Study assumes glass bottles reused 8 times; applied per litre to every glass answer, understates single-use glass |
+| Bottles per carton | 24 | https://www.water.com/fr-ca/product/pure-life-water-plastic-bottle-16-oz-24-pack-pallet/ | "packs of 24 ... 78 cases, or 1,872 bottles, per pallet" | no | |
+| Bottles per pallet (500 ml) | 1,872 | same | same | no | Costco/Niagara list 1,920 |
+| Pallet footprint | 1.2 m2 | https://palletgauge.com/pallet-size-comparison | "1200 x 1000 mm - 1.200 m2" | no | |
+| Occupancy Malaysia | 56.8 % (2025) | https://data.tourism.gov.my/frontend/pdf/Infographic_paid_accommodation_performance_jan-dec2025.pdf | "Malaysia 2025 - 56.8%, 2024 - 54.9%" | no | Newest official national full-year figure |
+| Occupancy Indonesia | 48.66 % (Jan-Nov 2025, star hotels) | https://ekonomi.bisnis.com/read/20260105/12/1941619/okupansi-hotel-berbintang-masih-turun-107-yoy-per-november-2025 (BPS) | "Secara kumulatif Januari hingga November 2025, BPS mencatat TPK hotel bintang sebesar 48,66%" | no | Official year-to-date figure; Dec 2025 alone 56.12 % |
+| Occupancy Philippines | 60 % (2025) | https://www.bworldonline.com/?p=743528 (Leechiu Property Consultants) | "Hotel occupancy in 2025 remained at 60%, flat year on year, and still below the 68% recorded in 2019" | no | No official national series found; newest named consultancy |
+| Occupancy Singapore | 81.9 % (2025) | https://www.stb.gov.sg/about-stb/media-publications/media-centre/record-singapore-tourism-receipts-from-january-to-september-2025/ | "hotel occupancy of 81.9% for 2025, up from 81.4% in 2024" | no | Newest official national full-year figure |
+| Wage Malaysia | RM1,700/month | https://www.skrine.com/insights/alerts/december-2024/minimum-wages-order-2024-gazetted | "Employers with fewer than five staff ... had until 1 August 2025 to move to RM1,700" | no | Statutory minimum wage 2025 |
+| Wage Indonesia | Rp2,996,561/month (UMP Bali 2025) | https://www.hukumonline.com/berita/a/ump-2025-se-Indonesia-lt68d3bc774d628/ | "Bali Rp2.996.561 (naik Rp179.889 dibandingkan UMP 2024)" | no | Provincial minimum wage of the largest leisure market; Jakarta Rp5,396,761, East Java Rp2,305,985, Surabaya UMK Rp4,961,753 (all unverified) |
+| Wage Philippines | PHP 695/day (NCR, from 18 Jul 2025) | https://www.pna.gov.ph/articles/1254675 | "Wage Order NCR-26 raised the non-agriculture daily minimum in Metro Manila from P645 to P695, and the P50 increase took effect July 18, 2025" | no | Statutory minimum wage of the capital region |
+| Wage Singapore | S$1,910/month (PWM cleaner, from 1 Jul 2025) | https://www.mom.gov.sg/employment-practices/progressive-wage-model/cleaning-sector | "General Cleaner Indoor Cleaner ... $1,910 (from 1 July 2025)" | no | No general minimum wage; sector floor as proxy |
+| Bottle price Malaysia, mass market (typical: used for "Not sure") | RM14.60 / 24 (Desa 500 ml); RM15.95 / 24 (Cactus 500 ml); RM22.75 / 24 (Cactus 500 ml, B2B wholesale Yee Lee Trading on Borong); RM27.86 / 24 (Spritzer 550 ml, dealer price, Lapasar) | https://acewater.my/price-list-2/ ; https://www.foodservicemalaysia.com/ourproducts/cid/277768/cat/beverage-water/ ; https://market.borong.com/v/yeelee/product/Cactus-Mineral-Water-24-x-500-ml-24-Units-Per-Carton/27577 ; https://mall.lapasar.com/products/spritzer-spritzer-natural-mineral-water-carton-24-x-550ml/128473 | "RM14.60"; "RM15.95"; "MYR 22.75 / Carton"; RM27.86 dealer price | first two: no; last two: team (accessed 8 Nov 2026, pages undated) | Median of the four: RM0.81 per bottle |
+| Bottle price Malaysia, premium (option only) | RM175.20 / 24 (Acqua Panna 500 ml glass, B2B wholesale Asiaeuro on Borong) | https://market.borong.com/v/asiaeuro-wines-and-spirits/product/ACQUA-PANNA-Still-Natural-Mineral-Water-500ml-Crown-cap-KLANG-VALLEY-ONLY/139338 | "MYR 175.20 / Carton" | team (accessed 8 Nov 2026, page undated) | Never drives "Not sure" |
+| Bottle price Indonesia, mass market (typical) | Rp66,718 / 24 (Aqua 600 ml, average); Rp51,000 / 24 (Aqua 600 ml, lowest); Rp52,500 / 24 (Aqua 330 ml, listings Rp47,190 to 60,000); Rp60,760 / 24 (Le Minerale 600 ml, listings Rp60,760 to 73,000) | https://www.blibli.com/jual/akua-600-ml-per-dus ; https://www.tokopedia.com/find/aqua-330ml-1-dus ; https://www.tokopedia.com/find/le-minerale-600ml-1-dus | marketplace listings, retail | first two: no; last two: team (accessed 8 Nov 2026, live listings) | Median of the four: Rp2,360 per bottle. Mass-brand prices are retail; hotels buying from distributors likely pay less |
+| Bottle price Indonesia, foodservice (option only) | Rp9,000 per 380 ml bottle (Equity, regular Rp10,000, B2B foodservice Indoguna) | https://shop.indoguna.co.id/en/products/equity-mineral-water-380-ml-air-minum-mineral | "The listed price is for a 380ml package" | team (accessed 8 Nov 2026) | Never drives "Not sure" |
+| Bottle price Indonesia, premium (option only) | Rp270,000 / 12 (Equil 380 ml, aggregator price guide, retail, 30 Mar 2025) | https://harga.web.id/harga-1-botol-equil-air-mineral-premium.info | price guide | team (accessed 8 Nov 2026) | Never drives "Not sure" |
+| Bottle price Philippines, mass market (typical) | PHP 334.57 / 24 (Absolute); PHP 366.17 / 24 (Wilkins) | https://www.merrymartwholesale.com/products/absolute-distilled-water-500ml-1-case-includes-24-pcs-500ml ; https://www.merrymartwholesale.com/products/wilkins-distilled-500ml-1-case-includes-24pcs-500ml | "P334.57 /CS"; "P366.17 /CS" | no | same |
+| Bottle price Singapore | S$8.64 / 24 (Pere Ocean, mass market, typical); S$56.40 / 24 (Evian regular price, premium, option only) | https://www.pereocean.com/pere-ocean-natural-mineral-water-500ml ; https://www.fairprice.com.sg/category/mineral-water | "S$8.64"; regular price S$56.40 (promotion S$34.95 not used) | no | "Not sure" = S$0.36 (Pere Ocean only). Before 2.3 the median included the Evian promotion, an artefact |
+| Exchange rate MYR | 4.0745 per USD (28 Oct 2026) | https://malaymail.com/news/money/2026/10/28/ringgit-ends-higher-against-greenback-on-confidence-in-malaysias-fundamentals/241025 | "rose to 4.0745/0790 against the US dollar" | no | Central bank (BNM) page not openable; financial press used |
+| Exchange rate IDR | 18,147.4 per USD (26 Oct 2026) | https://www.morningstar.com/markets/currencies | "Indonesian Rupiah USD-IDR 18,147.4000 as of October 26" | no | Bank Indonesia page not openable |
+| Exchange rate PHP | 63.453 per USD (26 Oct 2026) | https://taxcalculator.com.ph/exchange-rates (BSP bulletin) | "US$1 = P63.4530 on the bulletin of 26 October 2026" | no | BSP reference rate via secondary site |
+| Exchange rate SGD | 1.28025 per USD (26 Oct 2026) | https://www.mtfxgroup.com/tools/historical-currency-exchange-rates/usd-to-sgd-rate/ | "1 USD = 1.28025 SGD on October 26, 2026" | no | Also used to convert the price list (assumed SGD) |
+| Bottles per room-night, "2 bottles" view (kept in the note) | 2 | https://www.aquablu.com/stories/the-future-of-hospitality-embracing-sustainability-in-hotels ; https://topiawater.com/case-study-streamline-200/ ; https://www.swissotel-singapore-stamford.com/the-hotel/blog/sustainability-at-fairmont-singapore-swissotel-the-stamford/ | "two bottles a night"; "two 750 ml bottles per room per day"; "reduced 1.5 million single-use plastic bottles per year" | no | Assumption; these pages only support it |
+| Bottles per room-night case: The Westin Kuala Lumpur | 903 bottles per room and year | https://www.malaysianfoodie.com/2022/10/rethinking-tourism-experience-a-green-take-on-sustainability-at-marriott-bonvoy-hotels-and-resorts.html | over 400,000 bottles a year, 443 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: Hard Rock Hotel Bali | 957 bottles per room and year | https://hotel.hardrock.com/bali/hardrockhotelbali-new-waterbottlingplant-to-reduce-singleuse-plastic.aspx | over 400,000 a year expected, 418 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: W Singapore Sentosa Cove | 1458 bottles per room and year | https://www.visitsingapore.com/content/dam/mice2-0/venues/w-singapore/w_singapore-sustainability.pdf | over 350,000 a year expected (rooms), 240 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: Eaton Hotel Hong Kong | 753 bottles per room and year | https://www.asiatraveltips.com/news13/189-EatonHotel.shtml | about 350,000 a year, 465 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: Prince Hotel Da Nang | 659 bottles per room and year | https://www.thailand-business-news.com/pr-news/coway-vina-installs-164-water-purifiers-at-prince-hotel-da-nang-accelerating-vietnam-hospitality-b2b-expansion | about 108,000 a year, 164 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: Caravelle Saigon | 601 bottles per room and year | https://www.asiatraveltips.com/news19/1411-CaravelleSaigon.shtml | 200,000 a year expected, about 333 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: Hyatt Regency Hong Kong Sha Tin | 555 bottles per room and year | https://www.thestandard.com.hk/news/article/62152/Hotels-welcome-green-initiative | about 6,000 a week, 562 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: New World Saigon | 526 bottles per room and year | https://en.prnasia.com/releases/apac/coway-vina-installs-542-water-purifiers-across-all-guest-rooms-at-new-world-saigon-hotel-to-cut-285-000-reusable-glass-bottles-annually-544294.shtml | over 285,000 a year, 542 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Bottles per room-night case: Shangri-La Mactan | 472 bottles per room and year | https://philstar.com/lifestyle/travel-and-tourism/2014/05/11/1321626/shangri-las-mactan-breaks-ground-water-bottling-plant | 250,000 a year expected, 530 rooms | team (31 Oct 2026) | Supports the default of 3 per occupied room-night |
+| Market context Malaysia | roadmap vision | https://www.pmo.gov.my/wp-content/uploads/2019/07/Malaysia-Roadmap-Towards-Zero-Single-Use-Plastics-2018-2030-m-min.pdf | "zero single-use plastics for a cleaner and healthier environment in Malaysia by 2030" | no | |
+| Market context Indonesia | Bali Circular Letter 9/2025; PDAM study | https://www.socialexpat.net/bali-governor-bans-single-use-plastic-bottled-water-under-one-litre/ ; https://ideas.repec.org/a/gam/jsusta/v16y2024i16p7082-d1458770.html | "bans producing, distributing, and selling single-use plastic bottled water under one litre"; "sporadic microbial contamination was detected due to the depletion of residual chlorine" | no | |
+| Market context Philippines | RA 11898; Boracay Ordinance 386 | https://lawphil.net/statutes/repacts/ra2022/ra_11898_2022.html ; https://denr.gov.ph/news-events/denr-backs-ordinance-banning-single-use-plastics-in-boracay/ | "50% for the footprint generated in 2025, 60% for 2026, 70% for 2027, and 80% from 2028 onward" (secondary guide); "prohibits the use of single-use or disposable plastic items by hotels, resorts, restaurants and establishments in the accommodation business" | no | |
+| Market context Singapore | STB roadmap | https://www.stb.gov.sg/about-stb/media-publications/media-centre/launch-of-the-hotel-sustainability-roadmap-by-stb-and-sha/ | "60% of hotel room stock in Singapore to attain internationally-recognised hotel sustainability certification by 2025" | no | |
+| Price list, In-Room products | SMART Classic+ 140.00; SAN Classic+ 350.00; CLIMA Unico+ (Hot, Ambient) 780.00; CLIMA Versa+ (Hot, Cold) 980.00 | docs/Swisspro_Price_List.pdf, Hospitality section, PDF dated 16 Sep 2026, prices excl. GST | lines transcribed verbatim in `js/pricelist.js` (label, description, price) | price list (lines provided by the team, 30 Oct 2026) | Currency not printed: SGD assumed |
+| Price list, F&B / Drinking Station products | SMART Classic 350.00; CLIMA Unico 750.00; CLIMA Versa 890.00; CLIMA Mesa 1,299.00; CLIMA Piso 1,399.00; CLIMA Vida 1,399.00; CLIMA Vida S 1,599.00; Triple Tap + Icebank (90L/hr) 5,999.00 (New Product) | same | same | price list (team) | Water types in parentheses as printed drive the matching; Triple Tap prints none |
+| Price list, In-Room servicing | Comprehensive SUPERSWISS Replacement 85.00 ("2 or 3 Year Contract Price with labour and change of parts", comment "Original Price average"); Ala-Carte 70.00 (delivery only); UPGRADE Comprehensive 90.00 (3 year contract + free faucet) | same | same | price list (team) | The 85.00 line states no interval: three readings under Adjust, default (since 2.2) one change per room and year, as in the Westin Singapore case below; previously per change every 9 months (most conservative) |
+| Price list, F&B servicing | 3 STAGE REPLACEMENT Ala Carte 80.00; Quarterly 350.00 ("4x Replace CleanswissP, Carboswiss, Clean/Replace Ceraswiss") | same | same | price list (team) | Quarterly line used as the yearly price per station |
+| Filter change interval, residential section | 9 months | docs/Swisspro_Price_List.pdf, residential section | line not transcribed; reported by the team ("die Endkundenliste nennt einen Wechsel alle 9 Monate") | team-reported (30 Oct 2026) | Used only by the "per change every 9 months" reading, which is no longer the default; adjustable |
+| Westin Singapore reference case (secondary source) | 305 guest rooms; investment S$42,700 (305 x S$140 simple tap); yearly filter change S$19,825 (305 x S$65 per filter, not including service, one change per room per year); plastic bottles S$40,640 a year (243,840 bottles at S$0.17); break-even about 2 years | Final Presentation 2024, Swisspro student team, p. 13 and p. 44, figures provided by Swisspro (not in the repository) | as provided in the task brief of 1 Nov 2026 | no (team document, to be checked against p. 13 and p. 44) | Register: `westin_case_2024` and `service_changes_per_room_year` (kind `sourced-secondary`). Source for the default of one filter change per room and year. S$0.17 is the rounded value of S$40,640 / 243,840 = S$0.1667 |
+| Safely managed drinking water, world | 73 % (2022) | https://data.unicef.org/topic/water-and-sanitation/drinking-water/ (WHO/UNICEF JMP) | "73 per cent of the global population used safely managed drinking water services in 2022" | no | Threshold: a market share is shown only when below the world share |
+| Safely managed drinking water, Indonesia | 30 % (2024) | https://www.sdg6data.org/country-or-area/Indonesia (WHO/UNICEF JMP via SDG 6 Data Portal) | "30% of the population uses a safely managed drinking water service (2024)" | no | Also the country note under More (water safety). The World Bank series gives 30.266 % for 2022 (CEIC) |
+| Safely managed drinking water, Philippines | 48 % (2022) | https://documents1.worldbank.org/curated/en/099060525091012191/pdf/P510359-d6d250a7-d2a8-46a2-a626-c0f00e8436f8.pdf (World Bank, citing JMP) | "as of 2022, 48 percent of the population has access to safely managed water" | no | A tap-water guide gives 53 %, which is a different indicator |
+| Safely managed drinking water, Malaysia | 95 % (2024) | https://sdg6data.org/en/country-or-area/Malaysia (UN-Water SDG 6 portal, JMP indicator 6.1.1) | "95% (2024)" | no | Above the world share, so not shown on the result page |
+
+## Client statements
+| Statement | Use in the wizard | Source | Status |
+| --- | --- | --- | --- |
+| "Most hotels run on city water with low TDS; reverse osmosis is usually not needed. A proper pre-treatment has at least particle pre-filtration and activated carbon. Rooftop storage tanks must be maintained." | Help text under "Water supply" in the proposal form; "Own well or treatment plant" adds the line "Please check your pre-treatment (particle and activated carbon filtration) before installation." to the result and the summary text; "Mains via storage tank" adds "A filter at the tap also covers the storage tanks and pipes after your pre-treatment." under water safety in More | Swisspro, written answer to the project team, 9 Nov 2026 (register: `client_water_pretreatment_2026`, kind `client-statement`) | client-reported; the written answer is held by the team |
+
+## Occupancy closest matches (status team-checked; links to be pasted by the team)
+Shown only after "Not sure" on occupancy, in the dropdown "Closest match" (default: national average). The
+values come from the documents below; the register has `url: null` until the team pastes the link.
+
+| Closest match | Value | Publisher and document | URL |
+| --- | --- | --- | --- |
+| Kuala Lumpur 5-star | 71.4 % (2025) | CBRE\|WTW, Klang Valley Hotel Snapshot 4Q25, p. 2 | to paste |
+| Kuala Lumpur 4 to 5-star | 63.3 % (1H 2025) | Knight Frank Malaysia, in YTL Hospitality REIT Annual Report 2025, pp. 50 to 51 | to paste |
+| Bali, star hotels | 60.7 % (2025) | BPS via GoodStats | to paste |
+| DKI Jakarta, star hotels | 53.43 % (2025) | BPS via GoodStats | to paste |
+| East Java, star hotels | 49.30 % (2025) | BPS via GoodStats | to paste |
+| Riau Islands, star hotels | 50.37 % (November 2025) | BPS Kepulauan Riau | to paste |
+| Metro Manila luxury | 86 % (Q1 2026) | JLL | to paste |
+
+On the public sources page the publishers are described generically (for example "property consultancy"),
+because user-facing text names no company beyond what was already there.
+
+## Not sourced at all (labelled assumptions, adjustable on the result page)
+Typical bottle price when "Not sure" (median of the market's mass-market references, derived), extra cost per bottle for delivery, storage and disposal (0 unless entered), bottles used outside guest rooms per day (0 unless entered), bottle weight scaling for other sizes, housekeeping minutes per room (1), handling
+minutes per carton (2), stock weeks (2), storage aisle multiplier (1), hours per FTE (2,080), reading of the
+85.00 service line (default: one change per room and year, Westin case; per 2-year contract and per change every 9 months selectable), price list currency (SGD), unit counts (1 per room,
+1 station per other area), cheap-water threshold for the argument order (US$0.25 per bottle), water types of
+SMART/SAN taps read as "ambient".
+
+## How to verify
+Open each URL, confirm the quoted wording, then set `status: 'opened'` on that entry in `js/factors.js`
+(the UI label changes from "Sourced, unverified" to "Sourced"). Hosts that must be allowed in a cloud
+environment: bottledwater.org, www.gov.uk, assets.publishing.service.gov.uk, data.tourism.gov.my,
+www.bps.go.id, www.stb.gov.sg, www.mom.gov.sg, www.pna.gov.ph, www.bnm.gov.my, www.bi.go.id, www.bsp.gov.ph,
+sustainable.columbia.edu, swissprowater.com, plus the retailer pages listed above.
+
+## Design v3 (10 Nov 2026)
+Open points of the redesign for the team:
+
+| Item | State | What to do |
+| --- | --- | --- |
+| Logo files | Not downloaded: swissprowater.com is blocked from the build environment. The pages reference `assets/logo-swisspro.png` (navy wordmark, light backgrounds), `assets/logo-swisspro-white.png` (white wordmark, navy footer and owner sheet) and `assets/favicon.png`, and show the text wordmark "SWISSPRO" until the files exist | Save https://swissprowater.com/wp-content/uploads/2021/06/logo_top.png, logo_footer.png and fav.png under these three names in `assets/`. Later swap in an SVG: only the `src` of the `img.logo` elements changes |
+| Brand colours | Taken from the brief (measured on swissprowater.com by the team, 10 Nov 2026), not measured by the author | Confirm with `node tools/extract-brand.js https://swissprowater.com` |
+| Reference files | `docs/design/reference-v3.png`, `bubbles-preview.gif` and `reference-v3.html` were not in the repository; the two images attached to the brief were used | Add the files to `docs/design/` |
+| Fonts | Poppins 500/600 and Inter 400/600, latin subset, from the npm packages `@fontsource/poppins` and `@fontsource/inter` 5.3.0 (SIL Open Font License 1.1), self-hosted in `assets/fonts` | The peso sign is not in the latin subset and falls back to a system font |
+| Status chips on the sources page | No source was opened by the author, so no chip says "verified". Chips read "reference value", "checked by the team", "reference case", "client statement", "assumption, adjustable", "derived" or "constant" | Set `status: 'opened'` in `js/factors.js` after checking a source; its chip then reads "verified" |
+| Abbreviated amounts | Amounts of 100,000 and above are abbreviated in the hero, the tiles and the business case, as specified; the reference image also abbreviates smaller amounts | Decide whether amounts from 10,000 should be abbreviated too |
+| Hero number | The payback including staff time when under 10 years (as in the reference image), with the cash payback stated in the line below; otherwise the bottles avoided a year | Confirm |
+| Check scripts | `tools/walkthrough.js` and `tools/benchmark.js` were adapted to the new markup (selectors, one label, opening the optional form fields); the per-country payback output is identical to commit 463587d | none |
