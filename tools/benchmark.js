@@ -27,11 +27,12 @@ function economics() {
     const alt = C.bottlePrices.find(b => b.tier === 'foodservice') || C.bottlePrices.find(b => b.tier === 'premium');
     const cases = [['defaults', base], ['3 bottles, closest-match occupancy', Object.assign({}, base, { bottlesPerRoomNight: '3', occupancyRef: CLOSEST[code] || undefined })]];
     if (alt) cases.push([alt.tier + ' reference (' + alt.label + ')', Object.assign({}, base, { priceBand: alt.id })]);
+    if (C.occupancyRefs && C.occupancyRefs.some(r => r.id === 'mar_apec')) cases.push(['3 bottles, Marriott Asia Pacific excl. China occupancy', Object.assign({}, base, { bottlesPerRoomNight: '3', occupancyRef: 'mar_apec' })]);
     for (const [name, a] of cases) {
       const n = M.normalise(F, a, {}); const calc = E.calculate(F, n.inputs); const bc = B.build({ F, PL, R, E }, a, {}, n.inputs, calc);
-      rows.push({ code, name, occupancy: fmt.pct(Math.round(n.inputs.occupancy * 1000) / 1000), price: fmt.money(n.inputs.symbol, n.inputs.pricePerBottle, n.inputs.decimals === 0 ? 0 : 2), cash: fmt.years(bc.payback.cashPaybackYears), full: fmt.years(bc.payback.fullPaybackYears), cashYears: bc.payback.cashPaybackYears });
+      rows.push({ code, name, occupancy: fmt.pct(Math.round(n.inputs.occupancy * 1000) / 1000), price: fmt.money(n.inputs.symbol, n.inputs.pricePerBottle, n.inputs.decimals === 0 ? 0 : 2), cash: fmt.years(bc.payback.cashPaybackYears), be3: bc.breakEven[1] ? (bc.breakEven[1].reached ? fmt.pct(Math.ceil(bc.breakEven[1].occupancy * 1000) / 1000) : 'not reached') : '-', full: fmt.years(bc.payback.fullPaybackYears), cashYears: bc.payback.cashPaybackYears });
     }
-    if (!alt) rows.push({ code, name: 'foodservice or premium reference', occupancy: '-', price: 'none in the register', cash: '-', full: '-' });
+    if (!alt) rows.push({ code, name: 'foodservice or premium reference', occupancy: '-', price: 'none in the register', cash: '-', be3: '-', full: '-' });
   }
   return rows;
 }
@@ -91,7 +92,7 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
       calculationPath: /Occupied room-nights/.test(printText) && /=/.test(printText),
       leadInPrint: !!printText.match(/Pays for itself|Saves about|per occupied room-night|Your guest rooms use/),
       fiveYearInPrint: /Five years: bottled water against Swisspro/.test(printText),
-      staffPaybackLabelled: /Payback including staff time freed/.test(printText),
+      staffPaybackLabelled: /With staff time/.test(printText) && /Break-even occupancy/.test(printText),
       plasticAfterMoney: posPlastic < 0 || (posMoney >= 0 && posMoney < posPlastic),
       printPagesMax2: pages > 0 && pages <= 2,
       printHasNoForm: !/Send the request to Swisspro/.test(printText)
@@ -119,6 +120,6 @@ const SECONDS_PER_TYPED = 10;   // typing a number the hotel knows (rooms)
   await browser.close(); server.close();
   results.sort((a, b) => a.id - b.id).forEach(r => console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.id}. ${r.name}\n      ${r.detail}`));
   console.log('\nPayback per country (250 rooms, free plastic bottles, basic tap, service one change per room and year)');
-  economics().forEach(r => console.log(`  ${r.code}  ${r.name.padEnd(58)} occupancy ${String(r.occupancy).padEnd(6)} price ${String(r.price).padEnd(14)} cash ${String(r.cash).padEnd(20)} incl. staff time ${r.full}`));
+  economics().forEach(r => console.log(`  ${r.code}  ${r.name.padEnd(58)} occupancy ${String(r.occupancy).padEnd(6)} price ${String(r.price).padEnd(14)} cash ${String(r.cash).padEnd(20)} 3-year break-even ${String(r.be3).padEnd(12)} with staff time ${r.full}`));
   process.exit(results.every(r => r.pass) ? 0 : 1);
 })();

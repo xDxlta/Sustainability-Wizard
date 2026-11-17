@@ -17,16 +17,18 @@ function run(answers, overrides) {
   return { n, calc, bc };
 }
 const NEGATIVE = /no cash payback|does not pay|not pay off|costs more|more than 30/i;
-const POSITIVE_KINDS = ['payback', 'payback-staff', 'saving', 'saving-staff', 'per-night', 'benefits'];
+const POSITIVE_KINDS = ['payback', 'saving', 'per-night', 'benefits'];
 
 test('1. Westin Singapore reproduction: 305 rooms, 243,840 bottles at S$0.17, basic tap', () => {
   const answers = { country: 'SG', rooms: '305', occupancy: '1', current: 'pet_free', bottlesPerRoomNight: '2', bottleSizeMl: '500', priceBand: 'custom', priceCustom: '0.17', areas: ['rooms'], temps: 'ambient' };
   const { calc, bc } = run(answers, { bottlesPerRoomNight: 243840 / (305 * 365) });
   assert.ok(Math.abs(calc.bottles.total - 243840) < 1e-6);
-  // investment: 305 x S$140 (SMART Classic+), list currency = SGD so no conversion
+  // investment: 305 x S$160 (SMART Classic+ incl. installation, management 13 Nov 2026); the 2024 case used the
+  // list price of S$140 (42,700), reproduced below with westin(); list currency = SGD so no conversion
   assert.equal(bc.lines.length, 1);
   assert.equal(bc.lines[0].product.id, 'ir_smart_plus');
-  assert.ok(Math.abs(bc.capexLocal - 42700) < 1e-6);
+  assert.equal(bc.lines[0].product.listPrice, 140);
+  assert.ok(Math.abs(bc.capexLocal - 305 * 160) < 1e-6);
   // bottled water a year: S$40,640 in the case; S$0.17 is that figure rounded (S$4 per 24 bottles), so within 2.5%
   assert.ok(Math.abs(calc.spend.annualLocal - 40640) / 40640 < 0.025, 'spend ' + calc.spend.annualLocal);
   // default service: one change per room and year at 85.00
@@ -67,7 +69,10 @@ test('lead statement never uses negative wording, for any outcome', () => {
    { available: true, cashPaybackYears: 12, fullPaybackYears: 4, cashSavingsPerYear: 10, fullSavingsPerYear: 15 },
    { available: true, cashPaybackYears: 9, fullPaybackYears: 8, cashSavingsPerYear: 10, fullSavingsPerYear: 12 },
    { available: false }].forEach(pb => assert.ok(POSITIVE_KINDS.includes(B.leadStatement(calc, pb, 100, 150).kind)));
-  assert.equal(B.leadStatement(calc, { available: true, cashPaybackYears: 12, fullPaybackYears: 4, cashSavingsPerYear: 10, fullSavingsPerYear: 15 }, 100, 90).kind, 'payback-staff');
+  // staff time never carries the lead: a payback of 4 years with staff time but 12 years cash leads with the cash saving
+  assert.equal(B.leadStatement(calc, { available: true, cashPaybackYears: 12, fullPaybackYears: 4, cashSavingsPerYear: 10, fullSavingsPerYear: 15 }, 100, 90).kind, 'saving');
+  // no cash saving but a positive saving with staff time: no staff-time lead either
+  assert.notEqual(B.leadStatement(calc, { available: true, cashPaybackYears: Infinity, fullPaybackYears: 20, cashSavingsPerYear: -1, fullSavingsPerYear: 4 }, 100, 101).kind, 'saving');
   const app = fs.readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
   const lead = app.slice(app.indexOf('function leadText'), app.indexOf('function renderResults'));
   assert.ok(!NEGATIVE.test(lead), 'lead texts contain negative wording');
@@ -169,7 +174,7 @@ test('Surabaya with the new defaults (3 bottles, typical price): positive lead, 
   assert.equal(n.inputs.bottlesPerRoomNight, 3);
   assert.ok(POSITIVE_KINDS.includes(bc.lead.kind));
   const rate = bc.rate.localPerList;
-  assert.ok(Math.abs(bc.capexLocal - 250 * 140 * rate) < 1e-3);
+  assert.ok(Math.abs(bc.capexLocal - 250 * 160 * rate) < 1e-3);
   assert.ok(Math.abs(bc.servicingLocal - 250 * 85 * rate) < 1e-3);
   assert.equal(bc.cashShort, bc.payback.cashPaybackYears <= 5);
 });
@@ -240,4 +245,64 @@ test('water supply (client statement, 9 Nov 2026): own well asks to check the pr
   ['mains', '', undefined].forEach(v => assert.deepEqual(R.waterSupplyNotes(v), { result: null, argument: null }));
   const Q = require('../js/questions.js');
   assert.match(Q.proposalFields.find(f => f.id === 'source').help, /reverse osmosis is usually not needed/);
+});
+
+const KL = { country: 'MY', rooms: '200', occupancy: 'default', occupancyRef: 'kl5', current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: '500', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient' };
+
+test('management feedback 13 Nov 2026: in-room tap at SGD 160 incl. installation, other products at list price', () => {
+  const tap = PL.byId(PL.pricelist.items, 'ir_smart_plus');
+  assert.equal(tap.price, 160);
+  assert.equal(tap.listPrice, 140);
+  assert.equal(tap.includesInstallation, true);
+  assert.equal(tap.priceSource.date, '2026-11-13');
+  assert.ok(/160/.test(tap.priceSource.quote));
+  assert.equal(PL.byId(PL.pricelist.items, 'ir_san_plus').price, 350);
+  assert.equal(PL.inRoomServicePerYear(), 85);
+});
+
+test('break-even occupancy: cash formula, 2, 3 and 5 years, and not reached above 100%', () => {
+  const { bc, n } = run(KL);
+  const inp = n.inputs, pb = bc.payback;
+  assert.deepEqual(bc.breakEven.map(b => b.years), [2, 3, 5]);
+  bc.breakEven.forEach(b => {
+    const expected = (pb.annualService / inp.rooms + pb.capex / inp.rooms / b.years) / (365 * inp.bottlesPerRoomNight * inp.pricePerBottle);
+    assert.ok(Math.abs(b.occupancy - expected) < 1e-12);
+    assert.equal(b.reached, b.occupancy <= 1);
+  });
+  // at the break-even occupancy the cash payback equals the horizon
+  const b3 = bc.breakEven[1];
+  const at = run(Object.assign({}, KL, { occupancy: String(b3.occupancy * 100), occupancyRef: undefined })).bc.payback;
+  assert.ok(Math.abs(at.cashPaybackYears - 3) < 1e-6, 'payback at break-even ' + at.cashPaybackYears);
+  // the longer the horizon, the lower the threshold
+  assert.ok(bc.breakEven[0].occupancy > bc.breakEven[1].occupancy && bc.breakEven[1].occupancy > bc.breakEven[2].occupancy);
+  const none = B.breakEvenOccupancy(100, 16000, 8500, 2, 0.1, 3);
+  assert.equal(none.reached, false);
+  assert.equal(B.breakEvenOccupancy(0, 1, 1, 1, 1, 3), null);
+  console.log('    KL 200 rooms: break-even occupancy ' + bc.breakEven.map(b => b.years + ' y ' + (b.occupancy * 100).toFixed(1) + '%').join(', '));
+});
+
+test('Marriott Asia Pacific excluding China occupancy reference (72.2%, 2025) in every market', () => {
+  ['MY', 'ID', 'PH', 'SG'].forEach(code => {
+    const r = F.countries[code].occupancyRefs.filter(x => x.id === 'mar_apec')[0];
+    assert.ok(r, code);
+    assert.equal(r.value, 0.722);
+    assert.equal(r.period, '2025');
+    assert.ok(/^https:\/\/marriott\.gcs-web\.com\//.test(r.url));
+  });
+  const { n } = run(Object.assign({}, KL, { country: 'SG', occupancyRef: 'mar_apec' }));
+  assert.equal(n.inputs.occupancy, 0.722);
+});
+
+test('KL example: the result hero and business case lead with the cash payback; staff time is extra information', () => {
+  const { bc, calc } = run(KL);
+  assert.equal(bc.lead.kind, 'payback');
+  assert.equal(bc.lead.years, bc.payback.cashPaybackYears);
+  assert.equal(bc.lead.saving, bc.payback.cashSavingsPerYear);
+  assert.ok(bc.payback.fullPaybackYears < bc.payback.cashPaybackYears);
+  const app = fs.readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  const hero = app.slice(app.indexOf('function heroModel'), app.indexOf('function contextLine'));
+  assert.ok(!/fullPaybackYears|fullSavingsPerYear/.test(hero), 'hero uses staff-time figures');
+  const rows = app.slice(app.indexOf('function businessRows'), app.indexOf('function serviceBasis'));
+  assert.ok(!/fullSavingsPerYear|labour/.test(rows), 'business rows use staff time');
+  console.log('    KL 200 rooms: bottles ' + Math.round(calc.bottles.total) + ', spend RM ' + Math.round(bc.calcRooms.spend.annualLocal) + ', service RM ' + Math.round(bc.servicingLocal) + ', net RM ' + Math.round(bc.payback.cashSavingsPerYear) + ', investment RM ' + Math.round(bc.capexLocal) + ', cash payback ' + bc.payback.cashPaybackYears.toFixed(2) + ' y, with staff time ' + bc.payback.fullPaybackYears.toFixed(2) + ' y');
 });

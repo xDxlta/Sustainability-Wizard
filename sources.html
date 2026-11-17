@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sources and assumptions - Swisspro Sustainability Wizard</title>
-  <link rel="stylesheet" href="styles.css?v=3.0">
+  <link rel="stylesheet" href="styles.css?v=3.1">
   <link rel="icon" href="assets/favicon.png" type="image/png">
 </head>
 <body>
@@ -34,9 +34,9 @@
       <p>Indicative estimate. <a href="index.html">Back to the wizard</a>. Swisspro Pte Ltd, Singapore. <a href="https://swissprowater.com" rel="noopener">swissprowater.com</a></p>
     </div>
   </footer>
-  <script src="js/factors.js?v=3.0"></script>
-  <script src="js/pricelist.js?v=3.0"></script>
-  <script src="js/format.js?v=3.0"></script>
+  <script src="js/factors.js?v=3.1"></script>
+  <script src="js/pricelist.js?v=3.1"></script>
+  <script src="js/format.js?v=3.1"></script>
   <script>
   (function () {
     var F = window.SW.factors, PL = window.SW.pricelist, fmt = window.SW.format;
@@ -97,10 +97,14 @@
     document.getElementById('markets').innerHTML = h;
 
     var pl = PL.pricelist, cur = pl.currency.value;
-    h = '<h2>Swisspro products and prices</h2><p class="hint">Products and prices come from the Hospitality section of the Swisspro price list dated ' + esc(pl.source.dated) + '. Prices are in ' + esc(cur) + ', exclude GST, installation, freight, duties and local taxes, and are converted to your currency with the exchange rates above. The base case is the basic in-room tap in every guest room; the unit that gives the water you asked for is shown as an upgrade, and each other area gets one drinking station.</p>';
+    h = '<h2>Swisspro products and prices</h2><p class="hint">Products and prices come from the Hospitality section of the Swisspro price list dated ' + esc(pl.source.dated) + '. Prices are in ' + esc(cur) + ', exclude GST, freight, duties and local taxes, and exclude installation unless noted. They are converted to your currency with the exchange rates above. The base case is the basic in-room tap in every guest room; the unit that gives the water you asked for is shown as an upgrade, and each other area gets one drinking station.</p>';
     h += '<div class="table-scroll"><table class="kv products"><tr><th>Section</th><th>Unit</th><th>Water</th><td class="head">Price</td></tr>';
-    pl.items.forEach(function (it) { h += '<tr><th scope="row">' + esc(PL.AREAS[it.area]) + '</th><td class="l">' + esc(it.label.replace(/\s*\(.*\)$/, '')) + '</td><td class="l">' + (it.temps.length ? esc(it.temps.map(function (t) { return { ambient: 'ambient', cold: 'chilled', hot: 'hot', sparkling: 'sparkling' }[t]; }).join(', ')) : 'as per proposal') + (it.mount === 'tap' ? ', filtered tap' : '') + '</td><td>' + esc(fmt.cur(cur, it.price, 2)) + '</td></tr>'; });
+    pl.items.forEach(function (it) { h += '<tr><th scope="row">' + esc(PL.AREAS[it.area]) + '</th><td class="l">' + esc(it.label.replace(/\s*\(.*\)$/, '')) + '</td><td class="l">' + (it.temps.length ? esc(it.temps.map(function (t) { return { ambient: 'ambient', cold: 'chilled', hot: 'hot', sparkling: 'sparkling' }[t]; }).join(', ')) : 'as per proposal') + (it.mount === 'tap' ? ', filtered tap' : '') + '</td><td>' + esc(fmt.cur(cur, it.price, 2)) + (it.includesInstallation ? ' incl. installation' : '') + '</td></tr>'; });
     h += '</table></div>';
+    pl.items.filter(function (it) { return it.priceSource; }).forEach(function (it) {
+      var ps = it.priceSource;
+      h += row(null, 'Price of the ' + it.label + ' in-room tap', chip(ps.kind, ps.status), esc(fmt.cur(cur, it.price, 2)) + ' per room, installation included', '<p class="src-meta">' + esc(ps.publisher) + ', ' + esc(ps.document) + ' (' + esc(ps.date) + '): "' + esc(ps.quote) + '".</p>', 'The price list dated ' + esc(pl.source.dated) + ' shows ' + esc(fmt.cur(cur, it.listPrice, 2)) + ' for the unit alone; the wizard uses the price including installation.');
+    });
     h += row(null, 'Service contract', '<span class="chip">price list</span>', 'In-room units: ' + esc(fmt.cur(cur, PL.inRoomServicePerYear(), 2)) + ' per unit and year. Drinking stations: ' + esc(fmt.cur(cur, PL.stationServicePerYear(), 2)) + ' per station and year.', '', 'In-room units: comprehensive replacement with labour and change of parts, ' + esc(fmt.cur(cur, PL.byId(pl.servicing.inRoom, 'sv_ir_comprehensive').price, 2)) + ' per filter change, with one change per room and year. The price basis and the interval can be changed under Adjust the assumptions on the result page. Drinking stations: quarterly three-stage replacement.');
     document.getElementById('swisspro').innerHTML = h;
   })();

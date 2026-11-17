@@ -30,7 +30,7 @@
     areas: AREAS,
     /* PRODUCT lines. area: 'inRoom' = "PRODUCT (In-Room)", 'fnb' = "PRODUCT (F&B, Drinking Station)". */
     items: [
-      { id: 'ir_smart_plus', area: 'inRoom', label: 'SMART Classic+', name: 'SWISPRO SMART CLASSIC N PLUS (SUPERSWISS PNP)', price: 140.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
+      { id: 'ir_smart_plus', area: 'inRoom', label: 'SMART Classic+', name: 'SWISPRO SMART CLASSIC N PLUS (SUPERSWISS PNP)', price: 160.00, listPrice: 140.00, includesInstallation: true, priceSource: { kind: 'client-statement', publisher: 'Swisspro management', document: 'Meeting with the project team', date: '2026-11-13', quote: 'we have a price base of 160', note: 'SGD 160 per room including installation. The price list dated 16 Sep 2026 prints SGD 140 for the unit alone.' }, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
       { id: 'ir_san_plus', area: 'inRoom', label: 'SAN Classic+', name: 'SWISPRO SAN CLASSIC PLUS (SUPERSWISS PNP)', price: 350.00, temps: ['ambient'], mount: 'tap', reading: 'no water type printed; a filtered tap gives ambient water' },
       { id: 'ir_unico_plus', area: 'inRoom', label: 'CLIMA Unico+ (Hot, Ambient)', name: 'SWISPRO CLIMA UNICO PLUS (SUPERSWISS PNP)', price: 780.00, temps: ['hot', 'ambient'], mount: null },
       { id: 'ir_versa_plus', area: 'inRoom', label: 'CLIMA Versa+ (Hot, Cold)', name: 'SWISPRO CLIMA VERSA PLUS (SUPERSWISS PNP)', price: 980.00, temps: ['hot', 'cold'], mount: null },

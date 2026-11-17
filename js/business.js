@@ -74,29 +74,41 @@
   }
 
   /**
-   * The strongest true statement, in this order of preference:
-   *   1. payback in years if it falls inside the five-year view (cash first, else including staff time freed);
-   *   2. otherwise the yearly saving (cash first, else including staff time freed);
-   *   3. otherwise cost per occupied room-night if Swisspro is lower (including staff time freed);
+   * The strongest true statement, cash only (management feedback, 13 Nov 2026: staff time is not booked
+   * as a cash saving, so it never carries the lead), in this order of preference:
+   *   1. cash payback in years if it falls inside the five-year view;
+   *   2. otherwise the yearly cash saving;
+   *   3. otherwise cost per occupied room-night if Swisspro is lower than the bottles alone;
    *   4. otherwise the benefits that hold: staff time freed, bottles and plastic avoided, and the market's
    *      share of safely managed drinking water where it is below the world share.
    * Never a negative statement.
    */
   function leadStatement(calc, pb, capex, service, safeWater, calcAll) {
     var all = calcAll || calc;
-    var spend = calc.spend.annualLocal, staff = calc.labour.quantified ? calc.labour.costLocal : 0, orn = calc.bottles.occupiedRoomNights;
+    var spend = calc.spend.annualLocal, orn = calc.bottles.occupiedRoomNights;
     if (pb.available && spend > 0) {
       if (isFinite(pb.cashPaybackYears) && pb.cashPaybackYears <= VIEW_YEARS) return { kind: 'payback', years: pb.cashPaybackYears, saving: pb.cashSavingsPerYear, fullYears: pb.fullPaybackYears };
-      if (isFinite(pb.fullPaybackYears) && pb.fullPaybackYears <= VIEW_YEARS) return { kind: 'payback-staff', years: pb.fullPaybackYears, cashYears: pb.cashPaybackYears, saving: pb.fullSavingsPerYear };
       if (pb.cashSavingsPerYear > 0) return { kind: 'saving', saving: pb.cashSavingsPerYear, cashYears: pb.cashPaybackYears };
-      if (pb.fullSavingsPerYear > 0) return { kind: 'saving-staff', saving: pb.fullSavingsPerYear, cashYears: pb.cashPaybackYears };
       if (orn > 0) {
-        var bottledNight = (spend + staff) / orn, swissNight = (service + capex / SPREAD_YEARS) / orn;
+        var bottledNight = spend / orn, swissNight = (service + capex / SPREAD_YEARS) / orn;
         if (swissNight < bottledNight) return { kind: 'per-night', swisspro: swissNight, bottled: bottledNight };
       }
     }
     return { kind: 'benefits', bottles: all.bottles.total, outside: all.bottles.total - calc.bottles.total, spend: spend, hours: all.labour.hours, staffValue: all.labour.quantified ? all.labour.costLocal : 0, safeWater: safeWater || null };
   }
+
+  /**
+   * Break-even occupancy, cash only: the occupancy from which the filters pay back within `years`.
+   *   occupancy = (service per room and year + investment per room / years) / (365 x bottles per occupied room-night x price per bottle)
+   * Price per bottle is the effective local price (bottle price plus any extra cost per bottle).
+   * Returns { years, occupancy, reached } where reached is false above 100%; null without the inputs.
+   */
+  function breakEvenOccupancy(rooms, capex, servicePerYear, bottlesPerNight, pricePerBottle, years) {
+    if (!(rooms > 0) || capex == null || !(bottlesPerNight > 0) || !(pricePerBottle > 0) || !(years > 0)) return null;
+    var occ = (servicePerYear / rooms + capex / rooms / years) / (365 * bottlesPerNight * pricePerBottle);
+    return { years: years, occupancy: occ, reached: occ <= 1 };
+  }
+  var BREAK_EVEN_YEARS = [2, 3, 5];
 
   /** True when the cash case pays back (finite payback); decides between money tiles and benefit tiles. */
   function cashPaysBack(pb) { return !!(pb && pb.available && isFinite(pb.cashPaybackYears)); }
@@ -183,9 +195,10 @@
       servicingListPerYear: baseSvc.listPerYear, servicingLocal: service, servicingSource: serviceSource,
       capexLocal: capex, capexSource: capexSource, lines: basePrice.lines, unpriced: basePrice.unpriced,
       payback: pb, cashPaysBack: cashPaysBack(pb), cashShort: cashShort(pb), upgrade: upgrade, stationBlock: stations, fiveYear: view, perRoomMonth: month, safeWater: safeWater,
-      lead: leadStatement(calcRooms, pb, capex == null ? 0 : capex, service, safeWater, calcAll)
+      lead: leadStatement(calcRooms, pb, capex == null ? 0 : capex, service, safeWater, calcAll),
+      breakEven: BREAK_EVEN_YEARS.map(function (y) { return breakEvenOccupancy(inputs.rooms, capex, service, inputs.bottlesPerRoomNight, calcRooms.spend.pricePerBottle, y); })
     };
   }
 
-  return { build: build, cashPaysBack: cashPaysBack, cashShort: cashShort, listRate: listRate, priceSolutions: priceSolutions, serviceFor: serviceFor, fiveYear: fiveYear, perRoomMonth: perRoomMonth, leadStatement: leadStatement, VIEW_YEARS: VIEW_YEARS, SPREAD_YEARS: SPREAD_YEARS };
+  return { build: build, cashPaysBack: cashPaysBack, cashShort: cashShort, listRate: listRate, priceSolutions: priceSolutions, serviceFor: serviceFor, fiveYear: fiveYear, perRoomMonth: perRoomMonth, leadStatement: leadStatement, breakEvenOccupancy: breakEvenOccupancy, BREAK_EVEN_YEARS: BREAK_EVEN_YEARS, VIEW_YEARS: VIEW_YEARS, SPREAD_YEARS: SPREAD_YEARS };
 });

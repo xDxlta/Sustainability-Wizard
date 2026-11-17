@@ -113,8 +113,13 @@ const scenarios = {
       if (!(await page.$('#five-year svg.chart polyline'))) errors.push('five-year view missing');
       if (!(await page.$('.permonth'))) errors.push('per-room-per-month view missing');
       if (answers.temps && answers.temps !== 'ambient' && !(await page.$('.alt-box'))) errors.push('upgrade missing');
-      if (/payback including staff time freed/i.test(await page.evaluate(() => document.body.textContent)) === false) errors.push('payback including staff time freed missing');
-      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| including staff time freed:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none'), '| tiles:', tilesText.replace(/\n+/g, ' / '), '| stations:', st ? JSON.stringify(st) : 'none', '| page height collapsed:', collapsed + ' px'].join(' ');
+      { const body = await page.evaluate(() => document.body.textContent);
+        if (bc.full != null && isFinite(bc.full) && !/With staff time/.test(body)) errors.push('secondary line with staff time missing');
+        if (!/the filters pay back within three years from|within three years is not reached/.test(body)) errors.push('break-even occupancy line missing');
+        if (!/Break-even occupancy, payback within 2 years/.test(body) || !/Break-even occupancy, payback within 5 years/.test(body)) errors.push('break-even occupancy for 2 and 5 years missing'); }
+      { const heroTxt = await page.$eval('.rhero', e => e.innerText).catch(() => '');
+        if (bc.cash != null && isFinite(bc.cash) && bc.cash < 10 && !/paid for themselves from the bottles saved/.test(heroTxt)) errors.push('hero does not lead with the cash payback'); }
+      leadLine = ['lead (defaults):', leadText, '| cash payback:', isFinite(bc.cash) ? bc.cash.toFixed(1) + ' years' : 'none', '| with staff time:', isFinite(bc.full) ? bc.full.toFixed(1) + ' years' : 'none', '| upgrade cash payback:', bc.upgrade == null ? '-' : (isFinite(bc.upgrade) ? bc.upgrade.toFixed(1) + ' years' : 'none'), '| tiles:', tilesText.replace(/\n+/g, ' / '), '| stations:', st ? JSON.stringify(st) : 'none', '| page height collapsed:', collapsed + ' px'].join(' ');
       // exercise the adjust panel, the proposal form and the investment input
       if (!(await page.$('.results'))) { console.log(`\n== ${name} (${viewport.tag}) ==\nERRORS:\n  ` + errors.join('\n  ')); failures++; await page.close(); continue; }
       const openAll = async () => { for (const d of await page.$$('details')) { await d.evaluate(e => e.open = true); } };

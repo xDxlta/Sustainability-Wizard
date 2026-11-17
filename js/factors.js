@@ -27,6 +27,8 @@
   };
 
   /* One rule per factor where sources disagree (stated once, applied everywhere). */
+  /* Occupancy reference shared by every market in Asia Pacific excluding China (management feedback, 13 Nov 2026). */
+  var OCC_MARRIOTT_APEC = { id: 'mar_apec', label: 'Marriott hotels, Asia Pacific excluding China', value: 0.722, period: '2025', kind: 'sourced', status: 'team-checked', publisher: 'Marriott International', document: 'Marriott International reports fourth quarter and full year 2025 results (10 Feb 2026), comparable systemwide international properties, Asia Pacific excluding China, full year 2025 occupancy', publicSource: 'Hotel group results release, full year 2025, comparable systemwide international properties, Asia Pacific excluding China', url: 'https://marriott.gcs-web.com/news-releases/news-release-details/marriott-international-reports-fourth-quarter-and-full-year-2025' };
   var rules = {
     occupancy: 'Newest official national occupancy figure for the latest full calendar year. If the official series covers only part of the year, the official year-to-date figure. If no official national series exists, the newest figure from a named consultancy.',
     wage: 'Statutory minimum wage in force in 2025 for the market. Indonesia uses the provincial minimum wage of Bali (largest leisure market); Jakarta and Surabaya alternatives are noted and adjustable.',
@@ -146,7 +148,8 @@
         source: { publisher: 'Tourism Malaysia', title: 'Paid Accommodation Survey performance January-December 2025 (infographic)', url: 'https://data.tourism.gov.my/frontend/pdf/Infographic_paid_accommodation_performance_jan-dec2025.pdf', quote: 'Malaysia 2025 - 56.8%, 2024 - 54.9%', year: '2025', accessed: ACCESSED } },
       occupancyRefs: [
         { id: 'kl5', label: 'Kuala Lumpur 5-star', value: 0.714, period: '2025', kind: 'sourced', status: 'team-checked', publisher: 'CBRE|WTW', document: 'Klang Valley Hotel Snapshot 4Q25, p. 2', publicSource: 'Property consultancy, Klang Valley hotel snapshot 4Q25', url: null },
-        { id: 'kl45', label: 'Kuala Lumpur 4 to 5-star', value: 0.633, period: '1H 2025', kind: 'sourced', status: 'team-checked', publisher: 'Knight Frank Malaysia, in YTL Hospitality REIT Annual Report 2025', document: 'YTL Hospitality REIT Annual Report 2025, pp. 50 to 51', publicSource: 'Property consultancy market report in a listed hotel trust annual report 2025', url: null }
+        { id: 'kl45', label: 'Kuala Lumpur 4 to 5-star', value: 0.633, period: '1H 2025', kind: 'sourced', status: 'team-checked', publisher: 'Knight Frank Malaysia, in YTL Hospitality REIT Annual Report 2025', document: 'YTL Hospitality REIT Annual Report 2025, pp. 50 to 51', publicSource: 'Property consultancy market report in a listed hotel trust annual report 2025', url: null },
+        OCC_MARRIOTT_APEC
       ],
       wageMonthly: { value: 1700, unit: 'MYR per month', kind: 'sourced', status: UNVERIFIED, rule: rules.wage, label: 'National minimum wage (Minimum Wages Order 2024)',
         source: { publisher: 'Skrine (law firm) summarising the Minimum Wages Order 2024, gazetted 4 Dec 2024', url: 'https://www.skrine.com/insights/alerts/december-2024/minimum-wages-order-2024-gazetted', quote: 'Employers with fewer than five staff ... had until 1 August 2025 to move to RM1,700', year: '2025', accessed: ACCESSED },
@@ -176,7 +179,8 @@
         { id: 'bali', label: 'Bali, star hotels', value: 0.607, period: '2025', kind: 'sourced', status: 'team-checked', publisher: 'BPS (Statistics Indonesia), via GoodStats', document: 'Star hotel room occupancy by province, 2025', publicSource: 'Statistics Indonesia, star hotel occupancy by province 2025', url: null },
         { id: 'jakarta', label: 'DKI Jakarta, star hotels', value: 0.5343, period: '2025', kind: 'sourced', status: 'team-checked', publisher: 'BPS (Statistics Indonesia), via GoodStats', document: 'Star hotel room occupancy by province, 2025', publicSource: 'Statistics Indonesia, star hotel occupancy by province 2025', url: null },
         { id: 'eastjava', label: 'East Java, star hotels', value: 0.4930, period: '2025', kind: 'sourced', status: 'team-checked', publisher: 'BPS (Statistics Indonesia), via GoodStats', document: 'Star hotel room occupancy by province, 2025', publicSource: 'Statistics Indonesia, star hotel occupancy by province 2025', url: null },
-        { id: 'riau', label: 'Riau Islands, star hotels', value: 0.5037, period: 'November 2025', kind: 'sourced', status: 'team-checked', publisher: 'BPS Kepulauan Riau', document: 'Star hotel room occupancy, November 2025', publicSource: 'Statistics Indonesia, Riau Islands office, November 2025', url: null }
+        { id: 'riau', label: 'Riau Islands, star hotels', value: 0.5037, period: 'November 2025', kind: 'sourced', status: 'team-checked', publisher: 'BPS Kepulauan Riau', document: 'Star hotel room occupancy, November 2025', publicSource: 'Statistics Indonesia, Riau Islands office, November 2025', url: null },
+        OCC_MARRIOTT_APEC
       ],
       wageMonthly: { value: 2996561, unit: 'IDR per month', kind: 'sourced', status: UNVERIFIED, rule: rules.wage, label: 'Provincial minimum wage (UMP) Bali 2025',
         source: { publisher: 'Hukumonline (UMP 2025 list)', url: 'https://www.hukumonline.com/berita/a/ump-2025-se-Indonesia-lt68d3bc774d628/', quote: 'Bali Rp2.996.561 (naik Rp179.889 dibandingkan UMP 2024)', year: '2025', accessed: ACCESSED },
@@ -204,7 +208,8 @@
         source: { publisher: 'Leechiu Property Consultants, reported by BusinessWorld', url: 'https://www.bworldonline.com/?p=743528', quote: 'Hotel occupancy in 2025 remained at 60%, flat year on year, and still below the 68% recorded in 2019', year: '2025', accessed: ACCESSED },
         note: 'Private consultancy figure; no official DOT/PSA national series was found. Metro Manila H1 2025: 64%.' },
       occupancyRefs: [
-        { id: 'mnllux', label: 'Metro Manila luxury hotels', value: 0.86, period: 'Q1 2026', kind: 'sourced', status: 'team-checked', publisher: 'JLL', document: 'Metro Manila hotel market, Q1 2026', publicSource: 'Property consultancy, Metro Manila hotel market Q1 2026', url: null }
+        { id: 'mnllux', label: 'Metro Manila luxury hotels', value: 0.86, period: 'Q1 2026', kind: 'sourced', status: 'team-checked', publisher: 'JLL', document: 'Metro Manila hotel market, Q1 2026', publicSource: 'Property consultancy, Metro Manila hotel market Q1 2026', url: null },
+        OCC_MARRIOTT_APEC
       ],
       wageMonthly: { value: 695 * 2080 / 12 / 8, unit: 'PHP per month (derived: ₱695 per day / 8 h x 2080 h / 12)', kind: 'derived', status: UNVERIFIED, rule: rules.wage, label: 'NCR daily minimum wage, non-agriculture (Wage Order NCR-26)',
         source: { publisher: 'Philippine News Agency', url: 'https://www.pna.gov.ph/articles/1254675', quote: 'Wage Order NCR-26 raised the non-agriculture daily minimum in Metro Manila from ₱645 to ₱695, and the ₱50 increase took effect July 18, 2025', year: '2025', accessed: ACCESSED },
@@ -226,6 +231,7 @@
         note: 'Also used to convert the price list (assumed SGD) into the other currencies.' },
       occupancy: { value: 0.819, unit: 'average hotel occupancy 2025', kind: 'sourced', status: UNVERIFIED, rule: rules.occupancy,
         source: { publisher: 'Singapore Tourism Board', title: 'Record Singapore tourism receipts from January to September 2025 (media release, 3 Feb 2026)', url: 'https://www.stb.gov.sg/about-stb/media-publications/media-centre/record-singapore-tourism-receipts-from-january-to-september-2025/', quote: 'hotel occupancy of 81.9% for 2025, up from 81.4% in 2024', year: '2025', accessed: ACCESSED } },
+      occupancyRefs: [OCC_MARRIOTT_APEC],
       wageMonthly: { value: 1910, unit: 'SGD per month, basic wage', kind: 'sourced', status: UNVERIFIED, rule: rules.wage, label: 'Progressive Wage Model, General/Indoor Cleaner (proxy for room attendant)',
         source: { publisher: 'Ministry of Manpower Singapore', title: 'Progressive Wage Model - cleaning sector', url: 'https://www.mom.gov.sg/employment-practices/progressive-wage-model/cleaning-sector', quote: 'General Cleaner Indoor Cleaner ... $1,910 (from 1 July 2025)', year: '2025-26', accessed: ACCESSED },
         note: 'Singapore has no general minimum wage; the cleaning-sector PWM floor is the lowest defensible proxy. MOM median gross wage of a hotel housekeeper (June 2024): S$3,233 per month.' },

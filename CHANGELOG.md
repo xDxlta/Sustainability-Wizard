@@ -1,5 +1,25 @@
 # Changelog
 
+## Version 3.1 (branch claude/wizard-v2), 17 November 2026: management feedback of 13 Nov 2026
+
+- In-room tap (SMART Classic+): SGD 160 per room including installation (Swisspro management, 13 Nov 2026,
+  "we have a price base of 160"). The price list of 16 Sep 2026 shows SGD 140 for the unit; kept as a note
+  in the source entry and on the sources page. Other products keep their list prices; service stays SGD 85
+  per room and year.
+- The payback shown first is the cash payback everywhere: result hero, lead sentence, business case, owner
+  sheet, summary text and CSV. The net saving a year in the hero and the business case is the cash saving.
+  Staff time stays visible: hours and value under the business case and in a hero tile, plus one line
+  "With staff time: X years". The lead kinds "payback-staff" and "saving-staff" are removed; the per-night
+  comparison uses the bottles alone.
+- New: break-even occupancy, cash only. Under the business case: "With your prices, the filters pay back
+  within three years from X% occupancy."; two and five years in the details and the calculation table;
+  "not reached at this bottle price" above 100%. Also in the summary text and the CSV.
+- New occupancy reference in every market: Marriott hotels, Asia Pacific excluding China, 72.2% (2025).
+- Unchanged on purpose: 3 bottles a night, all bottle price references, all other occupancy references.
+- Tests: 54 (4 new: price and source, break-even formula, Marriott reference, cash-only hero and business
+  case). Walkthrough checks the cash hero, the staff-time line and the break-even lines.
+- Screenshot docs/screenshots/w1-result-kl.png (KL example, 1600 px).
+
 ## Version 3.0 (branch claude/wizard-v2), 10 November 2026: Swisspro design
 
 No calculation, factor, source, question or default changed; the 50 tests pass unchanged and the

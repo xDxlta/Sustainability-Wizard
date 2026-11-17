@@ -56,12 +56,11 @@ const server = http.createServer((req, res) => {
   await click('.nav-row .btn-primary', 1000);
   // Step 3
   await click('[data-field="areas"] [data-opt="rooms"]');
-  await click('[data-field="areas"] [data-opt="fnb"]');
-  await click('[data-field="temps"] [data-opt="cold"]', 900);
+  await click('[data-field="temps"] [data-opt="ambient"]', 900);
   await click('.nav-row .btn-primary', 400);
   // Results
   await page.waitForSelector('.results'); await page.mouse.move(980, 520, { steps: 20 }); await wait(4200);
-  await scrollTo(await yOf('#business-case'), 1500); await wait(2200);
+  await scrollTo(await yOf('#business-case'), 1500); await wait(3400);
   await click('#business-case details > summary', 900);
   await scrollTo(await yOf('#five-year'), 1500); await wait(2800);
   await scrollTo(await yOf('#calculation') - 40, 1500); await wait(2800);
