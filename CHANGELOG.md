@@ -1,5 +1,14 @@
 # Changelog
 
+## Hotel pipeline tool 1.0 (crm/), 17 November 2026
+
+- New tool under `crm/` for Swisspro's sales team: 183 Marriott hotels with a rule-based priority score,
+  hotel pages (facts, economics from the wizard engine, pitch, same owner, similar cases), pipeline records
+  with JSON and CSV export, case archive, model page without an invented probability. See `crm/README.md`.
+- Wizard: new button "Save the request as a file" next to "Copy the summary". The file carries the
+  figures of the request and says which of them the hotel gave itself; the pipeline tool reads it.
+  No calculation changed.
+
 ## Version 3.1 (branch claude/wizard-v2), 17 November 2026: management feedback of 13 Nov 2026
 
 - In-room tap (SMART Classic+): SGD 160 per room including installation (Swisspro management, 13 Nov 2026,

@@ -1,0 +1,1019 @@
+{
+ "note": "40 public cases of hotels replacing (or keeping) single-use bottled water; every source opened by the project team, Oct 2026.",
+ "cases": [
+  {
+   "id": "C01",
+   "hotel": "The Westin Kuala Lumpur",
+   "city": "Kuala Lumpur",
+   "country": "Malaysia",
+   "chain": "Marriott International",
+   "brand": "Westin",
+   "tier": "Premium",
+   "build_stage": "existing operating hotel",
+   "solution": "own glass bottling with in-house water purification",
+   "vendor": "EcoPure Waters",
+   "year": "not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "health_safety"
+   ],
+   "barriers": [],
+   "results": "over 400,000 plastic bottles avoided per year",
+   "source_url": "https://www.malaysianfoodie.com/2022/10/rethinking-tourism-experience-a-green-take-on-sustainability-at-marriott-bonvoy-hotels-and-resorts.html",
+   "source_date": "2022-10-21"
+  },
+  {
+   "id": "C02",
+   "hotel": "Element Kuala Lumpur",
+   "city": "Kuala Lumpur",
+   "country": "Malaysia",
+   "chain": "Marriott International",
+   "brand": "Element",
+   "tier": "Longer Stays (Marriott's own grouping; not Luxury)",
+   "build_stage": "not stated",
+   "solution": "in-room drinking-water filter on kitchenette tap",
+   "vendor": "3M (per guest account on FlyerTalk; Vulcan Post does not name vendor)",
+   "year": "not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [],
+   "barriers": [
+    "guest_complaint_convenience"
+   ],
+   "results": "not stated",
+   "source_url": "https://vulcanpost.com/785638/element-by-westin-kuala-lumpur-eco-friendly-features-workcation",
+   "source_date": "2022-04-20"
+  },
+  {
+   "id": "C03",
+   "hotel": "Anantara Desaru Coast Resort & Villas",
+   "city": "Desaru (Johor)",
+   "country": "Malaysia",
+   "chain": "Minor Hotels",
+   "brand": "Anantara",
+   "tier": "Luxury",
+   "build_stage": "existing operating hotel",
+   "solution": "on-site water bottling plant; glass bottles in every guestroom",
+   "vendor": "Eco Pure Waters (chain-approved vendor)",
+   "year": "2023 (plant unveiled; article 4 Jan 2023)",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.ttgasia.com/2023/01/04/anantara-desaru-coast-resort-villas-opens-water-bottling-plant/",
+   "source_date": "2023-01-04"
+  },
+  {
+   "id": "C04",
+   "hotel": "Shangri-La's Rasa Sayang Resort & Spa (also supplies Golden Sands Resort)",
+   "city": "Penang",
+   "country": "Malaysia",
+   "chain": "Shangri-La Group",
+   "brand": "Shangri-La",
+   "tier": "not verified (chain tier page could not be opened)",
+   "build_stage": "existing operating hotel",
+   "solution": "in-house bottling plant, 1.0 L glass bottles, still and sparkling",
+   "vendor": "not stated",
+   "year": "2012",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [
+    "licensing_precondition"
+   ],
+   "results": "both resorts use c. 1.65 million plastic bottles/yr; c. 4,708 kg plastic/yr reduction (paraphrase via fetch)",
+   "source_url": "https://theyumlist.net/2012/07/bottling-plant-at-shangri-las-rasa.html",
+   "source_date": "2012-07-06"
+  },
+  {
+   "id": "C05",
+   "hotel": "Four Seasons Resort Langkawi",
+   "city": "Langkawi",
+   "country": "Malaysia",
+   "chain": "Four Seasons",
+   "brand": "Four Seasons",
+   "tier": "not verified (chain page could not be opened)",
+   "build_stage": "not stated",
+   "solution": "in-house bottling plant; glass bottles, still and sparkling",
+   "vendor": "not stated",
+   "year": "2019",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "carbon_transport_waste"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.asiatraveltips.com/news19/2310-HotelWater.shtml",
+   "source_date": "2019-10-23"
+  },
+  {
+   "id": "C06",
+   "hotel": "Temple Tree Resort Langkawi",
+   "city": "Langkawi",
+   "country": "Malaysia",
+   "chain": "not stated",
+   "brand": "not stated",
+   "tier": "unclassified (chain/independence not stated)",
+   "build_stage": "existing operating hotel",
+   "solution": "reusable glass bottles in rooms + filtered water stations around property",
+   "vendor": "not stated",
+   "year": "not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.thestar.com.my/lifestyle/travel/2025/04/22/sustainability-hospitality-on-the-rise-in-malaysia",
+   "source_date": "2025-04-22"
+  },
+  {
+   "id": "C07",
+   "hotel": "The Danna Langkawi",
+   "city": "Langkawi",
+   "country": "Malaysia",
+   "chain": "not stated",
+   "brand": "not stated",
+   "tier": "unclassified (chain/independence not stated)",
+   "build_stage": "existing operating hotel",
+   "solution": "in-house water bottling plant; refillable glass bottles in rooms",
+   "vendor": "not stated",
+   "year": "not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "GM"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.thestar.com.my/lifestyle/travel/2025/04/22/sustainability-hospitality-on-the-rise-in-malaysia",
+   "source_date": "2025-04-22"
+  },
+  {
+   "id": "C08",
+   "hotel": "Swissôtel The Stamford",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "Accor",
+   "brand": "Swissôtel",
+   "tier": "Premium",
+   "build_stage": "existing operating hotel",
+   "solution": "2018: larger refillable bottles in rooms; later SWISSPRO filtered water dispensers (guest rooms, seminar rooms, most restaurants)",
+   "vendor": "Swisspro (per SwissCham); Amglow vendor article also claims Swissôtel as a client",
+   "year": "2018 (bottles removed); Swisspro date not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "GM"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "c. 700,000 single-use bottles/yr (GM); c. 25 t plastic/yr since 2019 across Swissôtel, Fairmont South Tower and RCCC (SwissCham)",
+   "source_url": "https://guide.michelin.com/sg/en/article/features/paving-the-way-for-sustainable-hospitality",
+   "source_date": "2021-04-27"
+  },
+  {
+   "id": "C09",
+   "hotel": "Fairmont Singapore (South Tower)",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "Accor",
+   "brand": "Fairmont",
+   "tier": "Luxury",
+   "build_stage": "renovation",
+   "solution": "in-room digital drinking-water dispenser (South Tower guest rooms)",
+   "vendor": "Swisspro (Amglow vendor article also claims Fairmont Singapore)",
+   "year": "not stated (renovation before 2021)",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "efficiency_labour",
+    "guest_experience"
+   ],
+   "barriers": [],
+   "results": "over 600,000 plastic bottles in a single year (vendor claim)",
+   "source_url": "https://www.archify.com/sg/product/swisspro-sg/updates/detail/drink-business-class-with-swisspro",
+   "source_date": "not stated"
+  },
+  {
+   "id": "C10",
+   "hotel": "W Singapore – Sentosa Cove",
+   "city": "Singapore (Sentosa)",
+   "country": "Singapore",
+   "chain": "Marriott International",
+   "brand": "W Hotels",
+   "tier": "Luxury",
+   "build_stage": "existing operating hotel",
+   "solution": "in-room tap filtration (all rooms) + in-house still/sparkling bottling for restaurants and banqueting",
+   "vendor": "BE WTR (F&B bottling); in-room vendor not stated",
+   "year": "2025",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "expected >350,000 plastic bottles/yr (rooms); single-use bottles eliminated in restaurants and banqueting",
+   "source_url": "https://www.visitsingapore.com/content/dam/mice2-0/venues/w-singapore/w_singapore-sustainability.pdf",
+   "source_date": "not stated (cites 2024 data)"
+  },
+  {
+   "id": "C11",
+   "hotel": "Carlton City Hotel Singapore",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "not stated",
+   "brand": "not stated",
+   "tier": "unclassified (not stated)",
+   "build_stage": "existing operating hotel",
+   "solution": "in-room filtered water taps",
+   "vendor": "not stated",
+   "year": "not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://carltoncity.sg/article/embracing-sustainable-future",
+   "source_date": "not stated"
+  },
+  {
+   "id": "C12",
+   "hotel": "PARKROYAL COLLECTION Marina Bay",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "Pan Pacific Hotels Group",
+   "brand": "PARKROYAL COLLECTION",
+   "tier": "not verified (chain page could not be opened)",
+   "build_stage": "not stated",
+   "solution": "in-room water filtration system",
+   "vendor": "Amglow (vendor claim)",
+   "year": "not stated (article 2023)",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "government_programme"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.thewellnessinsider.sg/p/sustainable-hospitality-how-amglows-water-filtration-system-is-transforming-the-industry",
+   "source_date": "2023-08-10"
+  },
+  {
+   "id": "C13",
+   "hotel": "Pan Pacific Singapore",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "Pan Pacific Hotels Group",
+   "brand": "Pan Pacific",
+   "tier": "not verified (chain page could not be opened)",
+   "build_stage": "renovation",
+   "solution": "in-room water filters + refillable glass bottles",
+   "vendor": "not stated",
+   "year": "2023",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.ttgasia.com/2023/08/22/pan-pacific-singapore-reveals-transformation-and-new-initiatives/",
+   "source_date": "2023-08-22"
+  },
+  {
+   "id": "C14",
+   "hotel": "voco Singapore (IHG fact sheet; property as titled in document)",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "IHG",
+   "brand": "voco",
+   "tier": "Premium",
+   "build_stage": "existing operating hotel",
+   "solution": "filtered water on tap in rooms",
+   "vendor": "not stated",
+   "year": "not stated",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://digital.ihg.com.cn/is/content/ihg/voco-singapore-9487500841-original?fmt=pdf",
+   "source_date": "not stated"
+  },
+  {
+   "id": "C15",
+   "hotel": "Marina Bay Sands",
+   "city": "Singapore",
+   "country": "Singapore",
+   "chain": "Las Vegas Sands",
+   "brand": "Marina Bay Sands",
+   "tier": "not verified (integrated resort; no chain tier)",
+   "build_stage": "existing operating hotel",
+   "solution": "DID NOT SWITCH to filtered/glass: chose single-use PET bottles over Tetra Pak cartons and CanO aluminium cans",
+   "vendor": "n/a (PET packaged water)",
+   "year": "2019",
+   "outcome": "not switched (chose PET)",
+   "decision_maker": [
+    "corporate_property_company"
+   ],
+   "reasons": [],
+   "barriers": [
+    "lca_carbon",
+    "cost",
+    "guest_expectation"
+   ],
+   "results": "c. 14 million additional PET bottles by 2021 (source familiar with tender; paraphrase via fetch)",
+   "source_url": "https://www.eco-business.com/news/marina-bay-sands-just-chose-single-use-plastic-bottles-to-serve-water-in-singapore-but-it-is-not-alone",
+   "source_date": "2019-11-08"
+  },
+  {
+   "id": "C16",
+   "hotel": "Resorts World Sentosa (all six hotels)",
+   "city": "Singapore (Sentosa)",
+   "country": "Singapore",
+   "chain": "Genting Singapore",
+   "brand": "Resorts World Sentosa",
+   "tier": "not verified (integrated resort; no chain tier)",
+   "build_stage": "existing operating hotel",
+   "solution": "refillable glass carafes in rooms + drinking-water station on every hotel floor; cartons/cans elsewhere",
+   "vendor": "not stated",
+   "year": "2019",
+   "outcome": "switched",
+   "decision_maker": [
+    "corporate_property_company"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "6.7 million plastic bottles/yr (>100 t) across resort",
+   "source_url": "https://www.ggrasia.com/resorts-world-sentosa-stops-using-throwaway-plastic-bottles/",
+   "source_date": "2019-06-06"
+  },
+  {
+   "id": "C17",
+   "hotel": "The Outpost Hotel Sentosa & Village Hotel Sentosa",
+   "city": "Singapore (Sentosa)",
+   "country": "Singapore",
+   "chain": "not stated",
+   "brand": "not stated",
+   "tier": "unclassified (chain not stated in source)",
+   "build_stage": "existing operating hotel",
+   "solution": "in-room filtered water taps",
+   "vendor": "Hyflux",
+   "year": "2023",
+   "outcome": "switched (announced)",
+   "decision_maker": [
+    "government_or_landlord_programme"
+   ],
+   "reasons": [
+    "government_programme",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://mothership.sg/2023/05/sentosa-stop-plastic-bottled-water/",
+   "source_date": "2023-05-17"
+  },
+  {
+   "id": "C18",
+   "hotel": "The St. Regis Bali Resort",
+   "city": "Nusa Dua, Bali",
+   "country": "Indonesia",
+   "chain": "Marriott International",
+   "brand": "St. Regis",
+   "tier": "Luxury",
+   "build_stage": "not stated",
+   "solution": "seawater reverse osmosis (SWRO) + in-house bottling in reusable glass bottles",
+   "vendor": "Biosystems",
+   "year": "not stated (2025 figures cited)",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "carbon_transport_waste",
+    "cost",
+    "water_security",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "water costs down up to 20%; 'up to 170 million plastic bottles' in 2025 (figure as published; implausible for one resort)",
+   "source_url": "https://www.greenglobe.com/green-globe-case-studies-blog/st-regis-bali-resort-in-indonesia-holds-an-essential-duty-to-conserve-naturally-existing-water",
+   "source_date": "'3 July' (year not shown; cites 2025)"
+  },
+  {
+   "id": "C19",
+   "hotel": "Novotel Jakarta Mangga Dua Square",
+   "city": "Jakarta",
+   "country": "Indonesia",
+   "chain": "Accor",
+   "brand": "Novotel",
+   "tier": "Midscale",
+   "build_stage": "not stated",
+   "solution": "compact on-site bottling station (washes, fills, labels, caps glass bottles) fed by purifier",
+   "vendor": "Bluewater (HotelStation / PRO purifier; via acquired PT PIPA)",
+   "year": "2024",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "cost",
+    "storage_logistics",
+    "carbon_transport_waste",
+    "water_safety_quality"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://bluewater.mynewsdesk.com/pressreleases/the-end-of-single-use-plastic-bottles-in-hotels-bluewater-launches-planet-friendly-compact-hotel-and-restaurant-bottling-solution-in-indonesia-3300280",
+   "source_date": "2024-01-30"
+  },
+  {
+   "id": "C20",
+   "hotel": "Hard Rock Hotel Bali",
+   "city": "Kuta, Bali",
+   "country": "Indonesia",
+   "chain": "Hard Rock Hotels",
+   "brand": "Hard Rock Hotel",
+   "tier": "not verified",
+   "build_stage": "existing operating hotel",
+   "solution": "in-house glass bottling (RO + UV); sealed glass bottles in all 418 rooms",
+   "vendor": "not stated",
+   "year": "2023",
+   "outcome": "switched",
+   "decision_maker": [
+    "GM"
+   ],
+   "reasons": [
+    "carbon_transport_waste",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "expected >400,000 plastic bottles/yr",
+   "source_url": "https://hotel.hardrock.com/bali/hardrockhotelbali-new-waterbottlingplant-to-reduce-singleuse-plastic.aspx",
+   "source_date": "2023-01-09"
+  },
+  {
+   "id": "C21",
+   "hotel": "Three Hilton hotels in Bali (not named)",
+   "city": "Bali",
+   "country": "Indonesia",
+   "chain": "Hilton",
+   "brand": "not stated",
+   "tier": "not determinable (brands not named)",
+   "build_stage": "existing operating hotel",
+   "solution": "glass-bottled water from an external local supplier (not in-house)",
+   "vendor": "local supplier 'Spring Water'",
+   "year": "by 2021",
+   "outcome": "switched",
+   "decision_maker": [
+    "chain_mandate"
+   ],
+   "reasons": [
+    "chain_programme",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.hospitalitynet.org/news/4104090.html",
+   "source_date": "2021-04-26"
+  },
+  {
+   "id": "C22",
+   "hotel": "Alila Ubud",
+   "city": "Ubud, Bali",
+   "country": "Indonesia",
+   "chain": "Alila (Hyatt since 2018 acquisition of Two Roads; owner at time not stated in source)",
+   "brand": "Alila",
+   "tier": "Luxury (Hyatt's current portfolio)",
+   "build_stage": "not stated",
+   "solution": "on-site RO plant + UV + mineralisation, bottled in reusable glass",
+   "vendor": "BioSystems",
+   "year": "2018",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "carbon_transport_waste",
+    "plastic_sustainability",
+    "guest_demand"
+   ],
+   "barriers": [
+    "local_tap_water_not_potable"
+   ],
+   "results": "not stated",
+   "source_url": "https://www.nowbali.co.id/alila-ubud-filters-plastic-bottles-paves-path-environmental-friendliness/",
+   "source_date": "2018-09-13"
+  },
+  {
+   "id": "C23",
+   "hotel": "Alila Villas Uluwatu",
+   "city": "Uluwatu, Bali",
+   "country": "Indonesia",
+   "chain": "Alila (owner at time not stated)",
+   "brand": "Alila",
+   "tier": "Luxury (Hyatt's current portfolio)",
+   "build_stage": "not stated",
+   "solution": "on-site purification and bottling in reusable glass",
+   "vendor": "EcoPure Waters",
+   "year": "2014 (post date)",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "carbon_transport_waste",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://accidentaltravelwriter.com/bali-resort-invests-in-purification-syatem-to-produce-its-own-bottled-water/",
+   "source_date": "2014-11-22"
+  },
+  {
+   "id": "C24",
+   "hotel": "Manila Marriott Hotel",
+   "city": "Pasay, Metro Manila",
+   "country": "Philippines",
+   "chain": "Marriott International",
+   "brand": "Marriott Hotels",
+   "tier": "Premium",
+   "build_stage": "existing operating hotel",
+   "solution": "recycled, refillable glass bottles in guest rooms (water source not stated)",
+   "vendor": "not stated",
+   "year": "2019",
+   "outcome": "switched (announced)",
+   "decision_maker": [
+    "chain_mandate"
+   ],
+   "reasons": [
+    "chain_programme",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "65,000 single-use plastic bottles to be replaced",
+   "source_url": "https://lifestyle.inquirer.net/347867/zero-single-use-plastic-bottles-other-sustainable-hotel-practices/",
+   "source_date": "2019-10-10"
+  },
+  {
+   "id": "C25",
+   "hotel": "Okada Manila",
+   "city": "Parañaque, Metro Manila",
+   "country": "Philippines",
+   "chain": "Tiger Resort Leisure and Entertainment (Okada Manila)",
+   "brand": "Okada Manila",
+   "tier": "not verified (integrated resort; no chain tier)",
+   "build_stage": "existing operating hotel (opened 2016)",
+   "solution": "on-site filtration and bottling in reusable glass",
+   "vendor": "Nordaq",
+   "year": "2024",
+   "outcome": "switched",
+   "decision_maker": [
+    "corporate_property_company"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "guest_experience"
+   ],
+   "barriers": [],
+   "results": "c. 2 million single-use bottles/yr; capacity 1,000 bottles/hour",
+   "source_url": "https://okadamanila.com/okada-manila-serves-sustainably-premium-nordaq-water/",
+   "source_date": "2024-11-11"
+  },
+  {
+   "id": "C26",
+   "hotel": "Shangri-La's Mactan Resort & Spa",
+   "city": "Lapu-Lapu, Cebu",
+   "country": "Philippines",
+   "chain": "Shangri-La Group",
+   "brand": "Shangri-La",
+   "tier": "not verified (chain tier page could not be opened)",
+   "build_stage": "existing operating hotel",
+   "solution": "on-site bottling plant (glass), linked to resort desalination plant",
+   "vendor": "EcoPure Waters",
+   "year": "2014",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "carbon_transport_waste",
+    "plastic_sustainability",
+    "health_safety"
+   ],
+   "barriers": [],
+   "results": "expected 250,000 plastic bottles/yr",
+   "source_url": "https://philstar.com/lifestyle/travel-and-tourism/2014/05/11/1321626/shangri-las-mactan-breaks-ground-water-bottling-plant",
+   "source_date": "2014-05-11"
+  },
+  {
+   "id": "C27",
+   "hotel": "City of Dreams Manila",
+   "city": "Parañaque, Metro Manila",
+   "country": "Philippines",
+   "chain": "Melco Resorts & Entertainment",
+   "brand": "City of Dreams",
+   "tier": "not verified (integrated resort)",
+   "build_stage": "existing operating hotel",
+   "solution": "Nordaq filtration/bottling system rolled out group-wide (rooms and restaurants)",
+   "vendor": "Nordaq",
+   "year": "2021-2023 (after Macau late 2020; article 2023)",
+   "outcome": "switched",
+   "decision_maker": [
+    "chain_mandate"
+   ],
+   "reasons": [
+    "chain_programme",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "group: >1.4 million bottles eliminated so far; installed in 43% of rooms/restaurants in Macau and Manila (paraphrase via fetch)",
+   "source_url": "https://asgam.com/2023/08/29/melco-expands-nordaq-water-purification-system-to-all-properties-globally/",
+   "source_date": "2023-08-29"
+  },
+  {
+   "id": "C28",
+   "hotel": "Hilton Manila",
+   "city": "Pasay (Newport City), Metro Manila",
+   "country": "Philippines",
+   "chain": "Hilton",
+   "brand": "Hilton Hotels & Resorts",
+   "tier": "Premium ('Premium experiences')",
+   "build_stage": "new build / pre-opening",
+   "solution": "glass bottles in rooms + planned in-house water facility/bottling",
+   "vendor": "not stated",
+   "year": "not stated (formal opening 'last Oct. 24')",
+   "outcome": "switched",
+   "decision_maker": [
+    "chain_mandate",
+    "GM"
+   ],
+   "reasons": [
+    "chain_programme",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.bworldonline.com/?p=196384",
+   "source_date": "not stated"
+  },
+  {
+   "id": "C29",
+   "hotel": "Centara Grand Beach Resort & Villas Krabi",
+   "city": "Krabi",
+   "country": "Thailand",
+   "chain": "Centara Hotels & Resorts",
+   "brand": "Centara Grand",
+   "tier": "not verified (brand page did not classify)",
+   "build_stage": "not stated",
+   "solution": "own bottling plant (RO, well water) in glass bottles",
+   "vendor": "not stated",
+   "year": "2014",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "carbon_transport_waste"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.adventuretravelnews.com/centara-grand-resort-krabi-launches-water-bottling-plant",
+   "source_date": "2014-12-23"
+  },
+  {
+   "id": "C30",
+   "hotel": "JW Marriott Phuket Resort & Spa (with Renaissance Phuket)",
+   "city": "Phuket",
+   "country": "Thailand",
+   "chain": "Marriott International",
+   "brand": "JW Marriott",
+   "tier": "Luxury",
+   "build_stage": "existing operating hotel",
+   "solution": "water-from-air (atmospheric) water supplied in glass bottles by external producer",
+   "vendor": "Generation Water",
+   "year": "2018-2019",
+   "outcome": "switched (pilot)",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "cost",
+    "water_security",
+    "plastic_sustainability",
+    "chain_programme"
+   ],
+   "barriers": [
+    "guest_education"
+   ],
+   "results": ">100,000 plastic bottles in first four months (paraphrase via fetch)",
+   "source_url": "https://www.eco-business.com/news/water-from-air-aims-to-turn-back-thailands-tide-of-plastic/",
+   "source_date": "2019-02-08"
+  },
+  {
+   "id": "C31",
+   "hotel": "Caravelle Saigon",
+   "city": "Ho Chi Minh City",
+   "country": "Vietnam",
+   "chain": "not stated",
+   "brand": "not stated",
+   "tier": "unclassified (not stated)",
+   "build_stage": "existing operating hotel",
+   "solution": "own filtration; custom reusable glass bottles; refill station per corridor + staff refill stations",
+   "vendor": "none (own system; bottles made in Vietnam)",
+   "year": "2019",
+   "outcome": "switched",
+   "decision_maker": [
+    "GM"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "no_local_recycling"
+   ],
+   "barriers": [
+    "water_safety_certification_precondition"
+   ],
+   "results": "expected 200,000 plastic bottles (7 t) per year; 2,000 glass bottles in stock (paraphrase via fetch)",
+   "source_url": "https://www.asiatraveltips.com/news19/1411-CaravelleSaigon.shtml",
+   "source_date": "2019-11-14"
+  },
+  {
+   "id": "C32",
+   "hotel": "New World Saigon Hotel",
+   "city": "Ho Chi Minh City",
+   "country": "Vietnam",
+   "chain": "New World Hotels & Resorts",
+   "brand": "New World",
+   "tier": "not verified",
+   "build_stage": "existing operating hotel",
+   "solution": "in-room water purifiers in all 542 rooms, REPLACING reusable glass bottles",
+   "vendor": "Coway Vina",
+   "year": "2026",
+   "outcome": "switched (glass bottles -> in-room purifier)",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "efficiency_labour",
+    "carbon_transport_waste",
+    "guest_experience",
+    "esg"
+   ],
+   "barriers": [],
+   "results": "glass bottles 24,000 -> 200 per month; >285,000 bottles/yr avoided (projected; paraphrase)",
+   "source_url": "https://en.prnasia.com/releases/apac/coway-vina-installs-542-water-purifiers-across-all-guest-rooms-at-new-world-saigon-hotel-to-cut-285-000-reusable-glass-bottles-annually-544294.shtml",
+   "source_date": "2026-08-18"
+  },
+  {
+   "id": "C33",
+   "hotel": "Prince Hotel Da Nang (formerly Sel de Mer Hotel & Suites)",
+   "city": "Da Nang",
+   "country": "Vietnam",
+   "chain": "not stated",
+   "brand": "not stated",
+   "tier": "unclassified (not stated)",
+   "build_stage": "rebrand / reopening",
+   "solution": "in-room water purifiers (164 units, all rooms)",
+   "vendor": "Coway Vina",
+   "year": "2026",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "esg",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "c. 108,000 plastic bottles/yr (paraphrase)",
+   "source_url": "https://www.thailand-business-news.com/pr-news/coway-vina-installs-164-water-purifiers-at-prince-hotel-da-nang-accelerating-vietnam-hospitality-b2b-expansion",
+   "source_date": "2026-08-31"
+  },
+  {
+   "id": "C34",
+   "hotel": "akyra TAS Sukhumvit Bangkok",
+   "city": "Bangkok",
+   "country": "Thailand",
+   "chain": "Akaryn Hotel Group",
+   "brand": "akyra",
+   "tier": "not verified",
+   "build_stage": "new build / pre-opening",
+   "solution": "self-service drinking water dispenser on every floor + stainless steel guest bottles",
+   "vendor": "not stated",
+   "year": "2018",
+   "outcome": "switched (designed in pre-opening)",
+   "decision_maker": [
+    "corporate_founder_MD"
+   ],
+   "reasons": [
+    "guest_demand",
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.asiatraveltips.com/news18/192-TASSukhumvitBangkok.shtml",
+   "source_date": "2018-02-19"
+  },
+  {
+   "id": "C35",
+   "hotel": "Six Senses resorts (group-wide; Soneva by Six Senses, Six Senses Hideaways, Evason etc.)",
+   "city": "multiple",
+   "country": "Thailand, Vietnam, Maldives, Fiji, Oman, Jordan, Spain",
+   "chain": "Six Senses (2008; today IHG)",
+   "brand": "Six Senses",
+   "tier": "Luxury & Lifestyle (IHG, current)",
+   "build_stage": "existing operating hotels (group-wide)",
+   "solution": "on-site filtration + RO + UV at each resort, glass-only bottling; imported branded water dropped",
+   "vendor": "not stated",
+   "year": "2008",
+   "outcome": "switched",
+   "decision_maker": [
+    "chain_mandate"
+   ],
+   "reasons": [
+    "carbon_transport_waste",
+    "guest_experience"
+   ],
+   "barriers": [],
+   "results": "not stated",
+   "source_url": "https://www.journaldespalaces.com/en/pressrelease-17482-six-senses-replaces-drinking-water-menus-with-alternative-choices-that-support-the-reduction-of-carbon-footprint-from-shipping.html",
+   "source_date": "2008-09-15"
+  },
+  {
+   "id": "C36",
+   "hotel": "Soneva resorts (Soneva Fushi, Soneva Jani, Soneva Kiri)",
+   "city": "multiple",
+   "country": "Maldives, Thailand",
+   "chain": "Soneva",
+   "brand": "Soneva",
+   "tier": "not verified",
+   "build_stage": "existing operating hotels",
+   "solution": "each resort filters, mineralises and bottles own water in reusable glass",
+   "vendor": "not stated",
+   "year": "2008",
+   "outcome": "switched",
+   "decision_maker": [
+    "corporate_property_company"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "revenue_charity",
+    "water_security"
+   ],
+   "barriers": [],
+   "results": "1.5 million plastic bottles averted; c. USD 90,000/yr raised for water charities",
+   "source_url": "https://luxnomade.com/2019/07/09/sonevas-plasticfreejuly-is-year-round/",
+   "source_date": "2019-07-09"
+  },
+  {
+   "id": "C37",
+   "hotel": "Eaton Hotel, Hong Kong",
+   "city": "Hong Kong",
+   "country": "Hong Kong SAR",
+   "chain": "Eaton (owner/chain not stated in source)",
+   "brand": "Eaton",
+   "tier": "not verified",
+   "build_stage": "existing operating hotel",
+   "solution": "in-house purification (7 stages incl. UV, mineral dosing) and glass-bottle washing/refilling; half lightly carbonated",
+   "vendor": "Classic Crystal Tropical Purification System (made in England)",
+   "year": "2013",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "cost"
+   ],
+   "barriers": [
+    "capex"
+   ],
+   "results": "c. 350,000 bottles/yr; HK$500,000 capex; payback c. 2 years (paraphrase)",
+   "source_url": "https://www.asiatraveltips.com/news13/189-EatonHotel.shtml",
+   "source_date": "2013-09-18"
+  },
+  {
+   "id": "C38",
+   "hotel": "Hyatt Regency Hong Kong, Sha Tin",
+   "city": "Hong Kong",
+   "country": "Hong Kong SAR",
+   "chain": "Hyatt",
+   "brand": "Hyatt Regency",
+   "tier": "Classics (Hyatt's portfolio; non-luxury)",
+   "build_stage": "existing operating hotel",
+   "solution": "in-room filtered water dispensers",
+   "vendor": "not stated",
+   "year": "c. mid-2023 (paraphrase)",
+   "outcome": "switched",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [],
+   "results": "c. 6,000 plastic bottles per week",
+   "source_url": "https://www.thestandard.com.hk/news/article/62152/Hotels-welcome-green-initiative",
+   "source_date": "2024-04-19"
+  },
+  {
+   "id": "C39",
+   "hotel": "Wynn Macau & Wynn Palace",
+   "city": "Macau",
+   "country": "Macau SAR",
+   "chain": "Wynn Resorts",
+   "brand": "Wynn",
+   "tier": "not verified",
+   "build_stage": "existing operating hotels",
+   "solution": "automated central filtration/refilling plant for reusable glass bottles (still + sparkling), 2,000 bottles/hour",
+   "vendor": "Nordaq (Nordaq 2000, co-developed)",
+   "year": "2019 (manual) / 2021 (automated)",
+   "outcome": "switched",
+   "decision_maker": [
+    "corporate_property_company"
+   ],
+   "reasons": [
+    "plastic_sustainability",
+    "carbon_transport_waste"
+   ],
+   "barriers": [],
+   "results": "expected 8 million plastic bottles/yr; 2,700 rooms planned",
+   "source_url": "https://www.newsroom.wynnresorts.com/en/wynnmacau/press-releases/wynn-becomes-the-first-integrated-resort-in-macau-to-develop-an-automated-water-refilling-system-wit/s/d71e0d1d-b9a2-4b8b-8451-0b2ac23fde04",
+   "source_date": "2021-01-08"
+  },
+  {
+   "id": "C40",
+   "hotel": "The Westin Detroit Metropolitan Airport",
+   "city": "Detroit",
+   "country": "USA",
+   "chain": "Marriott International",
+   "brand": "Westin",
+   "tier": "Premium",
+   "build_stage": "existing operating hotel",
+   "solution": "empty carafe in room; refill at hallway water station on each floor",
+   "vendor": "Fill it Forward (placard)",
+   "year": "2026 (reported)",
+   "outcome": "switched (reported, not confirmed by hotel)",
+   "decision_maker": [
+    "not stated"
+   ],
+   "reasons": [
+    "plastic_sustainability"
+   ],
+   "barriers": [
+    "guest_perception_cost_cutting",
+    "tap_water_taste"
+   ],
+   "results": "not stated",
+   "source_url": "https://viewfromthewing.com/?p=246335",
+   "source_date": "2026-04-11"
+  }
+ ]
+}

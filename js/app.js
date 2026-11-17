@@ -853,7 +853,21 @@
     var sendBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block', onclick: function () { send(sendBtn); } }, 'Send the request to Swisspro');
     card.appendChild(sendBtn);
     card.appendChild(status);
-    card.appendChild(el('div', { class: 'actions form-actions' }, el('button', { type: 'button', class: 'btn btn-text', onclick: function () { copyText(this, refreshText()); } }, 'Copy the summary')));
+    // The same request as a file, for Swisspro's hotel pipeline tool (crm/): exact figures and which of them the hotel gave itself.
+    function saveFile() {
+      var ctx = compute(), inp = ctx.n.inputs, pv = ctx.n.provenance, own = function (k) { return !!(pv[k] && pv[k].kind === 'user'); };
+      var data = { type: 'swisspro-wizard-request', version: 1, date: new Date().toISOString().slice(0, 10), hotel: p.hotel || '',
+        figures: { country: inp.country, rooms: inp.rooms, currency: inp.symbol,
+          occupancy: { value: inp.occupancy, fromHotel: own('occupancy') },
+          bottlesPerRoomNight: { value: inp.bottlesPerRoomNight, fromHotel: own('bottlesPerRoomNight') },
+          pricePerBottle: { value: inp.pricePerBottle, fromHotel: own('pricePerBottle') } },
+        summary: refreshText() };
+      var a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' })), download: 'swisspro-wizard-request-' + data.date + '.json' });
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    }
+    card.appendChild(el('div', { class: 'actions form-actions' },
+      el('button', { type: 'button', class: 'btn btn-text', onclick: function () { copyText(this, refreshText()); } }, 'Copy the summary'),
+      el('button', { type: 'button', class: 'btn btn-text', id: 'save-request-file', onclick: saveFile }, 'Save the request as a file')));
     if (ARTIFACT) card.appendChild(el('p', { class: 'hint', text: 'In this preview the email button may do nothing; copy the summary instead.' }));
     var st = disclosure('pf-summary', 'inline', 'Show the summary text'); st.appendChild(ta);
     st.appendChild(el('p', { class: 'hint', text: 'Or email ' + PL.leadEmail + ' directly. Your answers stay in this browser; nothing is stored elsewhere until you send the request.' }));

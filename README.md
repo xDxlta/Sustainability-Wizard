@@ -76,6 +76,13 @@ docs/                 methodology, research notes, demo script, pricing how-to, 
 - Add or reword a question: `js/questions.js`; the option `id`s are what `js/model.js` and
   `js/recommend.js` read.
 
+## Hotel pipeline tool (crm/)
+
+A second tool for Swisspro's sales team lives in `crm/`: hotel list with a rule-based priority score,
+hotel pages with economics from this wizard's engine, pipeline records, case archive. Open
+`crm/index.html`; see `crm/README.md`. Swisspro's own projects are confidential and never part of this
+repository (`crm/data-private/` is ignored by git).
+
 ## Tests
 ```bash
 npm test
