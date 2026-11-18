@@ -34,7 +34,7 @@ h3 { font-size: 15px; font-family: var(--body); font-weight: 600; }
 .private-bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 7px; padding-bottom: 7px; }
 
 /* ------------------------------------------------------------------ filters */
-.filters { display: grid; grid-template-columns: minmax(200px, 1.6fr) repeat(6, minmax(110px, 1fr)); gap: 10px; align-items: end; }
+.filters { display: grid; grid-template-columns: minmax(180px, 1.5fr) repeat(7, minmax(100px, 1fr)); gap: 10px; align-items: end; }
 .filters label, .form label:not(.btn) { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
 .input, select.input { height: 36px; font-size: 14px; padding: 0 10px; border-width: 1px; border-radius: 8px; }
 select.input { padding-right: 30px; background-position: right 10px center; }
@@ -162,3 +162,10 @@ table.hotels th:first-child { white-space: normal; width: 118px; line-height: 1.
 table.hotels td:nth-child(2) { min-width: 280px; width: 27%; }
 table.hotels td:nth-child(8) { min-width: 170px; }
 table.hotels td:nth-child(6) { max-width: 150px; }
+
+/* hotel that already replaced single-use bottles (public case) */
+.solved { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600; line-height: 1.3; color: #5E5130; background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 4px; padding: 2px 7px; text-decoration: none; }
+a.solved:hover { color: var(--navy); border-color: var(--gold); text-decoration: underline; }
+.solved-panel { display: grid; gap: 8px; border: 1px solid var(--warn-line); box-shadow: none; }
+.solved-panel .solved { margin-top: 0; font-size: 13px; }
+table.grid tr.focus td { background: var(--glacier); }

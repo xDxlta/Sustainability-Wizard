@@ -45,7 +45,7 @@
     var step = o.steps.filter(function (s) { return count >= s.min; })[0];
     var points = step ? step.points : 0, bonus = ctx.ownerHasProject ? o.projectBonus : 0;
     return { id: 'owner', label: 'Owner leverage', max: w, points: Math.min(w, points + bonus), notSourced: false,
-      detail: count + (count === 1 ? ' hotel' : ' hotels') + ' of this owner group in the data: ' + points + ' points.' + (bonus ? ' Another hotel of the group is at ' + o.projectStatuses.join(', ').replace(/, ([^,]*)$/, ' or $1') + ': plus ' + bonus + '.' : '') };
+      detail: (ctx.privateOwner ? 'Private owner, name not kept: other hotels of the same owner cannot be linked, so it counts as 1 hotel: ' : count + (count === 1 ? ' hotel' : ' hotels') + ' of this owner group in the data: ') + points + ' points.' + (bonus ? ' Another hotel of the group is at ' + o.projectStatuses.join(', ').replace(/, ([^,]*)$/, ' or $1') + ': plus ' + bonus + '.' : '') };
   }
 
   function segment(cfg, hotel) {

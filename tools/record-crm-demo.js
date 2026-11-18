@@ -28,7 +28,7 @@ const SUMMARY = ['Proposal request via the Swisspro Sustainability Wizard, 2026-
   const sp = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1 });
   await sp.goto(url + '#/hotels'); await sp.waitForTimeout(500);
   await sp.screenshot({ path: path.join(shotDir, 'crm-list.png') });
-  await sp.goto(url + '#/hotel/h003'); await sp.waitForTimeout(500);
+  await sp.goto(url + '#/hotel/h001'); await sp.waitForTimeout(500); // a hotel with the label "Already has a solution (public case)"
   await sp.screenshot({ path: path.join(shotDir, 'crm-hotel.png'), fullPage: true });
   await sp.close();
 

@@ -37,6 +37,34 @@ test('repository: the private folder is ignored and holds no tracked file', () =
   assert.match(fs.readFileSync(path.join(__dirname, '..', '.gitignore'), 'utf8'), /^crm\/data-private\/$/m);
 });
 
+test('data: corrections of 18 Nov 2026 (JW Marriott Kuala Lumpur rooms, private owners)', () => {
+  assert.strictEqual(byId.h121.name, 'JW Marriott Hotel Kuala Lumpur');
+  assert.strictEqual(byId.h121.rooms, 578);
+  assert.strictEqual(econ('h121').installationList, 578 * 160);
+  assert.strictEqual(data.hotels.filter(h => h.owner_group === C.privateOwner).length, 8);
+  data.hotels.forEach(h => assert.ok(!/\b(Datuk|Dato|Datin|Tan Sri|Tan Kian)\b|^[A-Z][a-z]+ and [A-Z][a-z]+ [A-Z][a-z]+$|^Justin Chen$/.test(h.owner_group || ''), h.id + ' ' + h.owner_group));
+  assert.strictEqual(data.hotels.filter(h => h.owner_group === 'Century Properties (Dua Mutiara)').length, 3);
+});
+
+test('existing solution: four hotels point to their own public case; the label does not touch the score', () => {
+  assert.strictEqual(C.solved.label, 'Already has a solution (public case)');
+  const names = { h006: /Westin Kuala Lumpur/, h041: /Element.*Kuala Lumpur/, h133: /St\. Regis Bali/, h001: /Manila Marriott/ };
+  assert.deepStrictEqual(Object.keys(C.solved.byHotel).sort(), Object.keys(names).sort());
+  Object.keys(names).forEach(id => {
+    const c = caseData.cases.filter(x => x.id === C.solved.byHotel[id])[0];
+    assert.match(byId[id].name, names[id]); assert.match(c.hotel, names[id]);
+    assert.ok(c.outcome.indexOf('switched') === 0);
+  });
+  assert.ok(!/solved|solution/i.test(fs.readFileSync(path.join(__dirname, '..', 'crm', 'js', 'score.js'), 'utf8')), 'score.js has no rule for an existing solution');
+  assert.strictEqual(sc(byId.h006, { econ: econ('h006'), ownerCount: 1 }).total, 79);
+});
+
+test('score: a private owner is known but not a group (1 hotel, 4 points, never the project bonus of another private owner)', () => {
+  const h = data.hotels.filter(x => x.owner_group === C.privateOwner)[0];
+  const o = comp(sc(h, { econ: econ(h.id), ownerCount: 1, ownerHasProject: false, privateOwner: true }), 'owner');
+  assert.ok(o.points === 4 && !o.notSourced && /Private owner/.test(o.detail));
+});
+
 /* ------------------------------------------------------------------ economics */
 test('economics: equal to the wizard engine for the same inputs (every hotel)', () => {
   data.hotels.forEach(h => {
@@ -303,6 +331,12 @@ test('cases: similar cases rank same tier, then same country, then same build st
   const sim = CA.similar(byId.h006, CA.prepare(caseData.cases), 4); // Premium, Malaysia, existing
   assert.strictEqual(sim[0].case.id, 'C01');
   assert.deepStrictEqual(sim[0].matched, ['tier', 'country', 'build stage']);
+  // A hotel is never its own similar case.
+  Object.keys(C.solved.byHotel).forEach(id => {
+    const own = C.solved.byHotel[id], list = CA.similar(byId[id], CA.prepare(caseData.cases), 40, own);
+    assert.ok(list.every(x => x.case.id !== own), id);
+  });
+  assert.ok(CA.similar(byId.h006, CA.prepare(caseData.cases), 4, 'C01').length > 0);
   sim.forEach(s => assert.ok(s.matched.indexOf('tier') >= 0));
   for (let i = 1; i < sim.length; i++) assert.ok(sim[i - 1].points >= sim[i].points);
   const lux = CA.similar(byId.h125, CA.prepare(caseData.cases), 4); // Luxury, Indonesia

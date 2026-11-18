@@ -1,5 +1,5 @@
 {
- "note": "Public data compiled by the project team (marriott.com, owner reports, Marriott job postings), Oct to Nov 2026. operating_model not_sourced = no public source found.",
+ "note": "Public data compiled by the project team (marriott.com, owner reports, Marriott job postings), Oct to Nov 2026. operating_model not_sourced = no public source found. owner_group Private owner = a private individual, name not kept.",
  "markets": {
   "kl_luxury": {
    "occupancy_pct": 71.4,
@@ -200,7 +200,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 393,
-   "owner_group": "Private vehicle linked to Datuk Lim Kheng Yew",
+   "owner_group": "Private owner",
    "operating_model": "managed",
    "market": "kl"
   },
@@ -800,7 +800,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 225,
-   "owner_group": "Tan Sri Lim Wee Chai, founder of Top Glove Corporation Bhd",
+   "owner_group": "Private owner",
    "operating_model": "managed",
    "market": "my_other"
   },
@@ -815,7 +815,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 223,
-   "owner_group": "Datuk Loh Kian Chong",
+   "owner_group": "Private owner",
    "operating_model": "managed",
    "market": "my_other"
   },
@@ -1730,7 +1730,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 67,
-   "owner_group": "Fabrice and Evguenia Ivara",
+   "owner_group": "Private owner",
    "operating_model": "owner_operated",
    "market": "id_other"
   },
@@ -1745,7 +1745,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 49,
-   "owner_group": "Justin Chen",
+   "owner_group": "Private owner",
    "operating_model": "owner_operated",
    "market": "kl"
   },
@@ -1790,7 +1790,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 15,
-   "owner_group": "Jacopo and Rosa Sertoli",
+   "owner_group": "Private owner",
    "operating_model": "owner_operated",
    "market": "bali"
   },
@@ -1805,7 +1805,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 8,
-   "owner_group": "Dato Sean Hång and Datin Karen Hång",
+   "owner_group": "Private owner",
    "operating_model": "owner_operated",
    "market": "my_other"
   },
@@ -1849,7 +1849,7 @@
    "build_stage": "existing",
    "status": "In Betrieb",
    "opening": null,
-   "rooms": 738,
+   "rooms": 578,
    "owner_group": "YTL",
    "operating_model": "managed",
    "market": "kl_luxury"
@@ -1880,7 +1880,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 318,
-   "owner_group": "Tan Kian / Century Properties (Dua Mutiara)",
+   "owner_group": "Century Properties (Dua Mutiara)",
    "operating_model": "managed",
    "market": "jakarta"
   },
@@ -1895,7 +1895,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 317,
-   "owner_group": "Tan Kian / Century Properties (Dua Mutiara)",
+   "owner_group": "Century Properties (Dua Mutiara)",
    "operating_model": "managed",
    "market": "jakarta"
   },
@@ -2285,7 +2285,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 62,
-   "owner_group": "Tan Kian / Century Properties (Dua Mutiara)",
+   "owner_group": "Century Properties (Dua Mutiara)",
    "operating_model": "not_sourced",
    "market": "jakarta"
   },
@@ -2615,7 +2615,7 @@
    "status": "In Betrieb",
    "opening": null,
    "rooms": 90,
-   "owner_group": "Datuk Loh Kian Chong",
+   "owner_group": "Private owner",
    "operating_model": "not_sourced",
    "market": "my_other"
   },

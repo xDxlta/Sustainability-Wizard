@@ -11,8 +11,8 @@ also opens from a folder without a web server. Records are stored in the browser
 
 | Page | What it shows |
 | --- | --- |
-| Hotels | All 183 Marriott hotels in Malaysia, Indonesia and the Philippines. Search by name; filter by country, tier, operating model, build stage, owner group and pipeline status; sort by priority score, rooms and value. |
-| Hotel page | Facts with their source, economics from the wizard's engine, the pitch text for the segment, the score breakdown, the other hotels of the same owner, the closest public cases, the pipeline record, and an attached wizard request. |
+| Hotels | All 183 Marriott hotels in Malaysia, Indonesia and the Philippines. Search by name; filter by country, tier, operating model, build stage, owner group, pipeline status and existing solution; sort by priority score, rooms and value. |
+| Hotel page | The label "Already has a solution (public case)" where it applies, facts with their source, economics from the wizard's engine, the pitch text for the segment, the score breakdown, the other hotels of the same owner, the closest public cases, the pipeline record, and an attached wizard request. |
 | Case archive | The 40 public cases with a link to each source; Swisspro's own projects as well while the private file is loaded. Filter by country, tier, solution and outcome. |
 | Model | How many records are closed as Won and as Lost, and "Export training table". No win probability exists yet and none is shown. |
 | Data and rules | Export and import of the pipeline records, loading the private projects file, the score rules, the reference occupancy per market. |
@@ -26,7 +26,7 @@ in one file, `crm/js/config.js`; they are a proposal of the project team.
 | --- | --- | --- |
 | Payback fit | 35 | Reference occupancy of the hotel's market divided by the occupancy needed for a cash payback within three years. Ratio 1.25 or more: 35. Ratio 0.5 or less: 0. In proportion in between. With a wizard request attached, the hotel's own figures are used. |
 | Size | 20 | Rooms divided by 400, capped at 20. |
-| Owner leverage | 20 | Hotels of the same owner group in the data (this hotel included): 1 = 4, 2 = 8, 3 to 4 = 12, 5 or more = 16. Plus 4 when another hotel of the group is at Quoted, Mock-up or Won. |
+| Owner leverage | 20 | Hotels of the same owner group in the data (this hotel included): 1 = 4, 2 = 8, 3 to 4 = 12, 5 or more = 16. Plus 4 when another hotel of the group is at Quoted, Mock-up or Won. A private owner counts as 1 hotel, because hotels of private owners cannot be linked to each other. |
 | Segment fit | 15 | Tier: Premium or Select 8, Longer Stays or Collections 5, Luxury 2. Operating model: managed 4, owner-operated 3. Build stage: existing 3, new build 1. |
 | Timing | 10 | New build opening after 2026: 10. New build opening in 2026: 7. |
 
@@ -37,6 +37,16 @@ renovation date is in the data. The total is the sum, rounded to a whole number.
 The weights come from the brief. The steps inside each component (the ratio range 0.5 to 1.25, the
 400 rooms, the owner steps, the split of the segment points, 7 points for a 2026 opening) are choices
 made while building and are open for the team to change.
+
+## Hotels that already have a solution
+
+Four hotels of the list already replaced single-use bottles according to the public case archive: The
+Westin Kuala Lumpur (case C01), Element Kuala Lumpur (C02), The St. Regis Bali Resort (C18) and Manila
+Marriott Hotel (C24). They carry the label "Already has a solution (public case)" in the list and on the
+hotel page, each with a link to its case, and the list has a filter for it. The label **does not change
+the priority score**; the hotel page says so. A hotel is never listed as its own similar case. The
+four pairs are in `crm/js/config.js` (`solved.byHotel`); add a pair there when a new case concerns a
+hotel of the list.
 
 ## Economics
 
@@ -62,7 +72,7 @@ payback without staff time. The occupancy is the reference occupancy of the hote
 | `status` | `In Betrieb` (operating) or `Pipeline` (not open yet). Shown in English. |
 | `opening` | Opening date of a new build as free text, otherwise `null`. |
 | `rooms` | Number of rooms. |
-| `owner_group` | Owner group, or `null` (shown as "not sourced"). |
+| `owner_group` | Owner group (company or group name), `Private owner` for a private individual whose name is not kept, or `null` (shown as "not sourced"). |
 | `operating_model` | `managed`, `owner_operated` or `not_sourced` (no public source found). |
 | `market` | Key into `markets`. |
 
@@ -96,7 +106,7 @@ and replaces the records in the browser. Export (CSV) writes one row per record 
 ### Training table (Model page, CSV)
 
 One row per record closed as Won or Lost: hotel features, the five score components, the economics and
-their basis (market reference or from the hotel), product, quoted value, who decides, status history,
+their basis (market reference or from the hotel), the case id where the hotel already has a solution, product, quoted value, who decides, status history,
 date closed, outcome and reason. Notes are left out.
 
 ## Swisspro's own projects: the private file

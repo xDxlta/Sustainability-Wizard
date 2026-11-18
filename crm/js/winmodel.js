@@ -8,9 +8,9 @@
  * ============================================================================================
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) { module.exports = factory(require('./store.js')); }
-  else { root.CRM = root.CRM || {}; root.CRM.winmodel = factory(root.CRM.store); }
-})(typeof self !== 'undefined' ? self : this, function (S) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(require('./store.js'), require('./config.js')); }
+  else { root.CRM = root.CRM || {}; root.CRM.winmodel = factory(root.CRM.store, root.CRM.config); }
+})(typeof self !== 'undefined' ? self : this, function (S, C) {
   'use strict';
 
   /** Placeholder for a future trained model. `features` is one row of the training table. */
@@ -28,7 +28,7 @@
     return c;
   }
 
-  var HEADER = ['hotel_id', 'hotel', 'country', 'city', 'market', 'brand', 'tier', 'rooms', 'owner_group', 'owner_hotels_in_data', 'operating_model', 'build_stage', 'opening',
+  var HEADER = ['hotel_id', 'hotel', 'country', 'city', 'market', 'brand', 'tier', 'rooms', 'owner_group', 'owner_hotels_in_data', 'operating_model', 'build_stage', 'opening', 'already_has_solution_public_case',
     'score_total', 'score_payback_fit', 'score_size', 'score_owner_leverage', 'score_segment_fit', 'score_timing', 'score_components_not_sourced',
     'economics_basis', 'occupancy', 'bottles_per_room_night', 'price_per_bottle', 'currency', 'bottles_per_year', 'bottle_spend_per_year', 'cash_payback_years',
     'occupancy_needed_2y', 'occupancy_needed_3y', 'occupancy_needed_5y', 'installation_value_sgd', 'service_value_sgd_per_year',
@@ -50,7 +50,7 @@
       var h = v.hotel, e = v.econ, sc = v.score, comp = {};
       sc.components.forEach(function (c) { comp[c.id] = c; });
       var be = function (y) { return e && e.breakEven[y] ? r(e.breakEven[y].occupancy, 4) : ''; };
-      rows.push([id, h.name, h.country, h.city, h.market, h.brand, h.tier, h.rooms, h.owner_group || '', h.owner_group ? v.ownerCount : '', h.operating_model, h.build_stage, h.opening || '',
+      rows.push([id, h.name, h.country, h.city, h.market, h.brand, h.tier, h.rooms, h.owner_group || '', h.owner_group ? v.ownerCount : '', h.operating_model, h.build_stage, h.opening || '', C.solved.byHotel[h.id] || '',
         sc.total, comp.payback.points, comp.size.points, comp.owner.points, comp.segment.points, comp.timing.points,
         sc.components.filter(function (c) { return c.notSourced; }).map(function (c) { return c.id; }).join(' '),
         e ? (e.fromHotel ? 'from the hotel' : 'market reference') : '', e ? r(e.occupancy, 4) : '', e ? e.bottlesPerRoomNight : '', e ? r(e.pricePerBottle, 4) : '', e ? e.currency : '',

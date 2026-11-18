@@ -68,10 +68,11 @@
   /**
    * The closest public cases for a hotel: same tier first, then same country, then same build stage
    * (4, 2 and 1 points, so a tier match always ranks above the other two together).
+   * `ownCaseId` is the case about this very hotel, if there is one: a hotel is never its own similar case.
    * Returns up to `limit` entries with at least one match: [{ case, points, matched: ['tier', 'country', 'build stage'] }].
    */
-  function similar(hotel, prepared, limit) {
-    return prepared.filter(function (c) { return c.kind === 'public'; }).map(function (c) {
+  function similar(hotel, prepared, limit, ownCaseId) {
+    return prepared.filter(function (c) { return c.kind === 'public' && c.id !== ownCaseId; }).map(function (c) {
       var matched = [], points = 0;
       if (c.tierGroup === hotel.tier) { matched.push('tier'); points += 4; }
       if (c.country === hotel.country) { matched.push('country'); points += 2; }

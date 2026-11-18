@@ -1,5 +1,15 @@
 # Changelog
 
+## Hotel pipeline tool 1.1 (crm/), 18 November 2026
+
+- Data: JW Marriott Hotel Kuala Lumpur has 578 rooms (was 738).
+- Data: names of private individuals in `owner_group` replaced by "Private owner" (8 hotels); in one mixed
+  entry the individual's name is removed and the company kept ("Century Properties (Dua Mutiara)").
+  A private owner counts as a single-hotel owner in the score and has no "same owner" list.
+- Four hotels carry the label "Already has a solution (public case)" in the list and on the hotel page,
+  with a link to the case, and a filter. The score is unchanged by it. A hotel is no longer listed as its
+  own similar case. `#/cases/<id>` opens the archive at one case.
+
 ## Hotel pipeline tool 1.0 (crm/), 17 November 2026
 
 - New tool under `crm/` for Swisspro's sales team: 183 Marriott hotels with a rule-based priority score,

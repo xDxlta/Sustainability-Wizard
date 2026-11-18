@@ -13,11 +13,18 @@
   var publicCases = CA.prepare(D.cases.cases);
   var ownerCount = {};
   hotels.forEach(function (h) { if (h.owner_group) ownerCount[h.owner_group] = (ownerCount[h.owner_group] || 0) + 1; });
+  /** Hotels of the same owner group in the data. A private owner is not a group: 1. Owner not sourced: null. */
+  function groupCount(h) { return !h.owner_group ? null : (h.owner_group === C.privateOwner ? 1 : ownerCount[h.owner_group]); }
+  function isGroup(h) { return !!h.owner_group && h.owner_group !== C.privateOwner; }
+  var caseById = {};
+  publicCases.forEach(function (c) { caseById[c.id] = c; });
+  /** The public case about this very hotel, or null. */
+  function ownCase(h) { return caseById[C.solved.byHotel[h.id]] || null; }
   var LIST = PL.pricelist.currency.value; // list currency of the wizard's price list (SGD)
 
   var app = document.getElementById('app');
   var state = loadState(), projectFile = loadProjects(), linked = linkProjects();
-  var ui = { q: '', country: '', tier: '', model: '', stage: '', owner: '', status: '', sort: 'score', dir: 'desc', listScroll: 0,
+  var ui = { q: '', country: '', tier: '', model: '', stage: '', owner: '', status: '', solved: '', sort: 'score', dir: 'desc', listScroll: 0,
     cases: { country: '', tier: '', solution: '', outcome: '', kind: '' } };
   var views = null, econCache = {};
 
@@ -107,13 +114,13 @@
   }
   function buildViews() {
     var active = {};
-    hotels.forEach(function (h) { if (h.owner_group && C.score.owner.projectStatuses.indexOf(S.get(state, h.id).status) >= 0) (active[h.owner_group] = active[h.owner_group] || []).push(h.id); });
+    hotels.forEach(function (h) { if (isGroup(h) && C.score.owner.projectStatuses.indexOf(S.get(state, h.id).status) >= 0) (active[h.owner_group] = active[h.owner_group] || []).push(h.id); });
     views = {};
     hotels.forEach(function (h) {
       var econ = econOf(h), rec = S.get(state, h.id);
-      var has = !!(h.owner_group && (active[h.owner_group] || []).some(function (id) { return id !== h.id; }));
-      var sc = SC.score(C.score, h, { econ: econ, ownerCount: ownerCount[h.owner_group], ownerHasProject: has });
-      views[h.id] = { hotel: h, econ: econ, score: sc, ownerCount: ownerCount[h.owner_group] || null, record: rec,
+      var has = !!(isGroup(h) && (active[h.owner_group] || []).some(function (id) { return id !== h.id; }));
+      var sc = SC.score(C.score, h, { econ: econ, ownerCount: groupCount(h), ownerHasProject: has, privateOwner: h.owner_group === C.privateOwner });
+      views[h.id] = { hotel: h, econ: econ, score: sc, ownerCount: groupCount(h), record: rec,
         value: rec.quotedValue != null ? { amount: rec.quotedValue, quoted: true } : { amount: econ ? econ.installationList : null, quoted: false } };
     });
     return views;
@@ -144,6 +151,20 @@
     } catch (e) { if (status) { status.textContent = e.message; status.className = 'error'; } }
   }
 
+  /** The label for a hotel that already replaced single-use bottles according to the public case archive, with a link to the case. */
+  function solvedLabel(h) {
+    var c = ownCase(h);
+    return c ? el('a', { class: 'solved', href: '#/cases/' + c.id, title: 'Open the public case ' + c.id + ' in the case archive', text: C.solved.label }) : null;
+  }
+  function solvedPanel(h) {
+    var c = ownCase(h); if (!c) return null;
+    return el('section', { class: 'panel solved-panel', id: 'solved' },
+      el('div', {}, el('span', { class: 'solved', text: C.solved.label })),
+      el('p', {}, c.solutionGroup === 'Other' ? null : el('strong', { text: c.solutionGroup + ': ' }), fmt.cap(c.solution) + '. Outcome: ' + c.outcome + '.' + (c.vendor && c.vendor !== 'not stated' ? ' Vendor: ' + c.vendor + '.' : '') + ' ',
+        el('a', { href: '#/cases/' + c.id, text: 'Open the case in the archive' }), ' · ', el('a', { href: c.source_url, target: '_blank', rel: 'noopener noreferrer', text: 'Source' }), c.source_date ? ' (' + c.source_date + ')' : null),
+      el('p', { class: 'small muted', text: 'This does not change the priority score: the score has no rule for an existing solution. Check what the hotel uses today before you approach it.' }));
+  }
+
   /* ================================================================== hotel list */
   function matches(h) {
     var v = view(h.id);
@@ -154,6 +175,7 @@
     if (ui.stage && h.build_stage !== ui.stage) return false;
     if (ui.owner === '__none' ? !!h.owner_group : (ui.owner && h.owner_group !== ui.owner)) return false;
     if (ui.status && v.record.status !== ui.status) return false;
+    if (ui.solved && (ui.solved === 'yes') !== !!ownCase(h)) return false;
     return true;
   }
   function sortValue(h) { var v = view(h.id); return ui.sort === 'rooms' ? h.rooms : ui.sort === 'value' ? (v.value.amount == null ? -1 : v.value.amount) : v.score.sum; }
@@ -170,13 +192,13 @@
         var v = view(h.id);
         tbody.appendChild(el('tr', {},
           el('td', {}, scoreEl(v.score)),
-          el('td', {}, el('a', { class: 'hname', href: '#/hotel/' + h.id, text: h.name }), el('span', { class: 'sub', text: h.city + ' · ' + h.brand })),
+          el('td', {}, el('a', { class: 'hname', href: '#/hotel/' + h.id, text: h.name }), el('span', { class: 'sub', text: h.city + ' · ' + h.brand }), solvedLabel(h)),
           el('td', { text: h.country }),
           el('td', { text: h.tier }),
           el('td', {}, h.operating_model === 'not_sourced' ? ns() : label('operating_model', h.operating_model)),
           el('td', {}, label('build_stage', h.build_stage), h.opening ? el('span', { class: 'sub', text: 'opens ' + h.opening }) : null),
           el('td', { class: 'num', text: fmt.int(h.rooms) }),
-          el('td', {}, h.owner_group ? [h.owner_group, ownerCount[h.owner_group] > 1 ? el('span', { class: 'sub', text: ownerCount[h.owner_group] + ' hotels in the data' }) : null] : ns()),
+          el('td', {}, h.owner_group ? [h.owner_group, groupCount(h) > 1 ? el('span', { class: 'sub', text: groupCount(h) + ' hotels in the data' }) : null] : ns()),
           el('td', {}, statusEl(h.id)),
           el('td', { class: 'num' }, v.value.amount == null ? ns() : sgd(v.value.amount), el('span', { class: 'sub', text: v.value.quoted ? 'quoted' : 'installation' }))));
       });
@@ -199,9 +221,10 @@
         field('Operating model', select('f-model', [['', 'All'], ['managed', 'Managed'], ['owner_operated', 'Owner-operated'], ['not_sourced', 'Not sourced']], ui.model, set('model'))),
         field('Build stage', select('f-stage', [['', 'All'], ['existing', 'Existing'], ['new_build', 'New build']], ui.stage, set('stage'))),
         field('Owner group', select('f-owner', [['', 'All']].concat(owners.map(function (o) { return [o, o + ' (' + ownerCount[o] + ')']; })).concat([['__none', 'Not sourced']]), ui.owner, set('owner'))),
-        field('Pipeline status', select('f-status', [['', 'All']].concat(C.statuses.map(function (x) { return [x, x]; })), ui.status, set('status')))),
+        field('Pipeline status', select('f-status', [['', 'All']].concat(C.statuses.map(function (x) { return [x, x]; })), ui.status, set('status'))),
+        field('Existing solution', select('f-solved', [['', 'All'], ['yes', C.solved.label], ['no', 'No public case']], ui.solved, set('solved')))),
       el('div', { class: 'list-bar' },
-        el('div', {}, count, ' · ', el('button', { type: 'button', class: 'link-btn', onclick: function () { ui.q = ui.country = ui.tier = ui.model = ui.stage = ui.owner = ui.status = ''; route(); } }, 'Clear filters')),
+        el('div', {}, count, ' · ', el('button', { type: 'button', class: 'link-btn', onclick: function () { ui.q = ui.country = ui.tier = ui.model = ui.stage = ui.owner = ui.status = ui.solved = ''; route(); } }, 'Clear filters')),
         el('div', { class: 'sort' }, el('label', { for: 'f-sort', text: 'Sort by' }),
           select('f-sort', [['score:desc', 'Priority score, highest first'], ['score:asc', 'Priority score, lowest first'], ['rooms:desc', 'Rooms, most first'], ['rooms:asc', 'Rooms, fewest first'], ['value:desc', 'Value, highest first'], ['value:asc', 'Value, lowest first']], ui.sort + ':' + ui.dir, function (v) { var p = v.split(':'); ui.sort = p[0]; ui.dir = p[1]; refresh(); }))));
     var table = el('table', { class: 'grid hotels' },
@@ -262,7 +285,7 @@
       p.otherTier ? el('p', { class: 'small muted source-line', text: 'This hotel is in the tier ' + h.tier + '. The pitch texts cover Premium and Select; the text for the same operating model is shown.' }) : null);
   }
 
-  function scorePanel(sc) {
+  function scorePanel(sc, solvedNote) {
     var grid = el('div', { class: 'breakdown' });
     sc.components.forEach(function (c) {
       grid.appendChild(el('div', {}, c.label, c.notSourced ? el('span', { class: 'sub ns', text: 'not sourced, neutral' }) : null));
@@ -272,13 +295,14 @@
     });
     grid.appendChild(el('div', { class: 'total', text: 'Total ' + sc.total + ' of 100 (sum ' + (Math.round(sc.sum * 10) / 10) + ', rounded)' }));
     return el('section', { class: 'panel', id: 'score' }, el('h2', { text: C.score.label }),
-      el('p', { class: 'small muted' }, 'A ranking aid built from five rules with fixed weights (a proposal of the project team). It is not a probability. ', el('a', { href: '#/data', text: 'See the rules' }), '.'),
+      el('p', { class: 'small muted' }, 'A ranking aid built from five rules with fixed weights (a proposal of the project team). It is not a probability. ', el('a', { href: '#/data', text: 'See the rules' }), '.', solvedNote || null),
       grid);
   }
 
   function ownerPanel(h) {
     var sec = el('section', { class: 'panel', id: 'owner' }, el('h2', { text: 'Same owner' }));
     if (!h.owner_group) { sec.appendChild(el('p', {}, ns('Owner group not sourced.'))); return sec; }
+    if (!isGroup(h)) { sec.appendChild(el('p', { class: 'muted', text: 'Private owner. The name is not kept, so other hotels of the same owner cannot be linked.' })); return sec; }
     var others = hotels.filter(function (x) { return x.owner_group === h.owner_group && x.id !== h.id; }).sort(function (a, b) { return view(b.id).score.sum - view(a.id).score.sum; });
     if (!others.length) { sec.appendChild(el('p', { class: 'muted', text: 'No other hotel of ' + h.owner_group + ' in the data.' })); return sec; }
     sec.appendChild(el('p', { class: 'small muted', text: h.owner_group + ': ' + others.length + (others.length === 1 ? ' other hotel' : ' other hotels') + ' in the data.' }));
@@ -299,9 +323,9 @@
       el('div', { class: 'small muted' }, matched ? 'Same ' + matched.join(', ') + '. ' : null, el('a', { href: c.source_url, target: '_blank', rel: 'noopener noreferrer', text: 'Source' }), c.source_date ? ' (' + c.source_date + ')' : null));
   }
   function similarPanel(h) {
-    var sim = CA.similar(h, publicCases, 4);
+    var own = ownCase(h), sim = CA.similar(h, publicCases, 4, own ? own.id : null);
     var sec = el('section', { class: 'panel', id: 'similar' }, el('h2', { text: 'Similar cases' }),
-      el('p', { class: 'small muted' }, 'The closest of the ' + publicCases.length + ' public cases: same tier first, then same country, then same build stage. ', el('a', { href: '#/cases', text: 'Open the case archive' }), '.'));
+      el('p', { class: 'small muted' }, 'The closest of the ' + publicCases.length + ' public cases: same tier first, then same country, then same build stage. ', el('a', { href: '#/cases', text: 'Open the case archive' }), '.', own ? ' The case about this hotel itself is shown at the top of the page, not here.' : null));
     if (!sim.length) sec.appendChild(el('p', { class: 'muted', text: 'No public case shares the tier, country or build stage of this hotel.' }));
     sim.forEach(function (s) { sec.appendChild(caseBlock(s.case, s.matched)); });
     return sec;
@@ -386,12 +410,12 @@
       el('div', { class: 'head-score' }, el('div', { class: 'big' }, String(v.score.total), el('small', { text: ' / 100' })), el('div', { class: 'lbl', text: C.score.label })),
       { href: '#/hotels', text: 'All hotels' }));
     app.appendChild(el('div', { class: 'wrap page' }, el('div', { class: 'cols' },
-      el('div', { class: 'main' }, factsPanel(h), economicsPanel(h, v.econ), pitchPanel(h), scorePanel(v.score), ownerPanel(h), similarPanel(h)),
+      el('div', { class: 'main' }, solvedPanel(h), factsPanel(h), economicsPanel(h, v.econ), pitchPanel(h), scorePanel(v.score, ownCase(h) ? ' ' + C.solved.label + ': not part of the score.' : null), ownerPanel(h), similarPanel(h)),
       el('aside', {}, recordPanel(h), requestPanel(h, v.econ)))));
   }
 
   /* ================================================================== case archive */
-  function renderCases() {
+  function renderCases(focusId) {
     var f = ui.cases, all = publicCases.concat(projectFile ? projectFile.projects.map(CA.fromProject) : []);
     var uniq = function (k) { var m = {}; all.forEach(function (c) { m[c[k]] = 1; }); return Object.keys(m).sort(); };
     var tbody = el('tbody'), count = el('span');
@@ -404,7 +428,7 @@
         var pub = c.kind === 'public';
         var clean = function (a) { return (a || []).filter(function (x) { return x !== 'not stated'; }).map(function (x) { return x.replace(/_/g, ' '); }).join(', '); };
         var matchedHotels = pub ? [] : (c.hotel_ids || []).filter(function (id) { return hotelsById[id]; });
-        tbody.appendChild(el('tr', {},
+        tbody.appendChild(el('tr', { id: 'case-' + c.id, class: c.id === focusId ? 'focus' : null },
           el('td', {}, el('span', { class: 'hname', text: c.hotel }), el('span', { class: 'sub', text: [c.city, c.country].filter(Boolean).join(', ') }),
             pub ? null : el('span', { class: 'sub orig', text: 'Swisspro project, confidential' }),
             matchedHotels.map(function (id) { return el('a', { class: 'sub', href: '#/hotel/' + id, text: 'Hotel page: ' + hotelsById[id].name }); })),
@@ -495,11 +519,11 @@
           projectFile && (projectFile.warnings.length || linked.warnings.length) ? el('ul', { class: 'plain small' }, projectFile.warnings.concat(linked.warnings).map(function (x) { return el('li', { text: x }); })) : null,
           pstatus)),
       el('section', { class: 'panel', id: 'rules' }, el('h2', { text: sc.label + ': the rules' }),
-        el('p', { class: 'small muted', text: 'Five components add up to 100. The weights are a proposal of the project team and live in one file (crm/js/config.js). Where data is missing the component is marked “not sourced” and scored neutral, at half of its points. The score is not a probability.' }),
+        el('p', { class: 'small muted', text: 'Five components add up to 100. The weights are a proposal of the project team and live in one file (crm/js/config.js). Where data is missing the component is marked “not sourced” and scored neutral, at half of its points. The score is not a probability. The label “' + C.solved.label + '” (' + Object.keys(C.solved.byHotel).length + ' hotels) is shown next to the score and does not change it.' }),
         el('div', { class: 'table-wrap' }, el('table', { class: 'grid rules' }, el('thead', {}, el('tr', {}, el('th', { text: 'Component' }), el('th', { class: 'num', text: 'Points' }), el('th', { text: 'Rule' }))), el('tbody', {},
           rule('Payback fit', w.payback, 'Reference occupancy of the hotel’s market divided by the occupancy needed for a cash payback within ' + sc.payback.years + ' years. Ratio ' + sc.payback.fullAt + ' or more: full points. Ratio ' + sc.payback.zeroAt + ' or less: none. In proportion in between. With a wizard request attached, the hotel’s own figures are used.'),
           rule('Size', w.size, 'Rooms divided by ' + sc.size.fullAtRooms + ', capped at full points.'),
-          rule('Owner leverage', w.owner, 'Hotels of the same owner group in the data: ' + sc.owner.steps.slice().reverse().map(function (s, i, a) { return (a[i + 1] ? (s.min === a[i + 1].min - 1 ? s.min : s.min + ' to ' + (a[i + 1].min - 1)) : s.min + ' or more') + ' = ' + s.points; }).join(', ') + '. Plus ' + sc.owner.projectBonus + ' when another hotel of the group is at Quoted, Mock-up or Won. Owner not sourced: ' + w.owner / 2 + '.'),
+          rule('Owner leverage', w.owner, 'Hotels of the same owner group in the data: ' + sc.owner.steps.slice().reverse().map(function (s, i, a) { return (a[i + 1] ? (s.min === a[i + 1].min - 1 ? s.min : s.min + ' to ' + (a[i + 1].min - 1)) : s.min + ' or more') + ' = ' + s.points; }).join(', ') + '. Plus ' + sc.owner.projectBonus + ' when another hotel of the group is at Quoted, Mock-up or Won. Owner not sourced: ' + w.owner / 2 + '. A private owner counts as 1 hotel.'),
           rule('Segment fit', w.segment, 'Tier: Premium or Select ' + seg.tier.Premium + ', Longer Stays or Collections ' + seg.tier.Collections + ', Luxury ' + seg.tier.Luxury + '. Operating model: managed ' + seg.model.managed + ', owner-operated ' + seg.model.owner_operated + ', not sourced ' + seg.modelMax / 2 + '. Build stage: existing ' + seg.stage.existing + ', new build ' + seg.stage.new_build + '.'),
           rule('Timing', w.timing, 'New build opening after ' + sc.referenceYear + ': ' + sc.timing.newBuildLater + '. New build opening in ' + sc.referenceYear + ': ' + sc.timing.newBuildThisYear + '. Existing hotel: the renovation date is not in the data, so ' + w.timing / 2 + ' (neutral).'))))),
       el('section', { class: 'panel', id: 'public-data' }, el('h2', { text: 'Public data' }),
@@ -521,13 +545,14 @@
     app.textContent = '';
     renderPrivateBar();
     if (page === 'hotel') renderHotel(parts[1]);
-    else if (page === 'cases') renderCases();
+    else if (page === 'cases') renderCases(parts[1]);
     else if (page === 'model') renderModel();
     else if (page === 'data') renderData();
     else { page = 'hotels'; renderHotels(); }
     Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'), function (a) { if (a.getAttribute('data-nav') === (page === 'hotel' ? 'hotels' : page)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     document.title = (page === 'hotel' && hotelsById[parts[1]] ? hotelsById[parts[1]].name + ' \u00b7 ' : '') + 'Swisspro hotel pipeline';
     if (nav) window.scrollTo(0, page === 'hotels' ? ui.listScroll : 0);
+    if (nav && page === 'cases' && parts[1]) { var row = document.getElementById('case-' + parts[1]); if (row) row.scrollIntoView({ block: 'center' }); }
     current = page;
   }
   window.addEventListener('hashchange', function () { route(true); });

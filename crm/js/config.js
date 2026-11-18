@@ -79,6 +79,15 @@
     return { key: key, segment: pitch[key].segment, text: pitch[key].text, otherTier: otherTier };
   }
 
+  /* Hotels of the list that already replaced single-use bottles according to the public case archive
+     (hotel id -> case id in cases_public.json). Named by the project team, 18 Nov 2026. Shown as a label
+     and offered as a filter; it does not enter the priority score. */
+  var solved = { label: 'Already has a solution (public case)', byHotel: { h006: 'C01', h041: 'C02', h133: 'C18', h001: 'C24' } };
+
+  /* Owner value that stands for a private individual whose name is not kept. Such hotels are not one
+     owner group: each counts as a single-hotel owner and no "same owner" list is shown. */
+  var privateOwner = 'Private owner';
+
   var labels = {
     operating_model: { managed: 'Managed', owner_operated: 'Owner-operated', not_sourced: 'Not sourced' },
     build_stage: { existing: 'Existing', new_build: 'New build' },
@@ -87,7 +96,7 @@
 
   return {
     score: score, statuses: statuses, closedStatuses: closedStatuses, deciders: deciders, reasons: reasons,
-    projectStatusMap: projectStatusMap, pitch: pitch, pitchFor: pitchFor, labels: labels,
+    projectStatusMap: projectStatusMap, solved: solved, privateOwner: privateOwner, pitch: pitch, pitchFor: pitchFor, labels: labels,
     dataDate: 'compiled Oct to Nov 2026 by the project team',
     storageKey: 'swisspro-crm-v1', projectsKey: 'swisspro-crm-projects-v1'
   };
