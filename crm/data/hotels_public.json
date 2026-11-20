@@ -10,32 +10,32 @@
    "source": "Kuala Lumpur 4 to 5-star, Knight Frank in YTL REIT AR 2025"
   },
   "my_other": {
-   "occupancy_pct": 55.9,
-   "source": "Malaysia 4-star, MAH 1Q 2025"
+   "occupancy_pct": 62.8,
+   "source": "Malaysia 4-star, DOSM Stats Bulletin Q4 2025 (Mar 2026)"
   },
   "bali": {
-   "occupancy_pct": 60.7,
-   "source": "Bali star hotels, BPS 2025"
+   "occupancy_pct": 61.1,
+   "source": "Bali 4- and 5-star combined by occupied room-nights, BPS Room Occupancy Rate of Hotel 2025 (Apr 2026), appendix tables 1 and 2"
   },
   "jakarta": {
-   "occupancy_pct": 53.43,
-   "source": "DKI Jakarta star hotels, BPS 2025"
+   "occupancy_pct": 51.8,
+   "source": "DKI Jakarta 4- and 5-star combined by occupied room-nights, BPS 2025 (Apr 2026), appendix tables 1 and 2"
   },
   "surabaya": {
-   "occupancy_pct": 49.3,
-   "source": "East Java star hotels, BPS 2025"
+   "occupancy_pct": 49.1,
+   "source": "East Java 4- and 5-star combined by occupied room-nights, BPS 2025 (Apr 2026), appendix tables 1 and 2"
   },
   "riau": {
-   "occupancy_pct": 50.37,
-   "source": "Riau Islands star hotels, BPS Nov 2025"
+   "occupancy_pct": 48.1,
+   "source": "Riau Islands 4- and 5-star combined by occupied room-nights, BPS 2025 (Apr 2026), appendix tables 1 and 2"
   },
   "id_other": {
-   "occupancy_pct": 49.26,
-   "source": "Indonesia star hotels, BPS 2025"
+   "occupancy_pct": 52.8,
+   "source": "Indonesia 4- and 5-star combined by occupied room-nights, BPS 2025 (Apr 2026), appendix tables 1 and 2"
   },
   "ph": {
-   "occupancy_pct": 60.0,
-   "source": "Philippines, Leechiu 2025"
+   "occupancy_pct": 65.0,
+   "source": "Metro Manila, all hotels, Leechiu 2025 as reported by Hospitality News Philippines (8 Apr 2026)"
   }
  },
  "hotels": [
@@ -682,7 +682,7 @@
    "rooms": 249,
    "owner_group": "IOI Properties",
    "operating_model": "managed",
-   "market": "my_other"
+   "market": "kl"
   },
   {
    "id": "h044",
@@ -802,7 +802,7 @@
    "rooms": 225,
    "owner_group": "Private owner",
    "operating_model": "managed",
-   "market": "my_other"
+   "market": "kl"
   },
   {
    "id": "h052",
@@ -1627,7 +1627,7 @@
    "rooms": 180,
    "owner_group": "YTL",
    "operating_model": "owner_operated",
-   "market": "my_other"
+   "market": "kl"
   },
   {
    "id": "h107",
