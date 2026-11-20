@@ -81,6 +81,8 @@ a.hname:hover { color: var(--lake); text-decoration: underline; }
 .status { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; flex: none; border: 1.5px solid var(--on-navy-2); background: transparent; }
 .status[data-s="Contacted"]::before { border-color: var(--lake); background: var(--glacier-2); }
+.status[data-s="Replied"]::before { border-color: var(--lake); background: var(--glacier-2); }
+.status[data-s="Meeting"]::before { border-color: var(--lake); background: var(--glacier-2); }
 .status[data-s="Quoted"]::before { border-color: var(--lake); background: var(--lake); }
 .status[data-s="Mock-up"]::before { border-color: var(--navy); background: var(--navy); }
 .status[data-s="Won"]::before { border-color: var(--won); background: var(--won); }
@@ -169,3 +171,8 @@ a.solved:hover { color: var(--navy); border-color: var(--gold); text-decoration:
 .solved-panel { display: grid; gap: 8px; border: 1px solid var(--warn-line); box-shadow: none; }
 .solved-panel .solved { margin-top: 0; font-size: 13px; }
 table.grid tr.focus td { background: var(--glacier); }
+
+/* funnel outlook on the hotel page */
+.outlook { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--lake); background: var(--glacier-2); font-size: 13px; }
+.outlook p { margin: 2px 0; }
+.outlook .basis { color: var(--muted, #5b6b7a); font-size: 12px; }

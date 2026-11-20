@@ -6,7 +6,7 @@
   var SW = window.SW, CRM = window.CRM, D = window.CRM_DATA;
   var F = SW.factors, PL = SW.pricelist, fmt = SW.format;
   var deps = { F: F, PL: PL, M: SW.model, E: SW.engine, R: SW.recommend, B: SW.business };
-  var C = CRM.config, S = CRM.store, P = CRM.projects, CA = CRM.cases, WL = CRM.wizardlink, WM = CRM.winmodel, EC = CRM.economics, SC = CRM.score;
+  var C = CRM.config, S = CRM.store, P = CRM.projects, CA = CRM.cases, WL = CRM.wizardlink, WM = CRM.winmodel, FU = CRM.funnel, EC = CRM.economics, SC = CRM.score;
 
   var hotels = D.hotels.hotels, markets = D.hotels.markets, hotelNote = D.hotels.note, hotelsById = {};
   hotels.forEach(function (h) { hotelsById[h.id] = h; });
@@ -368,6 +368,12 @@
     if (rec.prefilled) sec.appendChild(el('p', { class: 'small muted', style: 'margin-bottom:10px', text: 'Pre-filled from Swisspro’s file on ' + rec.date + (rec.quotedValue != null ? '; the quoted value is the project value as given, check its currency' : '') + '. Any change makes the record yours.' }));
     sec.appendChild(form);
     if (rec.history.length) sec.appendChild(el('p', { class: 'history', text: 'History: ' + S.historyText(rec) }));
+    var ol = FU.outlook(state, h.id, S.today());
+    if (ol) sec.appendChild(el('div', { class: 'outlook', id: 'outlook' },
+      el('p', {}, el('strong', { text: ol.stage + ' since ' + ol.since + ' (' + ol.daysInStage + (ol.daysInStage === 1 ? ' day' : ' days') + '). ' }),
+        'Typical time to the next step: about ' + Math.round(ol.typicalDays) + ' days, so the next step is expected around ' + ol.nextExpected + (ol.overdue ? ' (already longer than typical)' : '') + '.'),
+      el('p', { text: 'If the hotel goes through every remaining step: Won around ' + ol.wonIfAllSteps + '. This is a time estimate, not a chance of winning.' }),
+      el('p', { class: 'basis', text: 'Basis: ' + ol.basis + (ol.allAssumed ? '. Source of the assumption for this step: ' + ol.assumptionSource + '. See the Model page.' : '. See the Model page.') })));
     if (stored) sec.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'link-btn', onclick: function () { if (window.confirm('Delete the pipeline record of this hotel?')) { S.remove(state, h.id); save(); route(); } } }, 'Delete this record')));
     return sec;
   }
@@ -470,6 +476,15 @@
       tb.appendChild(el('tr', {}, el('td', {}, el('a', { class: 'hname', href: '#/hotel/' + id, text: h.name })), el('td', {}, el('span', { class: 'status', 'data-s': r.status, text: r.status })),
         el('td', {}, r.reason ? fmt.cap(r.reason) : ns('reason not set')), el('td', { text: r.date }), el('td', {}, scoreEl(view(id).score))));
     });
+    var day = S.today(), fs = FU.stats(state, day), st = FU.stageTable(state, view, day), ftb = el('tbody');
+    C.funnel.stages.slice(0, -1).forEach(function (k) {
+      var x = fs[k];
+      ftb.appendChild(el('tr', {}, el('td', {}, el('span', { class: 'status', 'data-s': k, text: k })),
+        el('td', { class: 'num', text: String(x.entered) }), el('td', { class: 'num', text: String(x.movedOn) }), el('td', { class: 'num', text: String(x.lost) }), el('td', { class: 'num', text: String(x.waiting) }),
+        el('td', { class: 'num' }, x.conversion == null ? ns('from ' + C.funnel.minObserved + ' hotels') : fmt.pct(x.conversion)),
+        el('td', { class: 'num', text: String(Math.round(x.typicalDays)) }),
+        el('td', { class: 'small' }, x.basis, el('span', { class: 'sub', text: 'Assumption: ' + x.assumedDays + ' days, ' + x.assumptionSource }))));
+    });
     app.appendChild(pageHead('Model', 'What exists today: the rule-based priority score and a growing record of what happened. No win probability yet.'));
     app.appendChild(el('div', { class: 'wrap page' },
       el('section', { class: 'panel' }, el('h2', { text: 'Win probability: ' + wp.label }),
@@ -482,6 +497,13 @@
         el('div', { class: 'actions' },
           el('button', { type: 'button', class: 'btn btn-primary', id: 'export-training', disabled: table.rows.length ? null : true, onclick: function () { download('swisspro-training-table-' + S.today() + '.csv', S.toCsv(table.header, table.rows), 'text/csv'); } }, 'Export training table'),
           el('span', { class: 'small muted', text: table.rows.length ? table.rows.length + ' rows, one per closed record: hotel features, score components, economics, status history, outcome and reason.' : 'No record is closed as Won or Lost yet, so there is nothing to export.' }))),
+      el('section', { class: 'panel', id: 'funnel' }, el('h2', { text: 'Funnel: time and conversion between steps' }),
+        el('div', { class: 'prose' },
+          el('p', { text: 'Every dated status change is a step, so the tool learns from replies, meetings, quotes and mock-ups, not only from wins. Typical days start as an assumption and move towards Swisspro\u2019s own figures with every logged step; hotels still waiting count with the days waited so far. A conversion share is shown once ' + C.funnel.minObserved + ' hotels have left a step as moved on or lost.' })),
+        el('div', { class: 'table-wrap', style: 'margin-top:12px' }, el('table', { class: 'grid' }, el('thead', {}, el('tr', {}, el('th', { text: 'Step' }), el('th', { class: 'num', text: 'Entered' }), el('th', { class: 'num', text: 'Moved on' }), el('th', { class: 'num', text: 'Lost' }), el('th', { class: 'num', text: 'Still waiting' }), el('th', { class: 'num', text: 'Conversion' }), el('th', { class: 'num', text: 'Typical days to next step' }), el('th', { text: 'Basis' }))), ftb)),
+        el('div', { class: 'actions' },
+          el('button', { type: 'button', class: 'btn btn-line', id: 'export-stages', disabled: st.rows.length ? null : true, onclick: function () { download('swisspro-stage-table-' + day + '.csv', S.toCsv(st.header, st.rows), 'text/csv'); } }, 'Export stage table'),
+          el('span', { class: 'small muted', text: st.rows.length ? st.rows.length + ' rows, one per stay in a step, with days and whether the hotel moved on: the training data for time between steps.' : 'No hotel has a dated step yet.' }))),
       el('section', { class: 'panel flush' }, closed.length
         ? el('div', { class: 'table-wrap' }, el('table', { class: 'grid' }, el('thead', {}, el('tr', {}, el('th', { text: 'Closed record' }), el('th', { text: 'Outcome' }), el('th', { text: 'Reason' }), el('th', { text: 'Date' }), el('th', { text: 'Score' }))), tb))
         : el('p', { class: 'empty', text: 'Closed records appear here once a hotel is set to Won or Lost on its page.' }))));

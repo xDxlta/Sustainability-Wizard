@@ -46,7 +46,27 @@
     timing: { newBuildLater: 10, newBuildThisYear: 7 }
   };
 
-  var statuses = ['Not contacted', 'Contacted', 'Quoted', 'Mock-up', 'Won', 'Lost', 'On hold'];
+  var statuses = ['Not contacted', 'Contacted', 'Replied', 'Meeting', 'Quoted', 'Mock-up', 'Won', 'Lost', 'On hold'];
+
+  /* Funnel: the steps a hotel passes on the way to Won, in order. Every dated status change is one step.
+     A step may be skipped (a hotel can ask for a quote straight away).
+     assumedDays: typical (median) days from entering a step to reaching the next one. These are ASSUMPTIONS,
+     not data: each carries its source. Logged records update them (exponential time model with the assumption
+     counted as `priorWeight` observed steps), so the figure moves from assumption to Swisspro's own data.
+     A conversion share is only shown once `minObserved` hotels have left a step as moved on or lost. */
+  var funnel = {
+    stages: ['Contacted', 'Replied', 'Meeting', 'Quoted', 'Mock-up', 'Won'],
+    exits: { Lost: 'lost', 'On hold': 'on hold' },
+    priorWeight: 2,
+    minObserved: 5,
+    assumedDays: {
+      Contacted: { days: 14, source: 'assumption of the project team' },
+      Replied: { days: 21, source: 'assumption of the project team' },
+      Meeting: { days: 30, source: 'assumption of the project team' },
+      Quoted: { days: 270, source: 'Swisspro: after a quote often 6 to 12 months without news (meeting Oct 2026)' },
+      'Mock-up': { days: 120, source: 'assumption of the project team; Swisspro: whole process 0 to 2 years (meeting Sep 2026)' }
+    }
+  };
   var closedStatuses = ['Won', 'Lost'];
   var deciders = ['unknown', 'owner', 'owner representative', 'GM', 'engineering', 'procurement', 'chain office', 'consultant or contractor'];
   var reasons = ['payback', 'price', 'design', 'guest experience', 'brand or sustainability goal', 'timing or renovation', 'chose bottling plant', 'chose competitor', 'no budget', 'no decision', 'other'];
@@ -95,7 +115,7 @@
   };
 
   return {
-    score: score, statuses: statuses, closedStatuses: closedStatuses, deciders: deciders, reasons: reasons,
+    score: score, statuses: statuses, funnel: funnel, closedStatuses: closedStatuses, deciders: deciders, reasons: reasons,
     projectStatusMap: projectStatusMap, solved: solved, privateOwner: privateOwner, pitch: pitch, pitchFor: pitchFor, labels: labels,
     dataDate: 'compiled Oct to Nov 2026 by the project team',
     storageKey: 'swisspro-crm-v1', projectsKey: 'swisspro-crm-projects-v1'

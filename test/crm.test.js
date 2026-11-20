@@ -7,6 +7,7 @@ const fs = require('fs'), path = require('path');
 const F = require('../js/factors.js'), PL = require('../js/pricelist.js'), M = require('../js/model.js'), E = require('../js/engine.js'), R = require('../js/recommend.js'), B = require('../js/business.js');
 const C = require('../crm/js/config.js'), EC = require('../crm/js/economics.js'), SC = require('../crm/js/score.js'), S = require('../crm/js/store.js');
 const P = require('../crm/js/projects.js'), CA = require('../crm/js/cases.js'), WL = require('../crm/js/wizardlink.js'), WM = require('../crm/js/winmodel.js');
+const FU = require('../crm/js/funnel.js');
 const data = require('../crm/data/hotels_public.json'), caseData = require('../crm/data/cases_public.json');
 const deps = { F, PL, M, E, R, B };
 const byId = {}; data.hotels.forEach(h => { byId[h.id] = h; });
@@ -189,7 +190,7 @@ test('pitch: the five texts are chosen by segment, as given', () => {
 
 /* ------------------------------------------------------------------ pipeline record, export and import */
 test('record: fixed lists as in the brief', () => {
-  assert.deepStrictEqual(C.statuses, ['Not contacted', 'Contacted', 'Quoted', 'Mock-up', 'Won', 'Lost', 'On hold']);
+  assert.deepStrictEqual(C.statuses, ['Not contacted', 'Contacted', 'Replied', 'Meeting', 'Quoted', 'Mock-up', 'Won', 'Lost', 'On hold']);
   assert.strictEqual(C.deciders.length, 8);
   assert.strictEqual(C.reasons.length, 11);
 });
@@ -375,4 +376,59 @@ test('repository: the tool makes no external request and holds no email address 
     assert.ok(!/[\w.+-]+@[\w-]+\.[\w.]+/.test(t), f + ' holds an email address');
     assert.ok(!/\+\d{2}[\d\s-]{7,}/.test(t), f + ' holds a phone number');
   });
+});
+
+/* ------------------------------------------------------------------ funnel */
+function funnelState() {
+  const st = S.emptyState();
+  S.update(st, 'h001', { status: 'Contacted' }, '2026-01-01');
+  S.update(st, 'h001', { status: 'Replied' }, '2026-01-11');
+  S.update(st, 'h001', { status: 'Quoted' }, '2026-02-10');
+  S.update(st, 'h002', { status: 'Contacted' }, '2026-01-01');
+  S.update(st, 'h002', { status: 'Lost', reason: 'no decision' }, '2026-01-21');
+  S.update(st, 'h003', { status: 'Contacted' }, '2026-03-01');
+  return st;
+}
+
+test('funnel: spells per step, skipped steps allowed, waiting hotels censored', () => {
+  const st = funnelState(), day = '2026-03-31';
+  assert.deepStrictEqual(FU.spells(st.records.h001, day).map(s => [s.stage, s.days, s.endedBy, s.event]), [['Contacted', 10, 'Replied', 1], ['Replied', 30, 'Quoted', 1], ['Quoted', 49, '', 0]]);
+  assert.deepStrictEqual(FU.spells(st.records.h002, day).map(s => [s.stage, s.days, s.endedBy, s.event, s.lost]), [['Contacted', 20, 'Lost', 0, true]]);
+  assert.deepStrictEqual(FU.spells(st.records.h003, day).map(s => [s.stage, s.days, s.event]), [['Contacted', 30, 0]]);
+});
+
+test('funnel: typical days start at the assumption and are updated by logged steps (exponential, censored)', () => {
+  const empty = FU.stats(S.emptyState(), '2026-03-31');
+  C.funnel.stages.slice(0, -1).forEach(k => { close(empty[k].typicalDays, C.funnel.assumedDays[k].days); assert.strictEqual(empty[k].basis, 'assumption'); assert.strictEqual(empty[k].conversion, null); });
+  const s = FU.stats(funnelState(), '2026-03-31').Contacted, w = C.funnel.priorWeight, m0 = 14 / Math.log(2);
+  assert.strictEqual(s.entered, 3); assert.strictEqual(s.movedOn, 1); assert.strictEqual(s.lost, 1); assert.strictEqual(s.waiting, 1);
+  close(s.typicalDays, Math.log(2) * (w * m0 + 10 + 20 + 30) / (w + 1));
+  assert.strictEqual(s.conversion, null, 'no conversion share below minObserved');
+  assert.match(s.basis, /updated with 3 logged stays \(1 moved on\)/);
+});
+
+test('funnel: conversion share appears from minObserved closed stays', () => {
+  const st = S.emptyState();
+  ['h001', 'h002', 'h003', 'h004'].forEach(id => { S.update(st, id, { status: 'Contacted' }, '2026-01-01'); S.update(st, id, { status: 'Replied' }, '2026-01-08'); });
+  S.update(st, 'h005', { status: 'Contacted' }, '2026-01-01'); S.update(st, 'h005', { status: 'Lost', reason: 'price' }, '2026-01-15');
+  close(FU.stats(st, '2026-02-01').Contacted.conversion, 0.8);
+});
+
+test('funnel: outlook for a hotel in a step; none for Not contacted, Won or Lost; never a probability', () => {
+  const st = funnelState();
+  const o = FU.outlook(st, 'h003', '2026-03-05');
+  assert.strictEqual(o.stage, 'Contacted'); assert.strictEqual(o.daysInStage, 4); assert.ok(o.allAssumed === false);
+  assert.strictEqual(FU.outlook(st, 'h002', '2026-03-05'), null);
+  assert.strictEqual(FU.outlook(st, 'h100', '2026-03-05'), null);
+  const q = FU.outlook(st, 'h001', '2026-03-31');
+  assert.strictEqual(q.nextExpected, FU.addDays('2026-02-10', Math.round(q.typicalDays)));
+  assert.ok(q.wonIfAllSteps >= q.nextExpected);
+  assert.ok(!('probability' in q));
+});
+
+test('funnel: stage table has one row per stay in a step', () => {
+  const st = funnelState(), t = FU.stageTable(st, id => ({ hotel: byId[id], score: { total: 50 } }), '2026-03-31');
+  assert.deepStrictEqual(t.header.slice(-6), ['step', 'date_entered', 'date_left', 'days', 'ended_by', 'moved_on']);
+  assert.strictEqual(t.rows.length, 5);
+  assert.deepStrictEqual(t.rows[0].slice(6), ['Contacted', '2026-01-01', '2026-01-11', 10, 'Replied', 1]);
 });

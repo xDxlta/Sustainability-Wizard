@@ -14,7 +14,7 @@ also opens from a folder without a web server. Records are stored in the browser
 | Hotels | All 183 Marriott hotels in Malaysia, Indonesia and the Philippines. Search by name; filter by country, tier, operating model, build stage, owner group, pipeline status and existing solution; sort by priority score, rooms and value. |
 | Hotel page | The label "Already has a solution (public case)" where it applies, facts with their source, economics from the wizard's engine, the pitch text for the segment, the score breakdown, the other hotels of the same owner, the closest public cases, the pipeline record, and an attached wizard request. |
 | Case archive | The 40 public cases with a link to each source; Swisspro's own projects as well while the private file is loaded. Filter by country, tier, solution and outcome. |
-| Model | How many records are closed as Won and as Lost, and "Export training table". No win probability exists yet and none is shown. |
+| Model | How many records are closed as Won and as Lost, and "Export training table". Funnel: per step, how many hotels entered, moved on, were lost or are still waiting, the conversion share (from 5 hotels) and the typical days to the next step, with "Export stage table". No win probability exists yet and none is shown. |
 | Data and rules | Export and import of the pipeline records, loading the private projects file, the score rules, the reference occupancy per market. |
 
 ## Priority score (rule-based)
@@ -90,7 +90,7 @@ as written. For the filters the tool groups tier, solution and outcome by the ru
 
 | Field | Values |
 | --- | --- |
-| `status` | Not contacted, Contacted, Quoted, Mock-up, Won, Lost, On hold |
+| `status` | Not contacted, Contacted, Replied, Meeting, Quoted, Mock-up, Won, Lost, On hold |
 | `date` | Date of last change, `YYYY-MM-DD` |
 | `product` | Free text |
 | `quotedValue` | Number, SGD |
@@ -108,6 +108,20 @@ and replaces the records in the browser. Export (CSV) writes one row per record 
 One row per record closed as Won or Lost: hotel features, the five score components, the economics and
 their basis (market reference or from the hotel), the case id where the hotel already has a solution, product, quoted value, who decides, status history,
 date closed, outcome and reason. Notes are left out.
+
+### Funnel and stage table (Model page, CSV)
+Every dated status change is a step. Steps in order: Contacted, Replied, Meeting, Quoted, Mock-up, Won; a step may be skipped.
+Lost and On hold end a stay without moving on.
+
+- Typical days to the next step start as an assumption in `crm/js/config.js` (`funnel.assumedDays`, each with its source:
+  Quoted 270 days from Swisspro's "6 to 12 months without news"; the others are assumptions of the project team).
+- Every logged stay updates them: exponential waiting time with a Gamma prior, the assumption counted as 2 observed steps;
+  hotels still waiting count with the days waited so far (censored). Formula: median = ln 2 × (2 × m0 + total days) / (2 + moves), m0 = assumption ÷ ln 2.
+- Conversion share = moved on ÷ (moved on + lost), shown only from 5 such hotels. No assumption is used for it.
+- The hotel page shows, for a hotel in a step: days in the step, the expected date of the next step and the expected date of Won
+  if every remaining step is passed. It is a time estimate, never a chance of winning.
+- Stage table columns: `hotel_id, hotel, country, tier, rooms, score_total, step, date_entered, date_left, days, ended_by, moved_on`
+  (one row per stay; `moved_on` 0 with `ended_by` "still in this step" = censored). This is the training data for time between steps.
 
 ## Swisspro's own projects: the private file
 
@@ -157,6 +171,7 @@ crm/js/projects.js               private projects file
 crm/js/cases.js                  case archive groups, similar cases
 crm/js/wizardlink.js             reads a wizard request
 crm/js/winmodel.js               training table; winProbability() returns "not trained yet"
+crm/js/funnel.js                 funnel steps, time between steps (assumption updated by logged steps), stage table
 crm/js/app.js                    interface
 crm/data/                        public data
 crm/data-private/                confidential, ignored by git
