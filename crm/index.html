@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Swisspro hotel pipeline</title>
+  <meta name="description" content="Swisspro hotel pipeline: which hotels to approach, what each is worth, how to pitch it, and what happened.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../styles.css?v=3.1">
+  <link rel="stylesheet" href="crm.css?v=1.3">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#/hotels" aria-label="Swisspro hotel pipeline, hotel list">
+        <!-- Same logo file as the wizard; falls back to the text wordmark while the file is missing. -->
+        <img class="logo" src="../assets/logo-swisspro.png" alt="Swisspro" height="20" onerror="var s=document.createElement('span');s.className='logo-text';s.textContent='Swisspro';this.replaceWith(s)">
+        <span class="brand-sub">Hotel pipeline</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="#/hotels" data-nav="hotels">Hotels</a>
+        <a href="#/cases" data-nav="cases">Case archive</a>
+        <a href="#/model" data-nav="model">Model</a>
+        <a href="#/data" data-nav="data">Data and rules</a>
+        <a class="nav-site" href="../index.html">Sustainability Wizard</a>
+      </nav>
+    </div>
+  </header>
+  <div id="private-bar"></div>
+
+  <main id="app">
+    <noscript><p class="wrap notice">This tool needs JavaScript to run.</p></noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <img class="logo" src="../assets/logo-swisspro-white.png" alt="Swisspro" height="20" onerror="var s=document.createElement('span');s.className='logo-text';s.textContent='Swisspro';this.replaceWith(s)">
+      <p>Prototype for Swisspro's sales team. Public hotel data compiled Oct to Nov 2026 by the project team. Your pipeline records stay in this browser.</p>
+    </div>
+  </footer>
+
+  <!-- The wizard's own modules: factors, price list and calculation engine. Imported, not copied. -->
+  <script src="../js/factors.js?v=3.1"></script>
+  <script src="../js/engine.js?v=3.1"></script>
+  <script src="../js/pricelist.js?v=3.1"></script>
+  <script src="../js/model.js?v=3.1"></script>
+  <script src="../js/recommend.js?v=3.1"></script>
+  <script src="../js/business.js?v=3.1"></script>
+  <script src="../js/format.js?v=3.1"></script>
+  <!-- Public data (generated from the two JSON files by tools/build-crm-data.js, so the tool also opens from a folder). -->
+  <script src="data/data.js?v=1.1"></script>
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/economics.js?v=1.1"></script>
+  <script src="js/score.js?v=1.1"></script>
+  <script src="js/store.js?v=1.2"></script>
+  <script src="js/projects.js?v=1.1"></script>
+  <script src="js/cases.js?v=1.1"></script>
+  <script src="js/wizardlink.js?v=1.3"></script>
+  <script src="js/winmodel.js?v=1.3"></script>
+  <script src="js/funnel.js?v=1.2"></script>
+  <script src="js/app.js?v=1.3"></script>
+</body>
+</html>

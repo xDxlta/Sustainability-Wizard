@@ -49,14 +49,20 @@
     var sizeMl = num(inp.bottleSizeMl, 500);
     var litres = bottles.total * sizeMl / 1000;
     if (inp.bottleMaterial === 'glass') {
-      return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false };
+      // Glass: no opened source gives a weight or an emission factor; see factors.glass_co2e.note for why.
+      var g = F.factors.glass_co2e;
+      if (g && g.value != null) {
+        var co2Glass = litres * g.value; // factor is per litre of water
+        return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: co2Glass, co2eCarKm: co2Glass / fv(F, 'co2e_kg_per_car_km'), quantified: true, reason: null };
+      }
+      return { material: 'glass', bottleWeightG: null, packagingKg: null, litres: litres, co2eKg: null, co2eCarKm: null, quantified: false, reason: g ? g.note : 'No sourced factor for glass.' };
     }
     var gPerBottle = inp.bottleWeightOverrideG != null ? Math.max(0, num(inp.bottleWeightOverrideG, 0)) : petBottleWeightGrams(F, sizeMl);
     var packagingKg = bottles.total * gPerBottle / 1000;
     var co2Kg = packagingKg * fv(F, 'co2e_kg_per_kg_pet');
     return {
       material: 'pet', bottleWeightG: gPerBottle, packagingKg: packagingKg, litres: litres,
-      co2eKg: co2Kg, co2eCarKm: co2Kg / fv(F, 'co2e_kg_per_car_km'), quantified: true
+      co2eKg: co2Kg, co2eCarKm: co2Kg / fv(F, 'co2e_kg_per_car_km'), quantified: true, reason: null
     };
   }
 
@@ -73,11 +79,13 @@
     var roomHours = bottles.occupiedRoomNights * minPerRoomDay / 60;
     var cartons = bottles.total / fv(F, 'bottles_per_carton');
     var cartonHours = cartons * Math.max(0, num(inp.minutesPerCarton, 0)) / 60;
-    var hours = roomHours + cartonHours;
+    // Time the new set-up adds (refilling carafes, wiping taps): 0 unless the hotel enters a figure.
+    var newHours = bottles.occupiedRoomNights * Math.max(0, num(inp.newMinutesPerRoomPerDay, 0)) / 60;
+    var hours = Math.max(0, roomHours + cartonHours - newHours);
     var wage = Math.max(0, num(inp.wageHourly, 0));
     var costLocal = hours * wage;
     return {
-      roomHours: roomHours, cartonHours: cartonHours, hours: hours,
+      roomHours: roomHours, cartonHours: cartonHours, newHours: newHours, hours: hours,
       fteEquivalent: hours / fv(F, 'working_hours_per_fte_year'),
       wageHourly: wage, costLocal: costLocal, costUsd: costLocal * num(inp.usdPerLocal, 0), quantified: wage > 0
     };
