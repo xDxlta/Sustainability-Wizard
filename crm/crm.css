@@ -177,10 +177,18 @@ table.grid tr.focus td { background: var(--glacier); }
 .outlook p { margin: 2px 0; }
 .outlook .basis { color: var(--muted, #5b6b7a); font-size: 12px; }
 
-/* seriousness check of a wizard request */
-.checklight { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #f6f8fa; }
-.checklight .cl-head { font-weight: 600; margin: 0 0 6px; }
-.checklight .cl-ok { color: var(--won); }
-.checklight .cl-check { color: var(--hold); }
-.checklight li { margin: 3px 0; color: inherit; }
-.checklight li strong { font-weight: 600; }
+/* wizard request: one aligned table, then the seriousness check */
+.req-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+.req-table th, .req-table td { padding: 6px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.req-table th[scope="row"] { width: 46%; font-weight: 500; color: var(--text-2); padding-right: 10px; }
+.req-table tr.rt-group th { padding-top: 12px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--navy); border-bottom: 1px solid var(--navy); }
+.req-table tr:first-child th { padding-top: 0; }
+.checklight { margin-top: 14px; padding: 10px 12px; border-radius: 8px; background: #f6f8fa; }
+.checklight .cl-head { font-weight: 600; font-size: 13px; margin: 0 0 6px; }
+.cl-ok { color: var(--won); }
+.cl-check { color: var(--hold); }
+.cl-table { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+.cl-table td { padding: 5px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.cl-table td.cl-mark { width: 18px; font-weight: 700; }
+.cl-table td.cl-name { width: 38%; font-weight: 600; padding-right: 8px; }
+.cl-table td.cl-detail { color: var(--text-2); }

@@ -392,32 +392,42 @@
     save();
   }
   function checkLight(req, h) {
-    var lc = WL.leadCheck(req, h);
+    var lc = WL.leadCheck(req, h), tb = el('tbody');
+    lc.checks.forEach(function (c) {
+      tb.appendChild(el('tr', { class: c.ok ? 'cl-ok' : 'cl-check' },
+        el('td', { class: 'cl-mark', 'aria-label': c.ok ? 'passes' : 'to check', text: c.ok ? '\u2713' : '!' }),
+        el('td', { class: 'cl-name', text: c.label }), el('td', { class: 'cl-detail', text: c.detail })));
+    });
     return el('div', { class: 'checklight', id: 'lead-check' },
-      el('p', { class: 'cl-head ' + (lc.passed ? 'cl-ok' : 'cl-check'), text: lc.passed ? 'Confirmed lead: all four checks pass. It counts for the training data.' : 'To check: Swisspro confirms this request with one call before it counts.' }),
-      el('ul', { class: 'plain small' }, lc.checks.map(function (c) { return el('li', { class: c.ok ? 'cl-ok' : 'cl-check' }, el('strong', { text: (c.ok ? '\u2713 ' : '! ') + c.label + ': ' }), c.detail); })));
+      el('p', { class: 'cl-head ' + (lc.passed ? 'cl-ok' : 'cl-check'), text: lc.passed ? 'Confirmed lead: all four checks pass' : 'To check: Swisspro confirms this request with one call' }),
+      el('table', { class: 'cl-table' }, tb));
   }
-  function leadRows(req) {
-    var l = req.lead, L = WL.LEAD_LABELS; if (!l) return null;
-    function row(k, v) { return [el('dt', { text: k }), el('dd', {}, v ? [v, el('span', { class: 'from-hotel', text: 'from the hotel' })] : el('span', { class: 'muted', text: 'not given' }))]; }
-    return el('dl', { class: 'kv', style: 'margin-top:10px' },
-      row('Hotel as named', l.hotelName), row('Role', L.role[l.role]), row('How the hotel is run', L.operating[l.operating]),
-      row('Drinking water today', L.water[l.water]), row('Next renovation or opening', L.renovation[l.renovation]),
-      row('Who approves', L.approval[l.approval]), row('Timing', L.timing[l.timing]));
+  /** One aligned table: the hotel's own figures and what it confirmed about itself. Values not given show a dash. */
+  function requestTable(req, cur) {
+    var l = req.lead, L = WL.LEAD_LABELS, tb = el('tbody');
+    function group(t) { tb.appendChild(el('tr', { class: 'rt-group' }, el('th', { colspan: '2', scope: 'colgroup', text: t }))); }
+    function row(k, v, fallback) { tb.appendChild(el('tr', {}, el('th', { scope: 'row', text: k }), el('td', {}, v == null || v === '' ? el('span', { class: 'muted', text: fallback || '\u2013' }) : String(v)))); }
+    group('Figures');
+    row('Occupancy', req.occupancy == null ? null : fmt.pct(req.occupancy), 'market reference used');
+    row('Bottles per room-night', req.bottlesPerRoomNight, 'market reference used');
+    row('Price per bottle', req.pricePerBottle == null ? null : fmt.cur(cur, req.pricePerBottle, 2), 'market reference used');
+    if (l) {
+      group('About the hotel');
+      row('Hotel as named', l.hotelName); row('Role', L.role[l.role]); row('How it is run', L.operating[l.operating]);
+      row('Drinking water today', L.water[l.water]); row('Renovation or opening', L.renovation[l.renovation]);
+      row('Who approves', L.approval[l.approval]); row('Timing', L.timing[l.timing]);
+    }
+    return el('table', { class: 'req-table' }, tb);
   }
 
   function requestPanel(h, e) {
     var req = state.requests[h.id], sec = el('section', { class: 'panel req', id: 'request' }, el('h2', { text: 'Wizard request' }));
     if (req) {
       var cur = e ? e.symbol : (req.currency || '');
-      function row(k, v, own) { return [el('dt', { text: k }), el('dd', {}, v == null ? el('span', { class: 'muted', text: 'not given by the hotel, market reference used' }) : [String(v), own ? el('span', { class: 'from-hotel', text: 'from the hotel' }) : null])]; }
-      sec.appendChild(el('dl', { class: 'kv' },
-        row('Attached', (req.attachedOn || '') + ' (' + req.via + (req.date ? ' of ' + req.date : '') + ')'),
-        row('Occupancy', req.occupancy == null ? null : fmt.pct(req.occupancy), true),
-        row('Bottles per room-night', req.bottlesPerRoomNight, true),
-        row('Price per bottle', req.pricePerBottle == null ? null : fmt.cur(cur, req.pricePerBottle, 2), true)));
+      sec.appendChild(el('p', { class: 'small muted', style: 'margin:-4px 0 10px', text: 'Attached ' + (req.attachedOn || '') + ' (' + req.via + (req.date ? ' of ' + req.date : '') + '). All values from the hotel.' }));
+      sec.appendChild(requestTable(req, cur));
       WL.check(req, h).forEach(function (w) { sec.appendChild(el('p', { class: 'notice', style: 'margin-top:10px', text: w })); });
-      if (req.lead) { sec.appendChild(leadRows(req)); sec.appendChild(checkLight(req, h)); }
+      if (req.lead) sec.appendChild(checkLight(req, h));
       sec.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'link-btn', onclick: function () { delete state.requests[h.id]; save(); route(); } }, 'Remove the request')));
       return sec;
     }

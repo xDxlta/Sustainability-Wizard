@@ -107,15 +107,15 @@
     checks.push({ id: 'email', label: 'Business email', ok: !!dom && !free,
       detail: !dom ? 'No email domain in the request.' : free ? dom + ' is a free mail address.' : dom + (/(^|\.)marriott\.com$/.test(dom) ? ' (Marriott)' : ', check that it belongs to the hotel or its owner') });
     var r = request ? request.rooms : null, dev = r != null && hotel.rooms ? Math.abs(r - hotel.rooms) / hotel.rooms : null;
-    checks.push({ id: 'rooms', label: 'Rooms match the public data', ok: dev != null && dev <= 0.10,
-      detail: r == null ? 'No room count in the request.' : r + ' rooms against ' + hotel.rooms + ' in the hotel list (' + Math.round(dev * 100) + '% apart, at most 10%).' });
+    checks.push({ id: 'rooms', label: 'Rooms match', ok: dev != null && dev <= 0.10,
+      detail: r == null ? 'No room count in the request.' : r + ' vs ' + hotel.rooms + ' in the list, ' + Math.round(dev * 100) + '% apart (max 10%)' });
     var bad = [];
     if (request && request.occupancy != null && !(request.occupancy >= 0.2 && request.occupancy <= 1)) bad.push('occupancy ' + Math.round(request.occupancy * 100) + '%');
     if (request && request.bottlesPerRoomNight != null && !(request.bottlesPerRoomNight >= 0.5 && request.bottlesPerRoomNight <= 10)) bad.push(request.bottlesPerRoomNight + ' bottles per room-night');
     if (request && request.pricePerBottle != null && !(request.pricePerBottle > 0)) bad.push('price per bottle ' + request.pricePerBottle);
     var own = request && (request.occupancy != null || request.bottlesPerRoomNight != null || request.pricePerBottle != null);
-    checks.push({ id: 'figures', label: 'Plausible own figures', ok: !!own && !bad.length,
-      detail: !own ? 'The hotel gave no figures of its own.' : bad.length ? 'Outside the plausible range: ' + bad.join(', ') + '.' : 'Occupancy 20 to 100%, 0.5 to 10 bottles per room-night, price above zero.' });
+    checks.push({ id: 'figures', label: 'Figures plausible', ok: !!own && !bad.length,
+      detail: !own ? 'The hotel gave no figures of its own.' : bad.length ? 'Outside the plausible range: ' + bad.join(', ') + '.' : 'Occupancy, bottles and price in range' });
     var role = l ? l.role : '';
     checks.push({ id: 'role', label: 'Deciding role', ok: DECIDING_ROLES.indexOf(role) >= 0,
       detail: role ? LEAD_LABELS.role[role] : 'Role not given.' });
