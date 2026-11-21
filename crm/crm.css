@@ -192,3 +192,55 @@ table.grid tr.focus td { background: var(--glacier); }
 .cl-table td.cl-mark { width: 18px; font-weight: 700; }
 .cl-table td.cl-name { width: 38%; font-weight: 600; padding-right: 8px; }
 .cl-table td.cl-detail { color: var(--text-2); }
+
+/* ------------------------------------------------------------------ phones (desktop unchanged) */
+@media (max-width: 640px) {
+  .site-header .header-inner { flex-wrap: wrap; gap: 4px 12px; min-height: 0; padding-top: 10px; padding-bottom: 6px; }
+  .site-header .site-nav { width: 100%; gap: 18px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
+  .site-header .site-nav::-webkit-scrollbar { display: none; }
+  .site-header .site-nav a { flex: none; }
+  .crm-head { padding: 16px 0 44px; }
+  .crm-head h1 { font-size: 22px; }
+  .head-score { text-align: left; }
+  .panel { padding: 16px; }
+  .panel.flush { padding: 0; }
+  .list-bar .sort { width: 100%; }
+  .list-bar .sort select.input { flex: 1; min-width: 0; }
+
+  /* hotel list as cards: score and name on top, the other columns as labelled facts */
+  table.hotels, table.hotels tbody, table.hotels tr, table.hotels td { display: block; width: auto; }
+  table.hotels thead { display: none; }
+  table.hotels tr { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  table.hotels tr:last-child { border-bottom: 0; }
+  table.hotels td { padding: 0 !important; border: 0; min-width: 0 !important; max-width: none !important; font-size: 13px; }
+  table.hotels td:nth-child(1) { grid-column: 1 / -1; order: 2; }
+  table.hotels td:nth-child(2) { grid-column: 1 / -1; order: 1; width: auto; }
+  table.hotels td:nth-child(2) .hname { font-size: 15px; }
+  table.hotels td:nth-child(3) { order: 3; } table.hotels td:nth-child(4) { order: 4; } table.hotels td:nth-child(7) { order: 5; }
+  table.hotels td:nth-child(5) { order: 6; } table.hotels td:nth-child(6) { order: 7; } table.hotels td:nth-child(9) { order: 8; }
+  table.hotels td:nth-child(8) { order: 9; grid-column: span 2; } table.hotels td:nth-child(10) { order: 10; }
+  table.hotels td.num { text-align: left; }
+  table.hotels td:nth-child(n+3)::before { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); letter-spacing: .02em; }
+  table.hotels td:nth-child(3)::before { content: "Country"; }
+  table.hotels td:nth-child(4)::before { content: "Tier"; }
+  table.hotels td:nth-child(5)::before { content: "Operating model"; }
+  table.hotels td:nth-child(6)::before { content: "Build stage"; }
+  table.hotels td:nth-child(7)::before { content: "Rooms"; }
+  table.hotels td:nth-child(8)::before { content: "Owner group"; }
+  table.hotels td:nth-child(9)::before { content: "Pipeline status"; }
+  table.hotels td:nth-child(10)::before { content: "Value"; }
+  table.hotels td:nth-child(8) .sub { display: inline; margin-left: 6px; }
+  table.hotels td.empty { grid-column: 1 / -1; }
+  table.hotels .bar { width: 120px; }
+
+  /* other tables scroll sideways inside their panel */
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+  .table-wrap table.grid:not(.hotels) { min-width: 900px; }
+  dl.kv, .req dl.kv { grid-template-columns: 120px minmax(0, 1fr); }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .stat .v { font-size: 24px; }
+  .breakdown { grid-template-columns: minmax(0, 1fr) 80px 48px; }
+  .form .row2 { grid-template-columns: 1fr; }
+  .tile .v { font-size: 18px; overflow-wrap: anywhere; }
+  .private-bar .wrap { flex-wrap: wrap; }
+}
