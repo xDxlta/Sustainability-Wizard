@@ -756,6 +756,9 @@
   }
 
   /* ------------------------------------------------------------------ proposal request */
+  function fieldOf(id) { return Q.proposalFields.filter(function (f) { return f.id === id; })[0]; }
+  function fieldLabel(id) { return fieldOf(id).label; }
+  function optionLabel(id, v) { return (fieldOf(id).options.filter(function (o) { return o.id === v; })[0] || {}).label || v; }
   function summaryText(ctx) {
     var p = state.proposal, c = ctx.calc, rec = ctx.rec, inp = ctx.n.inputs, pr = ctx.pr, pb = c.payback;
     var m = function (v) { return fmt.cur(inp.symbol, v, 0); };
@@ -769,6 +772,7 @@
     L.push('Today: ' + rec.segment.current + (inp.bottlesPerRoomNight ? ', ' + inp.bottlesPerRoomNight + ' x ' + sizeLabel(inp.bottleSizeMl) + ' per room and night' : '') + (inp.pricePerBottle > 0 ? ' at ' + unitMoney(ctx, inp.pricePerBottle) + ' per bottle' + (ctx.n.provenance.pricePerBottle.kind === 'user' ? '' : ' (reference price)') : '') + '.');
     L.push('Wanted: ' + rec.segment.areas.join(', ') + (rec.segment.temps ? '; ' + rec.segment.temps + ' water in the room' : '') + '.');
     var extra = []; if (p.source) extra.push('Water supply: ' + (R.LABELS.source[p.source] || p.source)); if (p.halal) extra.push('Halal certificate requested'); if (p.timing) extra.push('Timing: ' + R.LABELS.timing[p.timing]); if (p.approval) extra.push('Approval by: ' + R.LABELS.approval[p.approval]);
+    ['role', 'operating', 'water', 'renovation'].forEach(function (k) { if (p[k]) extra.push(fieldLabel(k) + ': ' + optionLabel(k, p[k])); });
     if (extra.length) L.push(extra.join('. ') + '.');
     var wsNote = R.waterSupplyNotes(p.source).result; if (wsNote) L.push(wsNote);
     L.push('');
@@ -840,7 +844,7 @@
       var txt = refreshText(), subject = 'Proposal request via the Sustainability Wizard: ' + p.hotel;
       if (PL.leadEndpoint) {
         btn.disabled = true; status.textContent = 'Sending the request.';
-        var body = { name: p.name, hotel: p.hotel, email: p.email, segment: p.segment || '', phone: p.phone || '', source: p.source || '', halal: p.halal || '', timing: p.timing || '', approval: p.approval || '', answers: state.answers, overrides: state.overrides, summary: txt };
+        var body = { name: p.name, hotel: p.hotel, email: p.email, segment: p.segment || '', phone: p.phone || '', source: p.source || '', halal: p.halal || '', timing: p.timing || '', approval: p.approval || '', role: p.role || '', operating: p.operating || '', water: p.water || '', renovation: p.renovation || '', answers: state.answers, overrides: state.overrides, summary: txt };
         fetch(PL.leadEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
           .then(function (r) { if (!r.ok) throw new Error(r.status); status.textContent = 'Request sent. Swisspro replies to ' + p.email + '.'; btn.textContent = 'Request sent'; })
           .catch(function () { btn.disabled = false; status.textContent = 'The request was not sent. Email the summary to ' + PL.leadEmail + '.'; });
@@ -861,6 +865,9 @@
           occupancy: { value: inp.occupancy, fromHotel: own('occupancy') },
           bottlesPerRoomNight: { value: inp.bottlesPerRoomNight, fromHotel: own('bottlesPerRoomNight') },
           pricePerBottle: { value: inp.pricePerBottle, fromHotel: own('pricePerBottle') } },
+        /* What the hotel confirms about itself, for the pipeline tool. Of the email only the domain is kept (to check that it is a business address). */
+        lead: { hotelName: p.hotel || '', segment: p.segment || '', role: p.role || '', operating: p.operating || '', water: p.water || '', renovation: p.renovation || '',
+          approval: p.approval || '', timing: p.timing || '', emailDomain: String(p.email || '').split('@')[1] ? String(p.email).split('@')[1].trim().toLowerCase() : '' },
         summary: refreshText() };
       var a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' })), download: 'swisspro-wizard-request-' + data.date + '.json' });
       document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);

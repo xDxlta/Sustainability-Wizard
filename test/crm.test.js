@@ -432,3 +432,40 @@ test('funnel: stage table has one row per stay in a step', () => {
   assert.strictEqual(t.rows.length, 5);
   assert.deepStrictEqual(t.rows[0].slice(6), ['Contacted', '2026-01-01', '2026-01-11', 10, 'Replied', 1]);
 });
+
+/* ------------------------------------------------------------------ wizard request with the hotel's own answers */
+const LEADFILE = (lead, fig) => JSON.stringify({ type: 'swisspro-wizard-request', version: 1, date: '2026-11-21', hotel: 'x',
+  figures: Object.assign({ country: 'MY', rooms: 307, currency: 'RM', occupancy: { value: 0.7, fromHotel: true }, bottlesPerRoomNight: { value: 2, fromHotel: true }, pricePerBottle: { value: 0.9, fromHotel: true } }, fig || {}),
+  lead: Object.assign({ hotelName: 'Sheraton Kota Kinabalu', role: 'gm', operating: 'managed', water: 'plastic', renovation: '1to3', approval: 'owner', timing: '3to12', segment: 'upper', emailDomain: 'marriott.com' }, lead || {}) });
+
+test('wizard lead: only known answers and the email domain are kept', () => {
+  const r = WL.parse(LEADFILE({ role: 'hacker', water: 'glass_own', emailDomain: 'not a domain', extra: 'dropped' }));
+  assert.strictEqual(r.lead.role, ''); assert.strictEqual(r.lead.water, 'glass_own'); assert.strictEqual(r.lead.emailDomain, '');
+  assert.ok(!('extra' in r.lead));
+  assert.strictEqual(WL.parse(LEADFILE()).lead.emailDomain, 'marriott.com');
+});
+
+test('wizard lead: four checks; all pass for a plausible request from a deciding role with a business email', () => {
+  const ok = WL.leadCheck(WL.parse(LEADFILE()), byId.h027);
+  assert.deepStrictEqual(ok.checks.map(c => [c.id, c.ok]), [['email', true], ['rooms', true], ['figures', true], ['role', true]]);
+  assert.ok(ok.passed);
+  const bad = WL.leadCheck(WL.parse(LEADFILE({ emailDomain: 'gmail.com', role: 'other' }, { rooms: 400, occupancy: { value: 0.1, fromHotel: true } })), byId.h027);
+  assert.deepStrictEqual(bad.checks.map(c => c.ok), [false, false, false, false]);
+  assert.ok(!bad.passed);
+  assert.ok(!WL.leadCheck(WL.parse(SUMMARY), byId.h027).passed, 'a summary text without answers cannot pass');
+});
+
+test('wizard lead: the hotel is suggested by name within the country', () => {
+  const m = WL.matchHotel(WL.parse(LEADFILE()), data.hotels);
+  assert.strictEqual(m[0].hotel.id, 'h027');
+  assert.ok(m.every(x => x.hotel.country === 'Malaysia'));
+});
+
+test('training table carries what the hotel confirmed and whether the lead is confirmed', () => {
+  const st = S.emptyState();
+  st.requests.h027 = WL.parse(LEADFILE());
+  S.update(st, 'h027', { status: 'Replied' }, '2026-11-21'); S.update(st, 'h027', { status: 'Won' }, '2026-12-01');
+  const t = WM.trainingTable(st, id => ({ hotel: byId[id], econ: econ(id), score: sc(byId[id], { econ: econ(id), ownerCount: 1 }), ownerCount: 1 }));
+  const row = t.rows[0], get = k => row[t.header.indexOf(k)];
+  assert.strictEqual(get('wizard_request'), 'yes'); assert.strictEqual(get('hotel_water_today'), 'plastic'); assert.strictEqual(get('lead_confirmed'), 'yes');
+});

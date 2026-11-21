@@ -8,9 +8,9 @@
  * ============================================================================================
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) { module.exports = factory(require('./store.js'), require('./config.js')); }
-  else { root.CRM = root.CRM || {}; root.CRM.winmodel = factory(root.CRM.store, root.CRM.config); }
-})(typeof self !== 'undefined' ? self : this, function (S, C) {
+  if (typeof module === 'object' && module.exports) { module.exports = factory(require('./store.js'), require('./config.js'), require('./wizardlink.js')); }
+  else { root.CRM = root.CRM || {}; root.CRM.winmodel = factory(root.CRM.store, root.CRM.config, root.CRM.wizardlink); }
+})(typeof self !== 'undefined' ? self : this, function (S, C, WL) {
   'use strict';
 
   /** Placeholder for a future trained model. `features` is one row of the training table. */
@@ -32,7 +32,15 @@
     'score_total', 'score_payback_fit', 'score_size', 'score_owner_leverage', 'score_segment_fit', 'score_timing', 'score_components_not_sourced',
     'economics_basis', 'occupancy', 'bottles_per_room_night', 'price_per_bottle', 'currency', 'bottles_per_year', 'bottle_spend_per_year', 'cash_payback_years',
     'occupancy_needed_2y', 'occupancy_needed_3y', 'occupancy_needed_5y', 'installation_value_sgd', 'service_value_sgd_per_year',
-    'product', 'quoted_value_sgd', 'who_decides', 'status_history', 'date_closed', 'outcome', 'reason'];
+    'product', 'quoted_value_sgd', 'who_decides', 'status_history', 'date_closed', 'outcome', 'reason',
+    'wizard_request', 'hotel_role', 'hotel_operating', 'hotel_water_today', 'hotel_renovation', 'hotel_approval', 'lead_confirmed'];
+
+  /** What the hotel confirmed through the wizard, and whether the request passed the four checks. */
+  function leadCols(req, hotel) {
+    if (!req) return ['no', '', '', '', '', '', ''];
+    var l = req.lead || {};
+    return ['yes', l.role || '', l.operating || '', l.water || '', l.renovation || '', l.approval || '', req.lead && WL ? (WL.leadCheck(req, hotel).passed ? 'yes' : 'no') : 'no'];
+  }
 
   function r(x, d) { if (x == null || !isFinite(x)) return ''; var k = Math.pow(10, d); return Math.round(x * k) / k; }
 
@@ -56,7 +64,7 @@
         e ? (e.fromHotel ? 'from the hotel' : 'market reference') : '', e ? r(e.occupancy, 4) : '', e ? e.bottlesPerRoomNight : '', e ? r(e.pricePerBottle, 4) : '', e ? e.currency : '',
         e ? r(e.bottlesPerYear, 0) : '', e ? r(e.spendLocal, 0) : '', e && isFinite(e.cashPaybackYears) ? r(e.cashPaybackYears, 2) : (e ? 'no payback' : ''),
         be(2), be(3), be(5), e ? r(e.installationList, 0) : '', e ? r(e.serviceList, 0) : '',
-        rec.product, rec.quotedValue == null ? '' : rec.quotedValue, rec.decider, S.historyText(rec), rec.date, rec.status, rec.reason]);
+        rec.product, rec.quotedValue == null ? '' : rec.quotedValue, rec.decider, S.historyText(rec), rec.date, rec.status, rec.reason].concat(leadCols(state.requests && state.requests[id], h)));
     });
     return { header: HEADER, rows: rows };
   }

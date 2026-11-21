@@ -176,3 +176,11 @@ table.grid tr.focus td { background: var(--glacier); }
 .outlook { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--lake); background: var(--glacier-2); font-size: 13px; }
 .outlook p { margin: 2px 0; }
 .outlook .basis { color: var(--muted, #5b6b7a); font-size: 12px; }
+
+/* seriousness check of a wizard request */
+.checklight { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #f6f8fa; }
+.checklight .cl-head { font-weight: 600; margin: 0 0 6px; }
+.checklight .cl-ok { color: var(--won); }
+.checklight .cl-check { color: var(--hold); }
+.checklight li { margin: 3px 0; color: inherit; }
+.checklight li strong { font-weight: 600; }

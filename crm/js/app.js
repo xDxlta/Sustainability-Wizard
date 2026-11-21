@@ -378,6 +378,34 @@
     return sec;
   }
 
+  /**
+   * Attaches a wizard request to a hotel. When the hotel had no further step yet, the pipeline record moves to
+   * Replied (the hotel reached out), and the wizard's "Who approves" fills "Who decides" when that is still unknown.
+   */
+  function addRequest(hotelId, r) {
+    r.attachedOn = S.today(); state.requests[hotelId] = r;
+    var rec = S.get(state, hotelId), patch = {};
+    if (rec.status === 'Not contacted' || rec.status === 'Contacted') patch.status = 'Replied';
+    if (r.lead && r.lead.approval && rec.decider === 'unknown' && WL.DECIDER[r.lead.approval]) patch.decider = WL.DECIDER[r.lead.approval];
+    if (r.lead && !rec.note) patch.note = 'Request via the Wizard' + (r.date ? ' of ' + r.date : '') + '.';
+    if (Object.keys(patch).length) S.update(state, hotelId, patch, S.today());
+    save();
+  }
+  function checkLight(req, h) {
+    var lc = WL.leadCheck(req, h);
+    return el('div', { class: 'checklight', id: 'lead-check' },
+      el('p', { class: 'cl-head ' + (lc.passed ? 'cl-ok' : 'cl-check'), text: lc.passed ? 'Confirmed lead: all four checks pass. It counts for the training data.' : 'To check: Swisspro confirms this request with one call before it counts.' }),
+      el('ul', { class: 'plain small' }, lc.checks.map(function (c) { return el('li', { class: c.ok ? 'cl-ok' : 'cl-check' }, el('strong', { text: (c.ok ? '\u2713 ' : '! ') + c.label + ': ' }), c.detail); })));
+  }
+  function leadRows(req) {
+    var l = req.lead, L = WL.LEAD_LABELS; if (!l) return null;
+    function row(k, v) { return [el('dt', { text: k }), el('dd', {}, v ? [v, el('span', { class: 'from-hotel', text: 'from the hotel' })] : el('span', { class: 'muted', text: 'not given' }))]; }
+    return el('dl', { class: 'kv', style: 'margin-top:10px' },
+      row('Hotel as named', l.hotelName), row('Role', L.role[l.role]), row('How the hotel is run', L.operating[l.operating]),
+      row('Drinking water today', L.water[l.water]), row('Next renovation or opening', L.renovation[l.renovation]),
+      row('Who approves', L.approval[l.approval]), row('Timing', L.timing[l.timing]));
+  }
+
   function requestPanel(h, e) {
     var req = state.requests[h.id], sec = el('section', { class: 'panel req', id: 'request' }, el('h2', { text: 'Wizard request' }));
     if (req) {
@@ -389,6 +417,7 @@
         row('Bottles per room-night', req.bottlesPerRoomNight, true),
         row('Price per bottle', req.pricePerBottle == null ? null : fmt.cur(cur, req.pricePerBottle, 2), true)));
       WL.check(req, h).forEach(function (w) { sec.appendChild(el('p', { class: 'notice', style: 'margin-top:10px', text: w })); });
+      if (req.lead) { sec.appendChild(leadRows(req)); sec.appendChild(checkLight(req, h)); }
       sec.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'link-btn', onclick: function () { delete state.requests[h.id]; save(); route(); } }, 'Remove the request')));
       return sec;
     }
@@ -397,10 +426,10 @@
     function attach(text) {
       try {
         var r = WL.parse(text, F.factors.bottles_per_room_night_default.value);
-        r.attachedOn = S.today(); state.requests[h.id] = r; save(); var y = window.scrollY; route(); window.scrollTo(0, y);
+        addRequest(h.id, r); var y = window.scrollY; route(); window.scrollTo(0, y);
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     }
-    sec.appendChild(el('p', { class: 'small muted', style: 'margin-bottom:10px', text: 'When this hotel has sent a request through the wizard, attach it: its own occupancy, bottles and price then replace the market reference values. Only these figures are kept, no names or contact details.' }));
+    sec.appendChild(el('p', { class: 'small muted', style: 'margin-bottom:10px', text: 'When this hotel has sent a request through the wizard, attach it: its own occupancy, bottles and price then replace the market reference values, and a request file adds what the hotel confirms about itself. No names or contact details are kept.' }));
     sec.appendChild(el('div', { class: 'form' }, el('label', { for: 'q-text', text: 'Request summary' }), ta, err,
       el('div', { class: 'actions', style: 'margin-top:0' },
         el('button', { type: 'button', class: 'btn btn-primary', onclick: function () { attach(ta.value); } }, 'Attach'),
@@ -509,6 +538,35 @@
         : el('p', { class: 'empty', text: 'Closed records appear here once a hotel is set to Won or Lost on its page.' }))));
   }
 
+  /* ================================================================== wizard inbox */
+  /** A request file from the wizard: the tool suggests the hotel, the user confirms, the hotel enters the pipeline. */
+  function inboxPanel() {
+    var box = el('div', { id: 'inbox-result' }), err = el('p', { class: 'error', hidden: true });
+    function show(text) {
+      box.textContent = ''; err.hidden = true;
+      var r;
+      try { r = WL.parse(text, F.factors.bottles_per_room_night_default.value); } catch (e) { err.textContent = e.message; err.hidden = false; return; }
+      if (!r.lead) { err.textContent = 'This request has no answers about the hotel. Use a request file saved from the wizard.'; err.hidden = false; return; }
+      var cands = WL.matchHotel(r, hotels), pick = cands.length ? cands[0].hotel.id : '';
+      var opts = cands.map(function (c) { return [c.hotel.id, c.hotel.name + ', ' + c.hotel.city + ' (' + c.hotel.rooms + ' rooms)']; });
+      var allOpts = hotels.filter(function (h) { return !r.country || h.country === r.country; }).slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (h) { return [h.id, h.name]; });
+      var sel = select('inbox-hotel', (opts.length ? opts : [['', 'Choose the hotel']]).concat([['', '----']]).concat(allOpts), pick, function (v) { pick = v; preview(); }, 'Hotel');
+      var prev = el('div');
+      function preview() { prev.textContent = ''; if (pick && hotelsById[pick]) prev.appendChild(checkLight(r, hotelsById[pick])); }
+      box.appendChild(el('p', { class: 'small', text: '\u201c' + (r.lead.hotelName || 'no hotel name') + '\u201d, ' + (r.country || 'country not given') + ', ' + (r.rooms || '?') + ' rooms, request of ' + (r.date || 'unknown date') + '.' }));
+      box.appendChild(field(cands.length ? 'Suggested hotel (check it)' : 'No hotel found by name: choose it', sel));
+      box.appendChild(prev); preview();
+      box.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-primary', id: 'inbox-add', onclick: function () {
+        if (!pick) { err.textContent = 'Choose the hotel first.'; err.hidden = false; return; }
+        addRequest(pick, r); location.hash = '#/hotel/' + pick;
+      } }, 'Add to the pipeline')));
+    }
+    return el('section', { class: 'panel', id: 'wizard-inbox' }, el('h2', { text: 'Wizard requests' }),
+      el('p', { class: 'prose', text: 'Choose a request file saved from the wizard. The tool suggests the hotel, runs four checks (business email, rooms, plausible figures, deciding role) and adds the hotel to the pipeline as Replied with what it confirmed about itself. Of the email only the domain is kept.' }),
+      el('div', { class: 'actions' }, fileButton('Choose a request file', '.json,application/json', function (text) { show(text); }, 'btn-primary')),
+      err, box);
+  }
+
   /* ================================================================== data and rules */
   function renderData() {
     var n = Object.keys(state.records).length, status = el('p', { class: 'small muted', id: 'io-status', 'aria-live': 'polite' });
@@ -533,6 +591,7 @@
             }),
             el('button', { type: 'button', class: 'btn btn-line', id: 'export-csv', onclick: function () { download('swisspro-pipeline-' + S.today() + '.csv', S.pipelineCsv(state, hotelsById), 'text/csv'); status.textContent = 'Exported ' + n + ' records as CSV.'; } }, 'Export (CSV)')),
           status),
+        inboxPanel(),
         el('section', { class: 'panel', id: 'private' }, el('h2', { text: 'Swisspro’s own projects (confidential)' }),
           el('p', { class: 'prose', text: 'Choose your projects file. It is read in this browser only and is never part of the public data or the repository. Projects are matched to hotels; Swisspro’s status is shown as given and pre-fills the pipeline status: Hot to Mock-up, Warm to Quoted, Cold to On hold, HIT to Won. Closed pre-fills nothing.' }),
           el('div', { class: 'actions' }, fileButton(projectFile ? 'Load another file' : 'Choose the projects file', '.json,application/json', function (text, name) { loadProjectText(text, name, pstatus); }, 'btn-primary'),

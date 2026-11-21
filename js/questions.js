@@ -71,6 +71,19 @@
     ] },
     { id: 'approval', type: 'select', label: 'Who approves', options: [
       { id: '', label: 'Not sure' }, { id: 'gm', label: 'Hotel management' }, { id: 'owner', label: 'Owner' }
+    ] },
+    /* Four questions that only the hotel can answer. They go with the request into Swisspro's hotel pipeline tool. */
+    { id: 'role', type: 'select', label: 'Your role', options: [
+      { id: '', label: 'Choose' }, { id: 'gm', label: 'General manager' }, { id: 'engineering', label: 'Engineering' }, { id: 'procurement', label: 'Purchasing' }, { id: 'owner', label: 'Owner or owner representative' }, { id: 'other', label: 'Other' }
+    ] },
+    { id: 'operating', type: 'select', label: 'How the hotel is run', options: [
+      { id: '', label: 'Not sure' }, { id: 'managed', label: 'Managed by the chain' }, { id: 'franchised', label: 'Franchised, run by the owner' }, { id: 'independent', label: 'Independent' }
+    ] },
+    { id: 'water', type: 'select', label: 'Drinking water in rooms today', options: [
+      { id: '', label: 'Not sure' }, { id: 'plastic', label: 'Plastic bottles' }, { id: 'glass_supplier', label: 'Glass bottles from a supplier' }, { id: 'glass_own', label: 'Own bottling in glass' }, { id: 'filter', label: 'Filter or dispenser' }
+    ] },
+    { id: 'renovation', type: 'select', label: 'Next renovation or opening', options: [
+      { id: '', label: 'Not sure' }, { id: 'lt12', label: 'Within 12 months' }, { id: '1to3', label: 'In 1 to 3 years' }, { id: 'none', label: 'None planned' }
     ] }
   ];
 

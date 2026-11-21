@@ -123,6 +123,21 @@ Lost and On hold end a stay without moving on.
 - Stage table columns: `hotel_id, hotel, country, tier, rooms, score_total, step, date_entered, date_left, days, ended_by, moved_on`
   (one row per stay; `moved_on` 0 with `ended_by` "still in this step" = censored). This is the training data for time between steps.
 
+### Wizard requests (Data page)
+The wizard's request form asks four optional questions only the hotel can answer: role, how the hotel is run, drinking water
+today, next renovation or opening (plus the existing "Who approves" and "Timing"). "Save the request as a file" writes them,
+with only the domain of the email. On the Data page, "Wizard requests" reads such a file, suggests the hotel by name within the
+country, runs four checks and adds the hotel to the pipeline as Replied ("Who approves" fills "Who decides" when unknown):
+
+| Check | Passes when |
+| --- | --- |
+| Business email | a domain is given and it is not a free mail service |
+| Rooms | within 10% of the hotel list |
+| Own figures | occupancy 20 to 100%, 0.5 to 10 bottles per room-night, price above zero |
+| Role | general manager, engineering, purchasing, owner or owner representative |
+
+All four pass = confirmed lead (`lead_confirmed` yes in the training table). Otherwise Swisspro confirms it with a call.
+
 ## Swisspro's own projects: the private file
 
 Swisspro's projects are confidential and **must never be in the repository**. The folder
