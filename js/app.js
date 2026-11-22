@@ -19,6 +19,7 @@
   var state = load() || { view: 'intro', step: 0, answers: {}, overrides: {}, proposal: {} };
   state.proposal = state.proposal || {};
   var openState = {};          // which disclosures are open, kept across re-renders
+  var pricingPlan = 'buy';    // business case: 'buy' (default) or 'sub' (subscription)
   var countUpNext = false;     // the payback number counts up once, when the results first appear
   var cta = null;              // observers of the mobile "Request a proposal" bar
 
@@ -514,6 +515,11 @@
     var c = ctx.calc, pr = ctx.pr, pb = c.payback, lead = leadText(ctx);
     var card = el('section', { class: 'panel', id: 'business-case' });
     card.appendChild(el('h3', { text: 'Your business case' }));
+    var sub = pb.available ? B.subscription(ctx.n.inputs.rooms, c.spend.annualLocal, pb.capex, pb.annualService, ctx.n.inputs.usdPerLocal) : null;
+    if (sub) {
+      card.appendChild(planToggle(card, ctx));
+      if (pricingPlan === 'sub') { renderSubscription(card, ctx, sub); return card; }
+    }
     card.appendChild(el('p', { class: 'lead-line' }, lead.head + (ctx.pr.lead.kind === 'benefits' && lead.sub ? ' ' + lead.sub : '')));
     if (pb.available) {
       card.appendChild(kv(businessRows(ctx)));
@@ -548,6 +554,38 @@
     d.appendChild(el('div', { class: 'actions' }, el('button', { type: 'button', class: 'btn btn-text', onclick: function () { downloadCsv(ctx); } }, 'Download the calculation for Excel (CSV)')));
     card.appendChild(d);
     return card;
+  }
+
+  /** Buy or subscribe: two options above the business case. Switching rebuilds only this card. */
+  function planToggle(card, ctx) {
+    var opts = [['buy', 'Buy', 'One-off investment'], ['sub', 'Subscription', 'Monthly fee']];
+    return el('div', { class: 'plan-toggle', role: 'radiogroup', 'aria-label': 'Pricing option' }, opts.map(function (o) {
+      var on = pricingPlan === o[0];
+      return el('button', { type: 'button', class: 'tile-opt', role: 'radio', 'aria-checked': on ? 'true' : 'false', 'data-plan': o[0], onclick: function () {
+        if (pricingPlan === o[0]) return;
+        pricingPlan = o[0];
+        var fresh = renderBusinessCase(ctx);
+        card.parentNode.replaceChild(fresh, card);
+        var b = fresh.querySelector('[data-plan="' + o[0] + '"]'); if (b) b.focus({ preventScroll: true });
+      } }, el('span', { class: 'opt-label', text: o[1] }), el('span', { class: 'opt-desc', text: o[2] }));
+    }));
+  }
+  /** Subscription view (pricing slide B2): installation spread over 36 months plus service, no financing charge. */
+  function renderSubscription(card, ctx, sub) {
+    var pb = ctx.calc.payback, inp = ctx.n.inputs, usd = function (v) { return 'USD ' + fmt.int(Math.round(v / 10) * 10); };
+    card.appendChild(el('p', { class: 'lead-line' }, sub.savingMonth > 0
+      ? 'One fixed fee of ' + money(ctx, sub.fee) + ' a month, ' + money(ctx, sub.savingMonth) + ' less than bottled water from month one.'
+      : 'One fixed fee of ' + money(ctx, sub.fee) + ' a month, nothing to pay upfront.'));
+    card.appendChild(kv([
+      ['Bottled water today, a month', money(ctx, sub.bottlesMonth)],
+      ['Swisspro subscription, a month', money(ctx, -sub.fee)],
+      [sub.savingMonth >= 0 ? 'Saving, a month' : 'Extra cost, a month', money(ctx, Math.abs(sub.savingMonth)), 'strong'],
+      ['Upfront investment', money(ctx, 0)]]));
+    card.appendChild(el('p', { class: 'staff-line', text: (sub.perRoom != null ? unitMoney(ctx, sub.perRoom) + ' per room and month. ' : '') + 'Swisspro installs and owns the taps. Filters and service included. ' + sub.months + '-month term, then renew or buy out.' }));
+    if (sub.feeUsd != null) card.appendChild(el('p', { class: 'breakeven-line', text: sub.belowSignoff
+      ? 'Booked as opex: at about ' + usd(sub.feeUsd) + ' a month the fee stays below the USD 5,000 a month above which owners usually sign, so the GM can decide alone.'
+      : 'Booked as opex: at about ' + usd(sub.feeUsd) + ' a month the fee is above the USD 5,000 a month above which owners usually sign.' }));
+    card.appendChild(el('p', { class: 'hint scope', text: 'Fee = investment ' + money(ctx, pb.capex) + ' / ' + sub.months + ' months + service ' + money(ctx, pb.annualService) + ' / 12, no financing charge. Sign-off limits vary by management contract.' + (inp.currency === 'USD' ? '' : ' USD at the exchange rate used above.') }));
   }
 
   /** Cumulative cost over five years: bottled water against Swisspro (investment plus service), labelled at the line ends. */

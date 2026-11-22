@@ -306,3 +306,13 @@ test('KL example: the result hero and business case lead with the cash payback; 
   assert.ok(!/fullSavingsPerYear|labour/.test(rows), 'business rows use staff time');
   console.log('    KL 200 rooms: bottles ' + Math.round(calc.bottles.total) + ', spend RM ' + Math.round(bc.calcRooms.spend.annualLocal) + ', service RM ' + Math.round(bc.servicingLocal) + ', net RM ' + Math.round(bc.payback.cashSavingsPerYear) + ', investment RM ' + Math.round(bc.capexLocal) + ', cash payback ' + bc.payback.cashPaybackYears.toFixed(2) + ' y, with staff time ' + bc.payback.fullPaybackYears.toFixed(2) + ' y');
 });
+
+test('subscription: installation over 36 months plus service, no financing charge (pricing slide B2)', () => {
+  // Sheraton Kota Kinabalu, list currency SGD: 307 rooms x SGD 160 incl. installation, service SGD 85 per room and year.
+  const s = B.subscription(307, 50425, 160 * 307, 85 * 307, 0.77);
+  assert.equal(s.months, 36);
+  assert.ok(Math.abs(s.fee - 3539) < 1, 'fee SGD 3,539 a month');
+  assert.ok(Math.abs(s.feeUsd - 2725) < 1, 'about USD 2,700');
+  assert.equal(s.belowSignoff, true);
+  assert.equal(B.subscription(307, 50425, 0, 1000, 0.77), null);
+});
