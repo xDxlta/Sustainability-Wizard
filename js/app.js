@@ -575,12 +575,13 @@
     var pb = ctx.calc.payback, inp = ctx.n.inputs, usd = function (v) { return 'USD ' + fmt.int(Math.round(v / 10) * 10); };
     card.appendChild(el('p', { class: 'lead-line' }, sub.savingMonth > 0
       ? 'One fixed fee of ' + money(ctx, sub.fee) + ' a month, ' + money(ctx, sub.savingMonth) + ' less than bottled water from month one.'
-      : 'One fixed fee of ' + money(ctx, sub.fee) + ' a month, nothing to pay upfront.'));
+      : 'One fixed fee of ' + money(ctx, sub.fee) + ' a month, nothing to pay upfront and every cost known from month one.'));
     card.appendChild(kv([
       ['Bottled water today, a month', money(ctx, sub.bottlesMonth)],
       ['Swisspro subscription, a month', money(ctx, -sub.fee)],
-      [sub.savingMonth >= 0 ? 'Saving, a month' : 'Extra cost, a month', money(ctx, Math.abs(sub.savingMonth)), 'strong'],
+      sub.savingMonth >= 0 ? ['Saving, a month', money(ctx, sub.savingMonth), 'strong'] : ['Difference to bottled water, a month', money(ctx, -sub.savingMonth), 'strong'],
       ['Upfront investment', money(ctx, 0)]]));
+    if (sub.savingMonth < 0) card.appendChild(el('p', { class: 'breakeven-line', text: 'For ' + money(ctx, -sub.savingMonth) + ' a month more than bottles, the hotel invests nothing and no longer buys, stores or disposes of bottles.' }));
     card.appendChild(el('p', { class: 'staff-line', text: (sub.perRoom != null ? unitMoney(ctx, sub.perRoom) + ' per room and month. ' : '') + 'Swisspro installs and owns the taps. Filters and service included. ' + sub.months + '-month term, then renew or buy out.' }));
     if (sub.feeUsd != null) card.appendChild(el('p', { class: 'breakeven-line', text: sub.belowSignoff
       ? 'Booked as opex: at about ' + usd(sub.feeUsd) + ' a month the fee stays below the USD 5,000 a month above which owners usually sign, so the GM can decide alone.'
