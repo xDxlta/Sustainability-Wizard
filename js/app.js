@@ -29,6 +29,7 @@
   var pricingPlan = 'buy';    // business case: 'buy' (default) or 'sub' (subscription)
   var countUpNext = false;     // the payback number counts up once, when the results first appear
   var cta = null;              // observers of the mobile "Request a proposal" bar
+  var ctaShown = false;        // whether that bar is showing, kept across re-renders so it does not flicker
 
   /* ------------------------------------------------------------------ utilities */
   function load() { try { var s = localStorage.getItem(STORE); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
@@ -461,6 +462,7 @@
 
     // 1. Result hero
     var h = heroModel(ctx);
+    var heroBtn;
     var numEl = el('span', { class: 'big-num', id: 'payback-number', text: h.num == null ? h.text : fmt.dec(h.num, h.decimals) });
     var hero = el('section', { class: 'rhero', id: 'lead' },
       bubbles(7, 56, 98, 23),
@@ -472,7 +474,7 @@
           el('p', { class: 'rhero-lead', text: h.lead }),
           el('p', { class: 'rhero-cash', text: h.cash }),
           el('div', { class: 'actions' },
-            el('button', { type: 'button', class: 'btn btn-white', onclick: function () { var f = document.getElementById('proposal'); if (f) { f.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' }); var i = document.getElementById('pf-name'); if (i) i.focus({ preventScroll: true }); } } }, 'Request a proposal'),
+            heroBtn = el('button', { type: 'button', class: 'btn btn-white', onclick: function () { var f = document.getElementById('proposal'); if (f) { f.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' }); var i = document.getElementById('pf-name'); if (i) i.focus({ preventScroll: true }); } } }, 'Request a proposal'),
             ARTIFACT ? null : el('button', { type: 'button', class: 'btn btn-outline', onclick: function () { window.print(); } }, 'Print for the owner'))),
         el('div', { class: 'kpis' }, h.kpis.map(function (k) { return el('div', { class: 'kpi' }, el('strong', { text: k[0] }), el('span', { text: k[1] }), k[2] ? el('span', { class: 'kpi-2', text: k[2] }) : null); }))),
       wave('wave-rhero'));
@@ -495,15 +497,16 @@
     root.appendChild(renderPrintSheet(ctx, h));
     app.appendChild(root);
 
-    // Mobile: a bar with "Request a proposal" once the hero has scrolled away, until the form is in view.
-    var bar = el('div', { class: 'sticky-cta', hidden: true }, el('button', { type: 'button', class: 'btn btn-primary', onclick: function () { var f = document.getElementById('proposal'); if (f) f.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' }); } }, 'Request a proposal'));
+    // Mobile: a bar with "Request a proposal" that stays on screen. It steps aside only while the same button in the
+    // hero is visible (below the sticky header) and once the form itself fills the lower half of the screen.
+    var bar = el('div', { class: 'sticky-cta', hidden: !ctaShown }, el('button', { type: 'button', class: 'btn btn-primary', onclick: function () { var f = document.getElementById('proposal'); if (f) f.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' }); } }, 'Request a proposal'));
     app.appendChild(bar);
     if ('IntersectionObserver' in window) {
-      var heroOut = false, formIn = false, upd = function () { bar.hidden = !(heroOut && !formIn); };
-      var o1 = new IntersectionObserver(function (e) { heroOut = !e[0].isIntersecting; upd(); });
-      var o2 = new IntersectionObserver(function (e) { formIn = e[0].isIntersecting; upd(); });
-      o1.observe(hero); o2.observe(aside); cta = [o1, o2];
-    }
+      var btnIn = true, formIn = false, upd = function () { ctaShown = !btnIn && !formIn; bar.hidden = !ctaShown; };
+      var o1 = new IntersectionObserver(function (e) { btnIn = e[e.length - 1].isIntersecting; upd(); }, { rootMargin: '-64px 0px 0px 0px' });
+      var o2 = new IntersectionObserver(function (e) { formIn = e[e.length - 1].isIntersecting; upd(); }, { rootMargin: '0px 0px -50% 0px' });
+      o1.observe(heroBtn); o2.observe(aside); cta = [o1, o2];
+    } else { bar.hidden = false; }
     document.getElementById('restart-top').hidden = false;
   }
   function countUp(node, target, decimals) {
@@ -968,6 +971,7 @@
   function render() {
     document.getElementById('restart-top').hidden = state.view === 'intro';
     if (cta) { cta.forEach(function (o) { o.disconnect(); }); cta = null; }
+    ctaShown = false;
     if (state.view === 'wizard') renderStep();
     else if (state.view === 'results') renderResults();
     else renderIntro();
