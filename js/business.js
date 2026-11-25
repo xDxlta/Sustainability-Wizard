@@ -74,6 +74,22 @@
   }
 
   /**
+   * Subscription instead of purchase (pricing slide B2, 22 Nov 2026): Swisspro installs and owns the units,
+   * the hotel pays nothing upfront and one fixed monthly fee = investment (incl. installation) spread over
+   * SUB_MONTHS months plus the service contract, no financing charge. Arithmetic only.
+   */
+  var SUB_MONTHS = 36;
+  var SIGNOFF_USD_MONTH = 5000; // owner signs above about USD 5,000 a month, varies by contract (Tan, 2026)
+  function subscription(rooms, spendPerYear, capex, servicePerYear, usdPerLocal) {
+    if (!(capex > 0)) return null;
+    var installMonth = capex / SUB_MONTHS, serviceMonth = servicePerYear / 12, fee = installMonth + serviceMonth;
+    var bottles = spendPerYear / 12, feeUsd = usdPerLocal > 0 ? fee * usdPerLocal : null;
+    return { months: SUB_MONTHS, fee: fee, installMonth: installMonth, serviceMonth: serviceMonth, perRoom: rooms > 0 ? fee / rooms : null,
+      bottlesMonth: bottles, savingMonth: bottles - fee, feeUsd: feeUsd, signoffUsd: SIGNOFF_USD_MONTH,
+      belowSignoff: feeUsd != null ? feeUsd < SIGNOFF_USD_MONTH : null };
+  }
+
+  /**
    * The strongest true statement, cash only (management feedback, 13 Nov 2026: staff time is not booked
    * as a cash saving, so it never carries the lead), in this order of preference:
    *   1. cash payback in years if it falls inside the five-year view;
@@ -200,5 +216,5 @@
     };
   }
 
-  return { build: build, cashPaysBack: cashPaysBack, cashShort: cashShort, listRate: listRate, priceSolutions: priceSolutions, serviceFor: serviceFor, fiveYear: fiveYear, perRoomMonth: perRoomMonth, leadStatement: leadStatement, breakEvenOccupancy: breakEvenOccupancy, BREAK_EVEN_YEARS: BREAK_EVEN_YEARS, VIEW_YEARS: VIEW_YEARS, SPREAD_YEARS: SPREAD_YEARS };
+  return { build: build, cashPaysBack: cashPaysBack, cashShort: cashShort, listRate: listRate, priceSolutions: priceSolutions, serviceFor: serviceFor, fiveYear: fiveYear, perRoomMonth: perRoomMonth, subscription: subscription, SUB_MONTHS: SUB_MONTHS, leadStatement: leadStatement, breakEvenOccupancy: breakEvenOccupancy, BREAK_EVEN_YEARS: BREAK_EVEN_YEARS, VIEW_YEARS: VIEW_YEARS, SPREAD_YEARS: SPREAD_YEARS };
 });
