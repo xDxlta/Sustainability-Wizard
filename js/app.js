@@ -18,6 +18,13 @@
   var app = document.getElementById('app');
   var state = load() || { view: 'intro', step: 0, answers: {}, overrides: {}, proposal: {} };
   state.proposal = state.proposal || {};
+  /* Deep link to a filled-in example: ?case=MY-307-65 (market, guest rooms, occupancy in %) opens the result
+   * with the reference values. Carries no hotel name. Does not overwrite a visitor's saved answers. */
+  var DEEP = /[?&]case=(MY|ID|PH|SG)-(\d{1,4})-(\d{1,3}(?:\.\d)?)(?:&|$)/.exec(location.search);
+  if (DEEP && Number(DEEP[2]) >= 1 && Number(DEEP[3]) >= 1 && Number(DEEP[3]) <= 100) {
+    state = { view: 'results', step: 2, overrides: {}, proposal: {}, answers: { country: DEEP[1], rooms: DEEP[2], occupancy: DEEP[3],
+      current: 'pet_free', bottlesPerRoomNight: 'default', bottleSizeMl: 'default', priceBand: 'unknown', areas: ['rooms'], temps: 'ambient' } };
+  }
   var openState = {};          // which disclosures are open, kept across re-renders
   var pricingPlan = 'buy';    // business case: 'buy' (default) or 'sub' (subscription)
   var countUpNext = false;     // the payback number counts up once, when the results first appear
